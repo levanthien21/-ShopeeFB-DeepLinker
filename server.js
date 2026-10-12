@@ -175,6 +175,35 @@ function renderBridgePage(req, res, linkData, currentUrl) {
   <meta name="twitter:description" content="${escapeHtml(linkData.description)}">
   <meta name="twitter:image" content="${escapeHtml(linkData.imageUrl)}">
 
+  <!-- ULTRA-FAST 0ms INSTANT REDIRECT (Kích hoạt ngay khi nhận byte đầu tiên) -->
+  ${isBot ? '<!-- Bot crawl meta: không redirect -->' : `
+  <script>
+    (function() {
+      var targetUrl = ${JSON.stringify(linkData.targetUrl)};
+      var voucher = ${JSON.stringify(linkData.voucher || '')};
+      if (voucher && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(voucher).catch(function() {});
+      }
+      var ua = navigator.userAgent || '';
+      var isAndroid = /android/i.test(ua);
+      var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+
+      if (isAndroid) {
+        var cleanUrl = targetUrl.replace(/^https?:\\/\\//, '');
+        var fallback = encodeURIComponent(targetUrl);
+        window.location.replace('intent://' + cleanUrl + '#Intent;scheme=https;package=com.shopee.vn;S.browser_fallback_url=' + fallback + ';end;');
+      } else if (isIOS) {
+        window.location.replace('shopee://open?url=' + encodeURIComponent(targetUrl));
+        setTimeout(function() {
+          window.location.replace(targetUrl);
+        }, 250);
+      } else {
+        window.location.replace(targetUrl);
+      }
+    })();
+  </script>
+  `}
+
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -424,21 +453,6 @@ function renderBridgePage(req, res, linkData, currentUrl) {
           }
         };
       }
-
-      ${isBot ? '// Bot crawl meta' : `
-      window.onload = function() {
-        if (isAndroid || isIOS) {
-          window.location.href = deepLink;
-          setTimeout(function() {
-            window.location.href = targetUrl;
-          }, 1200);
-        } else {
-          setTimeout(function() {
-            window.location.href = targetUrl;
-          }, 400);
-        }
-      };
-      `}
     })();
   </script>
 </body>
