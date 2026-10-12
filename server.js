@@ -134,11 +134,17 @@ function renderBridgePage(req, res, linkData, currentUrl) {
   <title>${escapeHtml(linkData.title)}</title>
   <meta name="description" content="${escapeHtml(linkData.description)}">
   
+  <meta property="fb:app_id" content="966242223397117">
+  <meta property="og:site_name" content="Shopee">
+  <meta property="og:locale" content="vi_VN">
   <meta property="og:type" content="website">
   <meta property="og:url" content="${currentUrl}">
   <meta property="og:title" content="${escapeHtml(linkData.title)}">
   <meta property="og:description" content="${escapeHtml(linkData.description)}">
   <meta property="og:image" content="${escapeHtml(linkData.imageUrl)}">
+  <meta property="og:image:secure_url" content="${escapeHtml(linkData.imageUrl)}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="${escapeHtml(linkData.title)}">
   
   <!-- Twitter Card -->
