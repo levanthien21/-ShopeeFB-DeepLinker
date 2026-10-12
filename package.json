@@ -1,0 +1,13 @@
+{
+  "name": "shopee-fb-redirect-tool",
+  "version": "1.0.0",
+  "description": "Công cụ chuyển đổi link Shopee sang link Facebook tối ưu Deep Link & Open Graph",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
