@@ -518,32 +518,76 @@
   </div>
 
   <!-- ==================== MODAL THANH TOÁN VIETQR ==================== -->
-  <div id="checkoutModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative text-center">
+  <div id="checkoutModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 hidden overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative text-center my-auto">
       <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
         <i class="fa-solid fa-xmark"></i>
       </button>
 
-      <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl">
-        <i class="fa-solid fa-qrcode"></i>
+      <!-- Logo & Header -->
+      <div class="mb-3">
+        <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full font-bold text-xs uppercase tracking-wider mb-2">
+          <i class="fa-solid fa-shield-halved text-emerald-600"></i> Cổng Thanh Toán Vietcombank
+        </div>
+        <h3 class="text-xl font-black text-slate-900 tracking-tight">THÔNG TIN THANH TOÁN</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Quét mã QR bằng App Ngân hàng bất kỳ để kích hoạt tự động</p>
       </div>
 
-      <h3 class="text-lg font-black text-slate-900">Quét Mã VietQR Kích Hoạt Gói</h3>
-      <p class="text-xs text-slate-500 mt-1">Gói cước: <b id="checkoutPlanName" class="text-orange-600">Pro</b> (<span id="checkoutPlanPrice">149.000đ</span>/tháng)</p>
-
-      <!-- Mã QR Chuyển Khoản -->
-      <div class="my-4 p-3 bg-slate-50 border border-slate-200 rounded-2xl inline-block">
-        <img id="vietQrImg" src="" alt="VietQR" class="w-52 h-52 object-contain mx-auto rounded-lg shadow-sm">
+      <!-- Khung Mã QR VietQR -->
+      <div class="p-3 bg-slate-50 border-2 border-emerald-500/30 rounded-2xl inline-block shadow-sm mb-4">
+        <img id="vietQrImg" src="" alt="VietQR Vietcombank" class="w-56 h-56 object-contain mx-auto rounded-xl">
       </div>
 
-      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-left text-xs space-y-1 text-amber-950 mb-4">
-        <div><b>Số tiền:</b> <span id="checkoutAmount" class="font-bold text-red-600">149.000đ</span></div>
-        <div><b>Nội dung CK:</b> <code id="checkoutContent" class="bg-white px-1.5 py-0.5 rounded border border-amber-300 font-bold font-mono">NAP SHOPEE PRO</code></div>
-        <div class="text-[11px] text-slate-500 pt-1">Hệ thống sẽ kích hoạt ngay sau khi nhận được thông báo chuyển khoản.</div>
+      <!-- Bảng Thông Tin Chi Tiết Giống Ảnh -->
+      <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left text-xs space-y-2.5 mb-5 shadow-inner">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+          <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-user text-slate-400"></i> CHỦ TÀI KHOẢN:</span>
+          <span class="font-black text-slate-900 text-sm">LE VAN THIEN</span>
+        </div>
+
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+          <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-building-columns text-emerald-600"></i> NGÂN HÀNG:</span>
+          <span class="font-bold text-emerald-700">Vietcombank (VCB)</span>
+        </div>
+
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+          <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-regular fa-credit-card text-slate-400"></i> SỐ TÀI KHOẢN:</span>
+          <div class="flex items-center gap-2">
+            <span class="font-mono font-black text-slate-900 text-sm tracking-wider">9349850292</span>
+            <button onclick="copyRaw('9349850292')" class="px-2 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded text-[10px] transition">
+              Copy
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+          <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-money-bill-wave text-slate-400"></i> SỐ TIỀN:</span>
+          <div class="flex items-center gap-2">
+            <span id="checkoutAmount" class="font-black text-red-600 text-sm">149.000đ</span>
+            <button id="copyPriceBtn" onclick="copyAmount()" class="px-2 py-0.5 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded text-[10px] transition">
+              Copy
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-comment-dots text-slate-400"></i> NỘI DUNG CK:</span>
+          <div class="flex items-center gap-2">
+            <code id="checkoutContent" class="bg-white px-2 py-1 rounded border border-amber-300 font-bold font-mono text-amber-900 text-xs">NAP USER PRO</code>
+            <button id="copyContentBtn" onclick="copyContent()" class="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded text-[10px] transition">
+              Copy
+            </button>
+          </div>
+        </div>
       </div>
 
-      <button onclick="closeCheckoutModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition">
-        Tôi Đã Chuyển Khoản Thành Công
+      <div class="text-[11px] text-slate-400 mb-4 flex items-center justify-center gap-1.5">
+        <i class="fa-solid fa-circle-check text-emerald-500"></i>
+        <span>Vui lòng kiểm tra kỹ thông tin trước khi thanh toán. Cảm ơn bạn!</span>
+      </div>
+
+      <button onclick="closeCheckoutModal()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition">
+        Tôi Đã Chuyển Khoản Xong
       </button>
     </div>
   </div>
@@ -736,21 +780,37 @@
     function openCheckoutModal() { document.getElementById('checkoutModal').classList.remove('hidden'); }
     function closeCheckoutModal() { document.getElementById('checkoutModal').classList.add('hidden'); }
 
+    let currentCheckoutPrice = 0;
     function selectPlanCheckout(planId, name, price, limit) {
       closePricingModal();
-      document.getElementById('checkoutPlanName').innerText = name;
-      document.getElementById('checkoutPlanPrice').innerText = price.toLocaleString('vi-VN') + 'đ';
+      currentCheckoutPrice = price;
       document.getElementById('checkoutAmount').innerText = price.toLocaleString('vi-VN') + 'đ';
 
-      const userEmailPrefix = currentUser ? currentUser.email.split('@')[0].toUpperCase() : 'USER';
+      const userEmailPrefix = currentUser ? currentUser.email.split('@')[0].toUpperCase().replace(/[^A-Z0-9]/g, '') : 'KHACH';
       const content = `NAP ${userEmailPrefix} ${planId.toUpperCase()}`;
       document.getElementById('checkoutContent').innerText = content;
 
-      // Sinh mã VietQR (Tài khoản mẫu, có thể đổi số tài khoản trong tham số QR)
-      const qrUrl = `https://img.vietqr.io/image/MB-0988888888-compact2.png?amount=${price}&addInfo=${encodeURIComponent(content)}&accountName=SHOPEE%20FB%20DEEPLINKER`;
+      // Sinh mã VietQR chuẩn Vietcombank LE VAN THIEN 9349850292
+      const qrUrl = `https://img.vietqr.io/image/VCB-9349850292-compact2.png?amount=${price}&addInfo=${encodeURIComponent(content)}&accountName=LE%20VAN%20THIEN`;
       document.getElementById('vietQrImg').src = qrUrl;
 
       openCheckoutModal();
+    }
+
+    function copyRaw(text) {
+      navigator.clipboard.writeText(text);
+      alert('Đã sao chép: ' + text);
+    }
+
+    function copyAmount() {
+      navigator.clipboard.writeText(String(currentCheckoutPrice));
+      alert('Đã sao chép số tiền: ' + currentCheckoutPrice.toLocaleString('vi-VN') + 'đ');
+    }
+
+    function copyContent() {
+      const content = document.getElementById('checkoutContent').innerText;
+      navigator.clipboard.writeText(content);
+      alert('Đã sao chép nội dung CK: ' + content);
     }
 
     function openAuthModal(mode = 'login') {
