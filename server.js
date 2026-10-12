@@ -6,28 +6,25 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'links.json');
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Đọc dữ liệu link lưu trữ (cho môi trường có ghi file)
+// Đọc dữ liệu link lưu trữ (cho môi trường local)
 function getStoredLinks() {
   try {
     if (fs.existsSync(DATA_FILE)) {
       const data = fs.readFileSync(DATA_FILE, 'utf8');
       return JSON.parse(data || '{}');
     }
-  } catch (err) {
-    // Trên Vercel serverless có thể chỉ đọc
-  }
+  } catch (err) {}
   return {};
 }
 
 function saveStoredLinks(links) {
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(links, null, 2), 'utf8');
-  } catch (err) {
-    // Ignored nếu môi trường read-only như Vercel
-  }
+  } catch (err) {}
 }
 
 function generateShortCode(length = 6) {
@@ -39,7 +36,7 @@ function generateShortCode(length = 6) {
   return result;
 }
 
-// Encode dữ liệu vào chuỗi an toàn cho URL (Stateless - chạy vĩnh viễn trên Vercel không cần Database)
+// Encode dữ liệu vào chuỗi Base64URL an toàn (Stateless - vĩnh viễn trên Vercel không cần Database)
 function encodePayload(obj) {
   return Buffer.from(JSON.stringify(obj)).toString('base64url');
 }
@@ -53,9 +50,22 @@ function decodePayload(str) {
   }
 }
 
+// Gắn Sub-ID Tracking vào Shopee URL
+function attachSubId(url, subId) {
+  if (!subId) return url;
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set('sub_id', subId);
+    return parsed.toString();
+  } catch (e) {
+    const sep = url.includes('?') ? '&' : '?';
+    return `${url}${sep}sub_id=${encodeURIComponent(subId)}`;
+  }
+}
+
 // API: Tạo link chuyển hướng
 app.post('/api/create', (req, res) => {
-  let { targetUrl, title, description, imageUrl } = req.body;
+  let { targetUrl, title, description, imageUrl, voucher, subId, fomo } = req.body;
 
   if (!targetUrl) {
     return res.status(400).json({ error: 'Vui lòng cung cấp link Shopee' });
@@ -65,6 +75,11 @@ app.post('/api/create', (req, res) => {
     targetUrl = 'https://' + targetUrl;
   }
 
+  // Gắn sub_id tracking nếu có
+  if (subId) {
+    targetUrl = attachSubId(targetUrl, subId);
+  }
+
   const id = generateShortCode();
   const linkData = {
     id,
@@ -72,26 +87,30 @@ app.post('/api/create', (req, res) => {
     title: title || 'Mua ngay trên Shopee - Ưu đãi giảm giá',
     description: description || 'Bấm vào để xem chi tiết sản phẩm và nhận mã giảm giá độc quyền trên Shopee!',
     imageUrl: imageUrl || 'https://cf.shopee.vn/file/default_shopee_og.png',
+    voucher: (voucher || '').trim().toUpperCase(),
+    subId: (subId || '').trim(),
+    fomo: fomo !== false,
     createdAt: new Date().toISOString()
   };
 
-  // Lưu file nếu được
+  // Lưu database local
   const links = getStoredLinks();
   links[id] = { ...linkData, clicks: 0 };
   saveStoredLinks(links);
 
-  // Tạo mã stateless để hoạt động trọn đời trên Vercel không phụ thuộc database
+  // Tạo mã stateless để hoạt động trọn đời trên Vercel
   const statelessCode = encodePayload({
     u: linkData.targetUrl,
     t: linkData.title,
     d: linkData.description,
-    i: linkData.imageUrl
+    i: linkData.imageUrl,
+    v: linkData.voucher,
+    f: linkData.fomo ? 1 : 0
   });
 
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;
   const host = req.get('host');
   
-  // Trả về link dạng stateless `/p/:code` (chạy mượt mà trên Vercel)
   const shortUrl = `${protocol}://${host}/p/${statelessCode}`;
 
   res.json({
@@ -119,10 +138,13 @@ app.get('/api/links', (req, res) => {
   res.json({ success: true, list });
 });
 
-// Hàm render trang cầu nối Shopee Deep Link & Open Graph
+// Render trang cầu nối Shopee Deep Link & Open Graph với tính năng CTR Booster
 function renderBridgePage(req, res, linkData, currentUrl) {
   const userAgent = req.headers['user-agent'] || '';
   const isBot = /facebookexternalhit|Facebot|Twitterbot|Pinterest|LinkedInBot|WhatsApp|TelegramBot|Slackbot|Googlebot|bingbot/i.test(userAgent);
+
+  const hasVoucher = Boolean(linkData.voucher);
+  const showFomo = linkData.fomo !== false;
 
   const html = `<!DOCTYPE html>
 <html lang="vi">
@@ -156,7 +178,7 @@ function renderBridgePage(req, res, linkData, currentUrl) {
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #f8fafc;
+      background: #f1f5f9;
       color: #334155;
       display: flex;
       align-items: center;
@@ -168,37 +190,27 @@ function renderBridgePage(req, res, linkData, currentUrl) {
     }
     .card {
       background: #ffffff;
-      border-radius: 20px;
-      padding: 32px 24px;
+      border-radius: 24px;
+      padding: 28px 22px;
       max-width: 420px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
     }
     .thumb {
-      width: 110px;
-      height: 110px;
+      width: 120px;
+      height: 120px;
       object-fit: cover;
-      border-radius: 16px;
-      margin: 0 auto 18px;
+      border-radius: 18px;
+      margin: 0 auto 16px;
       display: block;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    .spinner {
-      width: 44px;
-      height: 44px;
-      border: 4px solid #fed7aa;
-      border-top-color: #ee4d2d;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 20px auto;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+      border: 2px solid #ffedd5;
     }
     .title {
-      font-size: 17px;
-      font-weight: 700;
+      font-size: 16px;
+      font-weight: 800;
       line-height: 1.4;
       margin-bottom: 8px;
       color: #0f172a;
@@ -207,30 +219,112 @@ function renderBridgePage(req, res, linkData, currentUrl) {
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    .subtitle {
-      font-size: 14px;
-      color: #64748b;
-      margin-bottom: 20px;
+
+    /* FOMO Box */
+    .fomo-box {
+      background: #fff7ed;
+      border: 1px dashed #fdba74;
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin: 14px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 700;
+      color: #c2410c;
+    }
+    .live-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+      margin-right: 4px;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Voucher Banner */
+    .voucher-banner {
+      background: #ecfdf5;
+      border: 1.5px solid #10b981;
+      border-radius: 14px;
+      padding: 12px;
+      margin: 14px 0;
+      text-align: left;
+    }
+    .voucher-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #047857;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .voucher-code-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #ffffff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px dashed #059669;
+    }
+    .voucher-code {
+      font-family: monospace;
+      font-size: 15px;
+      font-weight: 800;
+      color: #065f46;
+    }
+    .copy-pill {
+      font-size: 11px;
+      background: #059669;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3.5px solid #fed7aa;
+      border-top-color: #ee4d2d;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 16px auto;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
     .btn {
       display: inline-block;
       width: 100%;
-      background: #ee4d2d;
+      background: linear-gradient(135deg, #ee4d2d 0%, #ff6b35 100%);
       color: white;
       text-decoration: none;
-      padding: 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 16px;
+      padding: 15px 12px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 15px;
       box-sizing: border-box;
-      box-shadow: 0 4px 14px rgba(238, 77, 45, 0.35);
-      transition: background 0.2s;
+      box-shadow: 0 6px 18px rgba(238, 77, 45, 0.35);
+      transition: transform 0.15s ease;
+      letter-spacing: 0.3px;
     }
-    .btn:hover {
-      background: #d73211;
+    .btn:active {
+      transform: scale(0.98);
     }
     .tips {
-      margin-top: 16px;
+      margin-top: 14px;
       font-size: 12px;
       color: #94a3b8;
     }
@@ -240,24 +334,74 @@ function renderBridgePage(req, res, linkData, currentUrl) {
   <div class="card">
     <img src="${escapeHtml(linkData.imageUrl)}" alt="Preview" class="thumb" onerror="this.style.display='none'">
     <div class="title">${escapeHtml(linkData.title)}</div>
-    <div class="subtitle">Đang mở ứng dụng Shopee...</div>
-    
+
+    ${showFomo ? `
+    <div class="fomo-box">
+      <div><span class="live-dot"></span><span id="liveViewers">48</span> người đang xem</div>
+      <div>⏳ <span id="countdown">04:59</span></div>
+    </div>
+    ` : ''}
+
+    ${hasVoucher ? `
+    <div class="voucher-banner">
+      <div class="voucher-title">🎁 Đã tự động sao chép mã giảm giá:</div>
+      <div class="voucher-code-wrap">
+        <span class="voucher-code" id="vCode">${escapeHtml(linkData.voucher)}</span>
+        <span class="copy-pill" id="vPill">Đã chép</span>
+      </div>
+      <div style="font-size: 10px; color: #047857; margin-top: 5px;">* Dán mã này tại bước thanh toán trong Shopee để được giảm giá.</div>
+    </div>
+    ` : ''}
+
     <div class="spinner"></div>
 
     <a id="openBtn" href="${escapeHtml(linkData.targetUrl)}" class="btn">
-      🛍️ MỞ ỨNG DỤNG SHOPEE NGAY
+      🛍️ MỞ SHOPEE MUA NGAY
     </a>
 
-    <div class="tips">Nếu ứng dụng không tự mở trong vài giây, hãy bấm nút cam phía trên.</div>
+    <div class="tips">Hệ thống đang mở App Shopee... Nếu không tự mở, hãy bấm nút cam phía trên.</div>
   </div>
 
   <script>
     (function() {
       const targetUrl = ${JSON.stringify(linkData.targetUrl)};
+      const voucher = ${JSON.stringify(linkData.voucher || '')};
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
       const isAndroid = /android/i.test(userAgent);
       const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
 
+      // 1. Tự động sao chép mã giảm giá vào Clipboard của khách
+      if (voucher && navigator.clipboard) {
+        navigator.clipboard.writeText(voucher).catch(function() {});
+      }
+
+      // 2. Chạy đếm ngược FOMO
+      var countdownEl = document.getElementById('countdown');
+      if (countdownEl) {
+        var totalSec = 299; // 4 phút 59 giây
+        setInterval(function() {
+          if (totalSec > 0) {
+            totalSec--;
+            var m = Math.floor(totalSec / 60);
+            var s = totalSec % 60;
+            countdownEl.innerText = (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+          }
+        }, 1000);
+      }
+
+      // Giả lập số người xem dao động
+      var liveEl = document.getElementById('liveViewers');
+      if (liveEl) {
+        setInterval(function() {
+          var delta = Math.floor(Math.random() * 5) - 2;
+          var cur = parseInt(liveEl.innerText, 10) + delta;
+          if (cur < 28) cur = 32;
+          if (cur > 92) cur = 85;
+          liveEl.innerText = cur;
+        }, 3000);
+      }
+
+      // 3. Xây dựng Deep Link Shopee
       let deepLink = targetUrl;
       if (isAndroid) {
         const encodedTarget = encodeURIComponent(targetUrl);
@@ -303,7 +447,7 @@ function renderBridgePage(req, res, linkData, currentUrl) {
   res.send(html);
 }
 
-// Route 1: Stateless URL (/p/:code) -> Hoạt động vĩnh viễn trên Vercel không cần Database
+// Route 1: Stateless URL (/p/:code) -> Vĩnh viễn trên Vercel không cần Database
 app.get('/p/:code', (req, res) => {
   const { code } = req.params;
   const decoded = decodePayload(code);
@@ -316,7 +460,9 @@ app.get('/p/:code', (req, res) => {
     targetUrl: decoded.u,
     title: decoded.t,
     description: decoded.d,
-    imageUrl: decoded.i
+    imageUrl: decoded.i,
+    voucher: decoded.v,
+    fomo: decoded.f !== 0
   };
 
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;

@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Công Cụ Tạo Link Shopee Đăng Facebook (Deep Link)</title>
+  <title>ShopeeFB DeepLinker - Công Cụ Tạo Link Shopee Đăng Facebook Tối Ưu CTR</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
     body { font-family: 'Inter', sans-serif; }
   </style>
 </head>
@@ -15,14 +15,14 @@
 
   <!-- Header -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20">
           <i class="fa-solid fa-bolt text-lg"></i>
         </div>
         <div>
-          <h1 class="text-lg font-bold text-slate-900 leading-tight">ShopeeFB DeepLinker</h1>
-          <p class="text-xs text-slate-500">Chuyển link Shopee sang link Facebook mở trực tiếp App</p>
+          <h1 class="text-base sm:text-lg font-black text-slate-900 leading-tight">ShopeeFB DeepLinker Pro</h1>
+          <p class="text-[11px] text-slate-500">Mở trực tiếp App Shopee & Tối ưu CTR tăng tương tác Facebook</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -36,21 +36,21 @@
   <main class="max-w-6xl mx-auto px-4 py-8">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
       
-      <!-- Cột Trái: Form tạo link -->
+      <!-- Cột Trái: Form tạo link & Tính năng tăng CTR -->
       <div class="lg:col-span-7 space-y-6">
         
         <div class="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 shadow-sm">
           <h2 class="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2">
-            <i class="fa-solid fa-link text-orange-500"></i> Tạo Liên Kết Mới
+            <i class="fa-solid fa-link text-orange-500"></i> Thiết Lập Liên Kết Shopee
           </h2>
-          <p class="text-sm text-slate-500 mb-6">Điền link Shopee và tùy chỉnh thông tin hiển thị trên Facebook.</p>
+          <p class="text-xs text-slate-500 mb-6">Tạo link chia sẻ Facebook có ảnh to, nút mở app và các tính năng kích thích khách bấm mua.</p>
 
-          <form id="createForm" class="space-y-4">
+          <form id="createForm" class="space-y-5">
             
             <!-- Link Shopee -->
             <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                Link Shopee Gốc / Affiliate <span class="text-red-500">*</span>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                1. Link Shopee Gốc / Affiliate <span class="text-red-500">*</span>
               </label>
               <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -68,22 +68,22 @@
 
             <!-- Tiêu đề Facebook -->
             <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                Tiêu Đề Hiển Thị Trên Facebook <span class="text-red-500">*</span>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                2. Tiêu Đề Bài Đăng Facebook <span class="text-red-500">*</span>
               </label>
               <input 
                 type="text" 
                 id="title" 
                 required
-                placeholder="VD: [Mã Giảm 50%] Tai Nghe Bluetooth Chống Ồn Chính Hãng"
+                placeholder="VD: [Giảm 50%] Tai Nghe Bluetooth Chống Ồn Chính Hãng"
                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition"
               >
             </div>
 
-            <!-- Link Ảnh -->
+            <!-- Link Ảnh Sản Phẩm -->
             <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                Link Ảnh Bìa (Hiển thị thẻ to trên FB)
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                3. Link Hình Ảnh Sản Phẩm
               </label>
               <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -92,23 +92,86 @@
                 <input 
                   type="url" 
                   id="imageUrl" 
-                  placeholder="https://cf.shopee.vn/file/... hoặc link ảnh bất kỳ"
+                  placeholder="Dán link ảnh từ Shopee hoặc ảnh bất kỳ..."
                   class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition"
                 >
               </div>
-              <p class="text-xs text-slate-400 mt-1">Mẹo: Click chuột phải vào ảnh sản phẩm trên Shopee chọn "Sao chép địa chỉ hình ảnh" và dán vào đây.</p>
+            </div>
+
+            <!-- KHỐI TÍNH NĂNG TĂNG CTR (BOOSTER SUITE) -->
+            <div class="p-4 bg-orange-50/70 border border-orange-200 rounded-xl space-y-4">
+              <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-orange-950">
+                <i class="fa-solid fa-wand-magic-sparkles text-orange-600"></i> Vũ khí tăng lượt click (CTR Booster)
+              </div>
+
+              <!-- 1. Fake Video Play Button & Badge Overlay -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <label class="flex items-center gap-2.5 p-2.5 bg-white border border-orange-200/80 rounded-xl cursor-pointer hover:border-orange-400 transition">
+                  <input type="checkbox" id="enablePlayBtn" checked class="w-4 h-4 text-orange-600 rounded focus:ring-orange-500 accent-orange-600">
+                  <div class="text-xs">
+                    <span class="font-bold text-slate-800 block">🎬 Nút Play Video Ảo</span>
+                    <span class="text-[10px] text-slate-500">Giống video review, tăng x3 click</span>
+                  </div>
+                </label>
+
+                <div>
+                  <select id="badgeSelect" class="w-full h-full p-2.5 bg-white border border-orange-200/80 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-orange-500 transition">
+                    <option value="none">🏷️ Tem: Không gắn tem</option>
+                    <option value="flash_sale" selected>🔥 Tem: FLASH SALE GIẢM 50%</option>
+                    <option value="freeship">🚚 Tem: FREESHIP EXTRA 0Đ</option>
+                    <option value="mall">👑 Tem: SHOPEE MALL CHÍNH HÃNG</option>
+                    <option value="deal_soc">⚡ Tem: DEAL SỐC HÔM NAY</option>
+                    <option value="bogo">🎁 Tem: MUA 1 TẶNG 1</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- 2. Auto-Copy Voucher & Sub-ID Tracking -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-700 mb-1">
+                    📋 Tự động sao chép mã Voucher (nếu có):
+                  </label>
+                  <input 
+                    type="text" 
+                    id="voucherInput" 
+                    placeholder="VD: GIAM50K hoặc FREESHIP"
+                    class="w-full px-3 py-2 bg-white rounded-lg border border-orange-200 text-xs font-mono font-bold text-emerald-700 uppercase focus:outline-none focus:border-orange-500"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-700 mb-1">
+                    🏷️ Theo dõi nguồn đăng (Sub-ID Tracking):
+                  </label>
+                  <select id="subIdSelect" class="w-full px-3 py-2 bg-white rounded-lg border border-orange-200 text-xs font-medium text-slate-700 focus:outline-none focus:border-orange-500">
+                    <option value="">Không gắn (Mặc định)</option>
+                    <option value="fb_group">👥 Group Săn Sale (fb_group)</option>
+                    <option value="fb_page">📄 Fanpage Bán Hàng (fb_page)</option>
+                    <option value="fb_profile">👤 Trang Cá Nhân (fb_profile)</option>
+                    <option value="fb_reels">🎥 Video / Reels (fb_reels)</option>
+                    <option value="fb_comment">💬 Bình Luận Dạo (fb_comment)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- 3. FOMO Countdown Checkbox -->
+              <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700 pt-1">
+                <input type="checkbox" id="enableFomo" checked class="w-4 h-4 rounded text-orange-600 accent-orange-600">
+                <span>⏰ Bật đồng hồ đếm ngược Flash Sale & Hiển thị số người đang cùng xem</span>
+              </label>
             </div>
 
             <!-- Mô tả ngắn -->
             <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                Mô Tả Sản Phẩm / Lời Kêu Gọi
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                4. Mô Tả Sản Phẩm / Lời Kêu Gọi
               </label>
               <textarea 
                 id="description" 
                 rows="2"
-                placeholder="VD: Đang có Flash Sale giảm sâu hôm nay. Freeship toàn quốc, bấm mua ngay kẻo hết quà tặng!"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition"
+                placeholder="VD: Flash Sale giảm sâu chỉ hôm nay. Freeship toàn quốc, bấm vào để mở app mua ngay kẻo hết quà!"
+                class="w-full px-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition"
               ></textarea>
             </div>
 
@@ -124,10 +187,10 @@
 
         <!-- Hộp kết quả sau khi tạo link thành công -->
         <div id="resultBox" class="hidden bg-emerald-50 border border-emerald-200 rounded-2xl p-6 transition-all duration-300">
-          <div class="flex items-center gap-2 text-emerald-800 font-bold mb-2">
+          <div class="flex items-center gap-2 text-emerald-800 font-bold mb-1.5">
             <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i> Tạo Liên Kết Thành Công!
           </div>
-          <p class="text-xs text-emerald-700 mb-4">Link này đã được tối ưu thẻ xem trước Facebook và tự kích hoạt ứng dụng Shopee trên điện thoại.</p>
+          <p class="text-xs text-emerald-700 mb-4">Link đã được kích hoạt Deep Link mở thẳng App Shopee và tối ưu hiển thị Facebook.</p>
           
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <input 
@@ -156,40 +219,40 @@
 
       </div>
 
-      <!-- Cột Phải: Xem trước Facebook Preview & Lịch sử -->
+      <!-- Cột Phải: Live Preview Facebook & Lịch sử -->
       <div class="lg:col-span-5 space-y-6">
         
         <!-- Live Preview Facebook Card -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm sticky top-20">
+          <div class="flex items-center justify-between mb-3.5">
             <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-brands fa-facebook text-blue-600 text-base"></i> Mô phỏng xem trước trên Facebook
+              <i class="fa-brands fa-facebook text-blue-600 text-base"></i> Xem trước trên Facebook
             </h3>
-            <span class="text-[11px] bg-slate-100 text-slate-600 font-medium px-2 py-0.5 rounded">Live Preview</span>
+            <span class="text-[11px] bg-orange-100 text-orange-700 font-bold px-2 py-0.5 rounded">Mô phỏng thật</span>
           </div>
 
           <!-- Card Facebook Post Preview -->
           <div class="border border-slate-300 rounded-xl overflow-hidden bg-slate-50 transition shadow-sm">
-            <!-- Header bài viết giả lập -->
+            <!-- Header bài viết FB -->
             <div class="p-3 bg-white flex items-center gap-2.5 border-b border-slate-100">
-              <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-xs">
+              <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
                 FB
               </div>
               <div>
-                <div class="text-xs font-bold text-slate-900 leading-tight">Fanpage / Tường Facebook Của Bạn</div>
+                <div class="text-xs font-bold text-slate-900 leading-tight">Fanpage / Tường Nhà Bạn</div>
                 <div class="text-[10px] text-slate-400">Vừa xong · <i class="fa-solid fa-earth-americas"></i></div>
               </div>
             </div>
 
-            <!-- Nội dung bài viết giả lập -->
+            <!-- Caption bài viết -->
             <div class="px-3 py-2 bg-white text-xs text-slate-700">
-              Săn deal hot Shopee tại link bên dưới nha mọi người 👇
+              Săn deal siêu sốc Shopee ngay hôm nay nha cả nhà ơi 👇
             </div>
 
-            <!-- The Link Card -->
+            <!-- The Facebook Link Card -->
             <div class="cursor-pointer group">
-              <!-- Thumbnail -->
-              <div class="w-full h-44 bg-slate-200 overflow-hidden relative flex items-center justify-center">
+              <!-- Thumbnail Box with Overlays -->
+              <div class="w-full h-48 bg-slate-900 overflow-hidden relative flex items-center justify-center">
                 <img 
                   id="previewImage" 
                   src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=60" 
@@ -197,43 +260,41 @@
                   class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                   onerror="this.src='https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=60'"
                 >
+
+                <!-- Tem Nhãn Overlay -->
+                <div id="previewBadge" class="absolute top-2.5 left-2.5 bg-red-600 text-white text-[11px] font-black px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1 uppercase tracking-tight">
+                  🔥 FLASH SALE GIẢM 50%
+                </div>
+
+                <!-- Fake Video Play Button Overlay -->
+                <div id="previewPlayBtn" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div class="w-14 h-14 rounded-full bg-black/60 backdrop-blur-sm border-2 border-white/90 flex items-center justify-center text-white shadow-2xl pl-1 group-hover:scale-110 transition duration-300">
+                    <i class="fa-solid fa-play text-xl"></i>
+                  </div>
+                </div>
               </div>
               
-              <!-- Content Info -->
+              <!-- Footer Thông Tin Link -->
               <div class="p-3 bg-slate-100 border-t border-slate-200">
-                <div id="previewDomain" class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-0.5 truncate">
+                <div id="previewDomain" class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-0.5 truncate">
                   SHOPEE.VN
                 </div>
                 <div id="previewTitle" class="text-sm font-bold text-slate-900 leading-snug line-clamp-2">
-                  [Mã Giảm 50%] Tai Nghe Bluetooth Chống Ồn Chính Hãng
+                  [Giảm 50%] Tai Nghe Bluetooth Chống Ồn Chính Hãng
                 </div>
                 <div id="previewDesc" class="text-xs text-slate-500 mt-1 line-clamp-1">
-                  Đang có Flash Sale giảm sâu hôm nay. Freeship toàn quốc, bấm mua ngay kẻo hết quà tặng!
+                  Flash Sale giảm sâu chỉ hôm nay. Freeship toàn quốc, bấm vào để mở app mua ngay kẻo hết quà!
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- Lời khuyên -->
           <div class="mt-3 text-[11px] text-slate-500 flex items-start gap-1.5">
-            <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
-            <span>Facebook sẽ hiển thị khung hình ảnh to như trên khi bạn dán link đã tạo vào bài đăng.</span>
-          </div>
-        </div>
-
-        <!-- Lịch sử link -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-clock-rotate-left text-slate-500"></i> Link đã tạo gần đây
-            </h3>
-            <button id="refreshBtn" class="text-xs text-slate-500 hover:text-orange-500 transition">
-              <i class="fa-solid fa-rotate-right"></i> Làm mới
-            </button>
+            <i class="fa-solid fa-circle-info text-orange-500 mt-0.5"></i>
+            <span>Nút Play ảo và Tem nhãn giúp bài viết kích thích thị giác cực mạnh, khiến khách tò mò bấm vào ngay!</span>
           </div>
 
-          <div id="linksList" class="space-y-3 max-h-[300px] overflow-y-auto pr-1">
-            <div class="text-center py-6 text-xs text-slate-400">Đang tải danh sách...</div>
-          </div>
         </div>
 
       </div>
@@ -242,24 +303,39 @@
   </main>
 
   <script>
-    // Live preview binding
+    // Elements
     const titleInput = document.getElementById('title');
     const descInput = document.getElementById('description');
     const imageInput = document.getElementById('imageUrl');
-    
+    const enablePlayBtn = document.getElementById('enablePlayBtn');
+    const badgeSelect = document.getElementById('badgeSelect');
+
     const previewTitle = document.getElementById('previewTitle');
     const previewDesc = document.getElementById('previewDesc');
     const previewImage = document.getElementById('previewImage');
+    const previewPlayBtn = document.getElementById('previewPlayBtn');
+    const previewBadge = document.getElementById('previewBadge');
     const previewDomain = document.getElementById('previewDomain');
 
-    previewDomain.innerText = window.location.host;
+    previewDomain.innerText = window.location.host || 'SHOPEE.VN';
 
+    // Badge Map
+    const badgeMap = {
+      'none': null,
+      'flash_sale': '🔥 FLASH SALE GIẢM 50%',
+      'freeship': '🚚 FREESHIP EXTRA 0Đ',
+      'mall': '👑 SHOPEE MALL CHÍNH HÃNG',
+      'deal_soc': '⚡ DEAL SỐC HÔM NAY',
+      'bogo': '🎁 MUA 1 TẶNG 1'
+    };
+
+    // Live Preview Listeners
     titleInput.addEventListener('input', (e) => {
-      previewTitle.innerText = e.target.value.trim() || '[Mã Giảm 50%] Tai Nghe Bluetooth Chống Ồn Chính Hãng';
+      previewTitle.innerText = e.target.value.trim() || '[Giảm 50%] Tai Nghe Bluetooth Chống Ồn Chính Hãng';
     });
 
     descInput.addEventListener('input', (e) => {
-      previewDesc.innerText = e.target.value.trim() || 'Đang có Flash Sale giảm sâu hôm nay. Freeship toàn quốc, bấm mua ngay kẻo hết quà tặng!';
+      previewDesc.innerText = e.target.value.trim() || 'Flash Sale giảm sâu chỉ hôm nay. Freeship toàn quốc, bấm vào để mở app mua ngay kẻo hết quà!';
     });
 
     imageInput.addEventListener('input', (e) => {
@@ -267,7 +343,21 @@
       previewImage.src = url || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=60';
     });
 
-    // Handle Form Submit
+    enablePlayBtn.addEventListener('change', (e) => {
+      previewPlayBtn.style.display = e.target.checked ? 'flex' : 'none';
+    });
+
+    badgeSelect.addEventListener('change', (e) => {
+      const val = e.target.value;
+      if (val === 'none') {
+        previewBadge.style.display = 'none';
+      } else {
+        previewBadge.style.display = 'flex';
+        previewBadge.innerText = badgeMap[val] || '';
+      }
+    });
+
+    // Form Submit
     const form = document.getElementById('createForm');
     const resultBox = document.getElementById('resultBox');
     const outputUrl = document.getElementById('outputUrl');
@@ -279,13 +369,16 @@
       e.preventDefault();
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo liên kết...';
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo liên kết tối ưu...';
 
       const payload = {
         targetUrl: document.getElementById('targetUrl').value.trim(),
         title: titleInput.value.trim(),
         description: descInput.value.trim(),
-        imageUrl: imageInput.value.trim()
+        imageUrl: imageInput.value.trim() || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
+        voucher: document.getElementById('voucherInput').value.trim(),
+        subId: document.getElementById('subIdSelect').value,
+        fomo: document.getElementById('enableFomo').checked
       };
 
       try {
@@ -303,7 +396,6 @@
           fbDebugLink.href = `https://developers.facebook.com/tools/debug/?q=${encodeURIComponent(data.data.shortUrl)}`;
 
           resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          loadRecentLinks();
         } else {
           alert('Lỗi: ' + (data.error || 'Không thể tạo link'));
         }
@@ -326,52 +418,6 @@
         copyBtn.classList.replace('bg-slate-800', 'bg-emerald-600');
       }, 2000);
     });
-
-    // Load recent links
-    async function loadRecentLinks() {
-      const container = document.getElementById('linksList');
-      try {
-        const res = await fetch('/api/links');
-        const data = await res.json();
-
-        if (data.success && data.list.length > 0) {
-          container.innerHTML = data.list.map(item => `
-            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1.5 hover:border-slate-300 transition">
-              <div class="font-bold text-slate-800 line-clamp-1">${escapeHtml(item.title)}</div>
-              <div class="flex items-center justify-between text-slate-500 font-mono text-[11px]">
-                <a href="${item.shortUrl}" target="_blank" class="text-orange-600 hover:underline truncate max-w-[190px]">${item.shortUrl}</a>
-                <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded text-[10px]">
-                  ${item.clicks || 0} click
-                </span>
-              </div>
-              <div class="flex items-center justify-between pt-1 border-t border-slate-200/60 text-[10px] text-slate-400">
-                <span>${new Date(item.createdAt).toLocaleDateString('vi-VN')}</span>
-                <button onclick="copyText('${item.shortUrl}')" class="text-blue-600 hover:underline">
-                  <i class="fa-regular fa-copy"></i> Copy
-                </button>
-              </div>
-            </div>
-          `).join('');
-        } else {
-          container.innerHTML = '<div class="text-center py-6 text-xs text-slate-400">Chưa có liên kết nào được tạo.</div>';
-        }
-      } catch (err) {
-        container.innerHTML = '<div class="text-center py-6 text-xs text-red-400">Không thể tải danh sách.</div>';
-      }
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    window.copyText = function(text) {
-      navigator.clipboard.writeText(text);
-      alert('Đã sao chép liên kết vào bộ nhớ tạm!');
-    };
-
-    document.getElementById('refreshBtn').addEventListener('click', loadRecentLinks);
-    loadRecentLinks();
   </script>
 </body>
 </html>
