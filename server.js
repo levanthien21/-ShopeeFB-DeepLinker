@@ -1,6 +1,16 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const {
+  PLANS,
+  getAllUsers,
+  getUserById,
+  getUserByEmail,
+  saveUser,
+  hashPassword,
+  generateToken,
+  verifyToken
+} = require('./lib/db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,6 +19,29 @@ const DATA_FILE = path.join(__dirname, 'links.json');
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Middleware xác thực người dùng qua Header Authorization
+async function authMiddleware(req, res, next) {
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+
+  const userId = verifyToken(token);
+  if (!userId) {
+    req.user = null;
+    return next();
+  }
+
+  const user = await getUserById(userId);
+  req.user = user || null;
+  next();
+}
+
+app.use(authMiddleware);
 
 // Đọc dữ liệu link lưu trữ (cho môi trường local)
 function getStoredLinks() {
@@ -36,7 +69,6 @@ function generateShortCode(length = 6) {
   return result;
 }
 
-// Encode dữ liệu vào chuỗi Base64URL an toàn (Stateless - vĩnh viễn trên Vercel không cần Database)
 function encodePayload(obj) {
   return Buffer.from(JSON.stringify(obj)).toString('base64url');
 }
@@ -50,7 +82,6 @@ function decodePayload(str) {
   }
 }
 
-// Gắn Sub-ID Tracking vào Shopee URL
 function attachSubId(url, subId) {
   if (!subId) return url;
   try {
@@ -63,19 +94,136 @@ function attachSubId(url, subId) {
   }
 }
 
-// API: Tạo link chuyển hướng
-app.post('/api/create', (req, res) => {
+// ----------------- API AUTH -----------------
+
+// Đăng ký tài khoản
+app.post('/api/auth/register', async (req, res) => {
+  const { email, password, name } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Vui lòng nhập đầy đủ Email và Mật khẩu' });
+  }
+
+  const existing = await getUserByEmail(email);
+  if (existing) {
+    return res.status(400).json({ error: 'Email này đã được sử dụng. Vui lòng đăng nhập!' });
+  }
+
+  const userId = 'usr_' + generateShortCode(8);
+  const newUser = {
+    id: userId,
+    email: email.trim().toLowerCase(),
+    passwordHash: hashPassword(password),
+    name: (name || email.split('@')[0]).trim(),
+    role: 'user',
+    plan: 'free', // Tặng gói dùng thử ban đầu
+    linksUsed: 0,
+    linksLimit: PLANS.free.linkLimit,
+    planExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date().toISOString()
+  };
+
+  await saveUser(newUser);
+  const token = generateToken(newUser.id);
+
+  res.json({
+    success: true,
+    token,
+    user: sanitizeUser(newUser)
+  });
+});
+
+// Đăng nhập
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Vui lòng nhập Email và Mật khẩu' });
+  }
+
+  const user = await getUserByEmail(email);
+  if (!user || user.passwordHash !== hashPassword(password)) {
+    return res.status(401).json({ error: 'Email hoặc Mật khẩu không chính xác' });
+  }
+
+  const token = generateToken(user.id);
+  res.json({
+    success: true,
+    token,
+    user: sanitizeUser(user)
+  });
+});
+
+// Lấy thông tin tài khoản hiện tại
+app.get('/api/auth/me', (req, res) => {
+  if (!req.user) {
+    return res.json({ loggedIn: false, user: null });
+  }
+  res.json({
+    loggedIn: true,
+    user: sanitizeUser(req.user)
+  });
+});
+
+// Lấy thông tin 4 gói cước
+app.get('/api/plans', (req, res) => {
+  res.json({
+    success: true,
+    plans: PLANS
+  });
+});
+
+function sanitizeUser(user) {
+  const { passwordHash, ...safe } = user;
+  const planInfo = PLANS[safe.plan] || PLANS.free;
+  return {
+    ...safe,
+    planDetails: planInfo
+  };
+}
+
+// ----------------- API TẠO LINK (KIỂM TRA HẠN MỨC GÓI) -----------------
+app.post('/api/create', async (req, res) => {
   let { targetUrl, title, description, imageUrl, voucher, subId, fomo } = req.body;
 
   if (!targetUrl) {
     return res.status(400).json({ error: 'Vui lòng cung cấp link Shopee' });
   }
 
+  // 1. Kiểm tra đăng nhập
+  if (!req.user) {
+    return res.status(401).json({
+      error: 'Vui lòng Đăng ký hoặc Đăng nhập tài khoản để tạo link Shopee!'
+    });
+  }
+
+  const user = req.user;
+
+  // 2. Kiểm tra ngày hết hạn gói
+  if (user.plan !== 'free' && user.planExpiresAt && new Date(user.planExpiresAt) < new Date()) {
+    // Gói đã hết hạn -> đưa về gói free
+    user.plan = 'free';
+    user.linksLimit = PLANS.free.linkLimit;
+    await saveUser(user);
+    return res.status(403).json({
+      error: `Gói ${user.plan.toUpperCase()} của bạn đã hết hạn. Vui lòng gia hạn để tiếp tục sử dụng!`
+    });
+  }
+
+  // 3. Kiểm tra hạn mức link trong tháng
+  const limit = user.linksLimit || (PLANS[user.plan] ? PLANS[user.plan].linkLimit : 2);
+  if (user.linksUsed >= limit) {
+    return res.status(403).json({
+      error: `Bạn đã sử dụng hết hạn mức (${user.linksUsed}/${limit} link) của gói ${PLANS[user.plan]?.name || user.plan}. Vui lòng nâng cấp gói để tạo thêm link!`,
+      limitExceeded: true,
+      currentPlan: user.plan
+    });
+  }
+
   if (!/^https?:\/\//i.test(targetUrl)) {
     targetUrl = 'https://' + targetUrl;
   }
 
-  // Gắn sub_id tracking nếu có
   if (subId) {
     targetUrl = attachSubId(targetUrl, subId);
   }
@@ -83,6 +231,7 @@ app.post('/api/create', (req, res) => {
   const id = generateShortCode();
   const linkData = {
     id,
+    userId: user.id,
     targetUrl,
     title: title || 'Mua ngay trên Shopee - Ưu đãi giảm giá',
     description: description || 'Bấm vào để xem chi tiết sản phẩm và nhận mã giảm giá độc quyền trên Shopee!',
@@ -93,12 +242,15 @@ app.post('/api/create', (req, res) => {
     createdAt: new Date().toISOString()
   };
 
+  // Tăng số lượt đã dùng của user
+  user.linksUsed = (user.linksUsed || 0) + 1;
+  await saveUser(user);
+
   // Lưu database local
   const links = getStoredLinks();
   links[id] = { ...linkData, clicks: 0 };
   saveStoredLinks(links);
 
-  // Tạo mã stateless để hoạt động trọn đời trên Vercel
   const statelessCode = encodePayload({
     u: linkData.targetUrl,
     t: linkData.title,
@@ -110,7 +262,6 @@ app.post('/api/create', (req, res) => {
 
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;
   const host = req.get('host');
-  
   const shortUrl = `${protocol}://${host}/p/${statelessCode}`;
 
   res.json({
@@ -118,17 +269,27 @@ app.post('/api/create', (req, res) => {
     data: {
       ...linkData,
       shortUrl
+    },
+    userQuota: {
+      used: user.linksUsed,
+      limit: user.linksLimit,
+      plan: user.plan
     }
   });
 });
 
-// API: Lấy danh sách link gần đây
+// Lịch sử link của user
 app.get('/api/links', (req, res) => {
   const links = getStoredLinks();
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;
   const host = req.get('host');
 
-  const list = Object.values(links)
+  let list = Object.values(links);
+  if (req.user && req.user.role !== 'admin') {
+    list = list.filter(item => item.userId === req.user.id);
+  }
+
+  list = list
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .map(item => ({
       ...item,
@@ -138,11 +299,59 @@ app.get('/api/links', (req, res) => {
   res.json({ success: true, list });
 });
 
-// Render trang cầu nối Shopee Deep Link & Open Graph với tính năng CTR Booster
+// ----------------- API ADMIN QUẢN TRỊ GÓI & KHÁCH HÀNG -----------------
+
+// Lấy danh sách toàn bộ khách hàng (chỉ admin)
+app.get('/api/admin/users', async (req, res) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Chỉ Quản trị viên (Admin) mới có quyền truy cập!' });
+  }
+
+  const usersMap = await getAllUsers();
+  const users = Object.values(usersMap).map(u => sanitizeUser(u));
+  res.json({ success: true, users });
+});
+
+// Kích hoạt / Nâng cấp gói cho khách hàng
+app.post('/api/admin/upgrade', async (req, res) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Chỉ Quản trị viên mới có quyền nâng cấp!' });
+  }
+
+  const { targetEmail, planId, days } = req.body;
+  if (!targetEmail || !planId) {
+    return res.status(400).json({ error: 'Vui lòng cung cấp Email khách hàng và Gói cần kích hoạt' });
+  }
+
+  const user = await getUserByEmail(targetEmail);
+  if (!user) {
+    return res.status(404).json({ error: `Không tìm thấy tài khoản với email: ${targetEmail}` });
+  }
+
+  const plan = PLANS[planId];
+  if (!plan) {
+    return res.status(400).json({ error: 'Gói cước không hợp lệ!' });
+  }
+
+  const durationDays = parseInt(days, 10) || 30;
+  user.plan = planId;
+  user.linksLimit = plan.linkLimit;
+  user.linksUsed = 0; // Làm mới lượt khi kích hoạt gói mới
+  user.planExpiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+
+  await saveUser(user);
+
+  res.json({
+    success: true,
+    message: `Đã kích hoạt thành công gói ${plan.name} cho khách hàng ${user.email} (${durationDays} ngày)!`,
+    user: sanitizeUser(user)
+  });
+});
+
+// ----------------- ROUTE CHUYỂN HƯỚNG DEEP LINK (SIÊU TỐC 0ms) -----------------
 function renderBridgePage(req, res, linkData, currentUrl) {
   const userAgent = req.headers['user-agent'] || '';
   const isBot = /facebookexternalhit|Facebot|Twitterbot|Pinterest|LinkedInBot|WhatsApp|TelegramBot|Slackbot|Googlebot|bingbot/i.test(userAgent);
-
   const hasVoucher = Boolean(linkData.voucher);
   const showFomo = linkData.fomo !== false;
 
@@ -175,7 +384,7 @@ function renderBridgePage(req, res, linkData, currentUrl) {
   <meta name="twitter:description" content="${escapeHtml(linkData.description)}">
   <meta name="twitter:image" content="${escapeHtml(linkData.imageUrl)}">
 
-  <!-- ULTRA-FAST 0ms INSTANT REDIRECT (Kích hoạt ngay khi nhận byte đầu tiên) -->
+  <!-- ULTRA-FAST 0ms INSTANT REDIRECT -->
   ${isBot ? '<!-- Bot crawl meta: không redirect -->' : `
   <script>
     (function() {
@@ -248,8 +457,6 @@ function renderBridgePage(req, res, linkData, currentUrl) {
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-
-    /* FOMO Box */
     .fomo-box {
       background: #fff7ed;
       border: 1px dashed #fdba74;
@@ -276,8 +483,6 @@ function renderBridgePage(req, res, linkData, currentUrl) {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(0.85); }
     }
-
-    /* Voucher Banner */
     .voucher-banner {
       background: #ecfdf5;
       border: 1.5px solid #10b981;
@@ -293,9 +498,6 @@ function renderBridgePage(req, res, linkData, currentUrl) {
       color: #047857;
       letter-spacing: 0.5px;
       margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
     }
     .voucher-code-wrap {
       display: flex;
@@ -319,9 +521,7 @@ function renderBridgePage(req, res, linkData, currentUrl) {
       padding: 3px 8px;
       border-radius: 6px;
       font-weight: 700;
-      cursor: pointer;
     }
-
     .spinner {
       width: 36px;
       height: 36px;
@@ -347,7 +547,6 @@ function renderBridgePage(req, res, linkData, currentUrl) {
       box-sizing: border-box;
       box-shadow: 0 6px 18px rgba(238, 77, 45, 0.35);
       transition: transform 0.15s ease;
-      letter-spacing: 0.3px;
     }
     .btn:active {
       transform: scale(0.98);
@@ -373,12 +572,12 @@ function renderBridgePage(req, res, linkData, currentUrl) {
 
     ${hasVoucher ? `
     <div class="voucher-banner">
-      <div class="voucher-title">🎁 Đã tự động sao chép mã giảm giá:</div>
+      <div class="voucher-title">🎁 Đã tự động sao chép mã:</div>
       <div class="voucher-code-wrap">
-        <span class="voucher-code" id="vCode">${escapeHtml(linkData.voucher)}</span>
-        <span class="copy-pill" id="vPill">Đã chép</span>
+        <span class="voucher-code">${escapeHtml(linkData.voucher)}</span>
+        <span class="copy-pill">Đã chép</span>
       </div>
-      <div style="font-size: 10px; color: #047857; margin-top: 5px;">* Dán mã này tại bước thanh toán trong Shopee để được giảm giá.</div>
+      <div style="font-size: 10px; color: #047857; margin-top: 5px;">* Dán mã này khi thanh toán Shopee để được giảm giá.</div>
     </div>
     ` : ''}
 
@@ -388,80 +587,15 @@ function renderBridgePage(req, res, linkData, currentUrl) {
       🛍️ MỞ SHOPEE MUA NGAY
     </a>
 
-    <div class="tips">Hệ thống đang mở App Shopee... Nếu không tự mở, hãy bấm nút cam phía trên.</div>
+    <div class="tips">Đang mở App Shopee... Nếu không tự mở, hãy bấm nút cam phía trên.</div>
   </div>
-
-  <script>
-    (function() {
-      const targetUrl = ${JSON.stringify(linkData.targetUrl)};
-      const voucher = ${JSON.stringify(linkData.voucher || '')};
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      const isAndroid = /android/i.test(userAgent);
-      const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
-
-      // 1. Tự động sao chép mã giảm giá vào Clipboard của khách
-      if (voucher && navigator.clipboard) {
-        navigator.clipboard.writeText(voucher).catch(function() {});
-      }
-
-      // 2. Chạy đếm ngược FOMO
-      var countdownEl = document.getElementById('countdown');
-      if (countdownEl) {
-        var totalSec = 299; // 4 phút 59 giây
-        setInterval(function() {
-          if (totalSec > 0) {
-            totalSec--;
-            var m = Math.floor(totalSec / 60);
-            var s = totalSec % 60;
-            countdownEl.innerText = (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
-          }
-        }, 1000);
-      }
-
-      // Giả lập số người xem dao động
-      var liveEl = document.getElementById('liveViewers');
-      if (liveEl) {
-        setInterval(function() {
-          var delta = Math.floor(Math.random() * 5) - 2;
-          var cur = parseInt(liveEl.innerText, 10) + delta;
-          if (cur < 28) cur = 32;
-          if (cur > 92) cur = 85;
-          liveEl.innerText = cur;
-        }, 3000);
-      }
-
-      // 3. Xây dựng Deep Link Shopee
-      let deepLink = targetUrl;
-      if (isAndroid) {
-        const encodedTarget = encodeURIComponent(targetUrl);
-        deepLink = 'intent://' + targetUrl.replace(/^https?:\\/\\//, '') + 
-                   '#Intent;scheme=https;package=com.shopee.vn;S.browser_fallback_url=' + encodedTarget + ';end;';
-      } else if (isIOS) {
-        deepLink = 'shopee://open?url=' + encodeURIComponent(targetUrl);
-      }
-
-      const btn = document.getElementById('openBtn');
-      if (btn) {
-        btn.href = targetUrl;
-        btn.onclick = function() {
-          if (deepLink && deepLink !== targetUrl) {
-            window.location.href = deepLink;
-            setTimeout(function() {
-              window.location.href = targetUrl;
-            }, 1000);
-            return false;
-          }
-        };
-      }
-    })();
-  </script>
 </body>
 </html>`;
 
   res.send(html);
 }
 
-// Route 1: Stateless URL (/p/:code) -> Vĩnh viễn trên Vercel không cần Database
+// Route 1: Stateless URL (/p/:code) -> Vĩnh viễn trên Vercel
 app.get('/p/:code', (req, res) => {
   const { code } = req.params;
   const decoded = decodePayload(code);
