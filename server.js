@@ -1306,6 +1306,70 @@ function parseFacebookTarget(input) {
   return { cleanId, cleanName };
 }
 
+// Tự động phân giải Token: Nếu người dùng nhập User Access Token, tự động đổi sang Page Access Token
+async function resolvePageAccessToken(pageId, token) {
+  if (!token || token.trim().length < 20) {
+    return { token: token ? token.trim() : '', pageId, pageName: '' };
+  }
+  const cleanToken = token.trim();
+  const cleanTargetId = pageId ? String(pageId).replace(/[^\d]/g, '') : '';
+  const searchStr = pageId ? String(pageId).toLowerCase() : '';
+
+  try {
+    // 1. Thử gọi /me/accounts với token được cung cấp để xem có phải User Token không
+    const meRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,category,picture,followers_count,access_token&access_token=${cleanToken}`);
+    const meData = await meRes.json();
+
+    if (meData && Array.isArray(meData.data) && meData.data.length > 0) {
+      // Đúng là User Access Token! Tìm Page phù hợp trong danh sách tài khoản
+      let matched = null;
+      if (cleanTargetId) {
+        matched = meData.data.find(p => p.id === cleanTargetId);
+      }
+      if (!matched && searchStr) {
+        matched = meData.data.find(p =>
+          (p.name && p.name.toLowerCase().includes(searchStr)) ||
+          (p.name && searchStr.includes(p.name.toLowerCase()))
+        );
+      }
+      // Nếu không tìm thấy theo ID/tên nhưng chỉ có 1 page, hoặc lấy page đầu tiên
+      if (!matched && meData.data.length > 0) {
+        matched = meData.data[0];
+      }
+
+      if (matched && matched.access_token) {
+        return {
+          token: matched.access_token,
+          pageId: matched.id,
+          pageName: matched.name,
+          category: matched.category || 'Trang Fanpage Doanh Nghiệp',
+          avatar: matched.picture?.data?.url || `https://graph.facebook.com/${matched.id}/picture?type=normal`,
+          followers: matched.followers_count || 0,
+          allPages: meData.data
+        };
+      }
+    }
+
+    // 2. Nếu không có trong /me/accounts, có thể token đã là Page Token xịn! Kiểm tra với /me
+    const meDirectRes = await fetch(`https://graph.facebook.com/v19.0/me?fields=id,name,category,picture,followers_count,fan_count&access_token=${cleanToken}`);
+    const meDirect = await meDirectRes.json();
+    if (meDirect && meDirect.id && !meDirect.error) {
+      return {
+        token: cleanToken,
+        pageId: meDirect.id,
+        pageName: meDirect.name,
+        category: meDirect.category || 'Trang Fanpage Doanh Nghiệp',
+        avatar: meDirect.picture?.data?.url || `https://graph.facebook.com/${meDirect.id}/picture?type=normal`,
+        followers: meDirect.followers_count || meDirect.fan_count || 0
+      };
+    }
+  } catch (e) {
+    console.error('Lỗi phân giải Page Token:', e.message);
+  }
+
+  return { token: cleanToken, pageId, pageName: '' };
+}
+
 // Xác thực kết nối Fanpage Facebook
 app.post('/api/fb/verify-connection', async (req, res) => {
   if (!req.user) {
@@ -1323,22 +1387,23 @@ app.post('/api/fb/verify-connection', async (req, res) => {
   const cleanToken = (pageAccessToken || '').trim();
 
   let verifiedAccount = null;
+  let finalToken = cleanToken;
 
-  // Nếu người dùng cung cấp Token thật, gọi Meta Graph API kiểm tra quyền
+  // Nếu người dùng cung cấp Token thật, tự động phân giải Page Access Token
   if (cleanToken && cleanToken.length > 20) {
     try {
-      const fbRes = await fetch(`https://graph.facebook.com/v19.0/${cleanId}?fields=id,name,category,link,picture&access_token=${cleanToken}`);
-      const fbData = await fbRes.json();
-      if (fbData && fbData.id) {
+      const resolved = await resolvePageAccessToken(cleanId, cleanToken);
+      if (resolved && resolved.pageId) {
         verifiedAccount = {
-          id: fbData.id,
-          name: fbData.name,
-          category: fbData.category || 'Trang Fanpage Doanh Nghiệp',
-          avatar: fbData.picture?.data?.url || `https://graph.facebook.com/${fbData.id}/picture?type=normal`
+          id: resolved.pageId,
+          name: resolved.pageName || cleanName,
+          category: resolved.category || 'Trang Fanpage Doanh Nghiệp',
+          avatar: resolved.avatar || `https://graph.facebook.com/${resolved.pageId}/picture?type=normal`
         };
+        if (resolved.token) finalToken = resolved.token;
       }
     } catch (err) {
-      console.error('Lỗi Graph API:', err.message);
+      console.error('Lỗi Graph API verify-connection:', err.message);
     }
   }
 
@@ -1361,7 +1426,7 @@ app.post('/api/fb/verify-connection', async (req, res) => {
     pageName: verifiedAccount.name,
     pageCategory: verifiedAccount.category,
     pageAvatar: verifiedAccount.avatar,
-    pageAccessToken: cleanToken,
+    pageAccessToken: finalToken,
     niche: niche || 'cong_nghe',
     adAccountId: (adAccountId || '').trim(),
     fbTarget: target,
@@ -1451,28 +1516,49 @@ app.post('/api/fb/publish-now', async (req, res) => {
   // Nếu người dùng cung cấp Page Access Token thật, gọi Graph API đăng trực tiếp
   if (integration.pageAccessToken && integration.pageAccessToken.trim().length > 20) {
     try {
+      const resolved = await resolvePageAccessToken(integration.pageId, integration.pageAccessToken);
+      const activeToken = resolved.token || integration.pageAccessToken.trim();
+      const activePageId = resolved.pageId || integration.pageId;
+
       let fbPublishRes;
       if (imageUrl && imageUrl.startsWith('http')) {
-        fbPublishRes = await fetch(`https://graph.facebook.com/v19.0/${integration.pageId}/photos`, {
+        fbPublishRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/photos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             caption: postContent,
             url: imageUrl,
-            access_token: integration.pageAccessToken.trim()
+            access_token: activeToken
           })
         });
       } else {
-        fbPublishRes = await fetch(`https://graph.facebook.com/v19.0/${integration.pageId}/feed`, {
+        fbPublishRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/feed`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             message: postContent,
-            access_token: integration.pageAccessToken.trim()
+            access_token: activeToken
           })
         });
       }
-      const fbPublishData = await fbPublishRes.json();
+      let fbPublishData = await fbPublishRes.json();
+
+      // Nếu đăng ảnh lỗi, tự động fallback sang đăng feed
+      if (fbPublishData && fbPublishData.error && imageUrl && imageUrl.startsWith('http')) {
+        const feedRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/feed`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: postContent,
+            access_token: activeToken
+          })
+        });
+        const feedData = await feedRes.json();
+        if (feedData && (feedData.id || feedData.post_id)) {
+          fbPublishData = feedData;
+        }
+      }
+
       if (fbPublishData && (fbPublishData.id || fbPublishData.post_id)) {
         realPostId = fbPublishData.post_id || fbPublishData.id;
         isLiveApi = true;
@@ -1625,34 +1711,94 @@ app.get('/api/fb/farm/niches', (req, res) => {
   res.json({ success: true, niches: NICHE_DATA });
 });
 
+// API Tự động quét và nhận diện danh sách Fanpage từ Access Token
+app.post('/api/fb/farm/detect-pages', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const { token } = req.body;
+  if (!token || token.trim().length < 20) {
+    return res.status(400).json({ error: 'Vui lòng dán Access Token hợp lệ từ Meta for Developers' });
+  }
+
+  const cleanToken = token.trim();
+  try {
+    // 1. Thử lấy danh sách page từ /me/accounts (User Token)
+    const meRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,category,picture,followers_count,access_token&access_token=${cleanToken}`);
+    const meData = await meRes.json();
+
+    if (meData && Array.isArray(meData.data) && meData.data.length > 0) {
+      const pages = meData.data.map(p => ({
+        id: p.id,
+        name: p.name,
+        category: p.category || 'Trang Doanh Nghiệp',
+        avatar: p.picture?.data?.url || `https://graph.facebook.com/${p.id}/picture?type=normal`,
+        followers: p.followers_count || 0,
+        accessToken: p.access_token
+      }));
+      return res.json({
+        success: true,
+        type: 'user_token_pages',
+        message: `Đã tìm thấy ${pages.length} Fanpage được quản lý bởi tài khoản của bạn!`,
+        pages
+      });
+    }
+
+    // 2. Nếu là Page Token trực tiếp:
+    const meDirectRes = await fetch(`https://graph.facebook.com/v19.0/me?fields=id,name,category,picture,followers_count,fan_count&access_token=${cleanToken}`);
+    const meDirect = await meDirectRes.json();
+    if (meDirect && meDirect.id && !meDirect.error) {
+      const page = {
+        id: meDirect.id,
+        name: meDirect.name,
+        category: meDirect.category || 'Trang Fanpage',
+        avatar: meDirect.picture?.data?.url || `https://graph.facebook.com/${meDirect.id}/picture?type=normal`,
+        followers: meDirect.followers_count || meDirect.fan_count || 0,
+        accessToken: cleanToken
+      };
+      return res.json({
+        success: true,
+        type: 'direct_page_token',
+        message: `Đã xác thực thành công Page Token của "${page.name}"!`,
+        pages: [page]
+      });
+    }
+
+    if (meData && meData.error) {
+      return res.status(400).json({ error: `Lỗi Meta API: ${meData.error.message}` });
+    }
+    return res.status(400).json({ error: 'Không tìm thấy Fanpage nào liên kết với Token này. Hãy kiểm tra lại quyền pages_show_list và pages_manage_posts.' });
+  } catch (err) {
+    return res.status(500).json({ error: `Lỗi máy chủ: ${err.message}` });
+  }
+});
+
 // Thêm Fanpage mới vào Dàn Nuôi
 app.post('/api/fb/farm/add', async (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
   const { fbTarget, pageId, pageAccessToken, niche, dailySlots, contentMix, affiliateLink, autoRunAds, dailyBudget } = req.body;
 
   const target = (fbTarget || pageId || '').trim();
-  if (!target && !pageAccessToken) {
+  const rawToken = (pageAccessToken || '').trim();
+  if (!target && !rawToken) {
     return res.status(400).json({ error: 'Vui lòng nhập Link Fanpage, Page ID hoặc Page Access Token' });
   }
 
   const { cleanId, cleanName } = parseFacebookTarget(target || 'page_shop');
-  const cleanToken = (pageAccessToken || '').trim();
-
+  let finalToken = rawToken;
   let verifiedAccount = null;
 
-  // Nếu có Page Access Token thật, gọi Meta Graph API lấy thông tin chính xác
-  if (cleanToken && cleanToken.length > 20) {
+  // Nếu có Token, tự động phân giải Page Access Token chuẩn và trích xuất thông tin
+  if (rawToken && rawToken.length > 20) {
     try {
-      const fbRes = await fetch(`https://graph.facebook.com/v19.0/${cleanId}?fields=id,name,category,link,picture,followers_count,fan_count&access_token=${cleanToken}`);
-      const fbData = await fbRes.json();
-      if (fbData && fbData.id) {
+      const resolved = await resolvePageAccessToken(cleanId, rawToken);
+      if (resolved && resolved.pageId) {
         verifiedAccount = {
-          id: fbData.id,
-          name: fbData.name,
-          category: fbData.category || 'Trang Fanpage Doanh Nghiệp',
-          avatar: fbData.picture?.data?.url || `https://graph.facebook.com/${fbData.id}/picture?type=normal`,
-          followers: fbData.followers_count || fbData.fan_count || 0
+          id: resolved.pageId,
+          name: resolved.pageName || cleanName,
+          category: resolved.category || 'Trang Fanpage Doanh Nghiệp',
+          avatar: resolved.avatar || `https://graph.facebook.com/${resolved.pageId}/picture?type=normal`,
+          followers: resolved.followers || 0
         };
+        if (resolved.token) finalToken = resolved.token;
       }
     } catch (err) {
       console.error('Lỗi Graph API verify Fanpage Farm:', err.message);
@@ -1666,7 +1812,7 @@ app.post('/api/fb/farm/add', async (req, res) => {
       category: 'Trang Doanh Nghiệp',
       avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120',
       followers: 0,
-      isSandbox: !cleanToken
+      isSandbox: !finalToken
     };
   }
 
@@ -1676,7 +1822,7 @@ app.post('/api/fb/farm/add', async (req, res) => {
     category: verifiedAccount.category,
     avatar: verifiedAccount.avatar,
     followers: verifiedAccount.followers,
-    accessToken: cleanToken,
+    accessToken: finalToken,
     niche: niche || 'cong_nghe',
     status: 'ACTIVE',
     dailySlots: Array.isArray(dailySlots) && dailySlots.length ? dailySlots : ['08:00', '11:30', '20:00'],
@@ -1684,7 +1830,7 @@ app.post('/api/fb/farm/add', async (req, res) => {
     affiliateLink: affiliateLink || '',
     autoRunAds: !!autoRunAds,
     dailyBudget: parseInt(dailyBudget, 10) || 50000,
-    isSandbox: !cleanToken
+    isSandbox: !finalToken
   };
 
   const updatedFarm = await saveFanpageToFarm(req.user.id, newPage);
@@ -1743,18 +1889,58 @@ app.post('/api/fb/farm/trigger-now', async (req, res) => {
   let postUrl = null;
   let errorMsg = null;
 
-  if (page.accessToken && page.accessToken.trim().length > 20) {
+  let activeToken = page.accessToken ? page.accessToken.trim() : '';
+  let activePageId = page.id;
+
+  if (activeToken && activeToken.length > 20) {
     try {
-      const fbRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/photos`, {
+      const resolved = await resolvePageAccessToken(page.id, activeToken);
+      if (resolved && resolved.token && resolved.token !== activeToken) {
+        activeToken = resolved.token;
+        await updateFanpageInFarm(req.user.id, page.id, {
+          accessToken: activeToken,
+          name: resolved.pageName || page.name,
+          category: resolved.category || page.category,
+          avatar: resolved.avatar || page.avatar
+        });
+        page.accessToken = activeToken;
+      }
+      if (resolved && resolved.pageId) {
+        activePageId = resolved.pageId;
+      }
+
+      // 1. Thử đăng ảnh qua /photos
+      let fbRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/photos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           caption: genPost.fullText,
           url: genPost.imageUrl,
-          access_token: page.accessToken.trim()
+          access_token: activeToken
         })
       });
-      const fbData = await fbRes.json();
+      let fbData = await fbRes.json();
+
+      // 2. Fallback sang /feed nếu /photos gặp lỗi
+      if (fbData && fbData.error) {
+        const firstErr = fbData.error.message;
+        const feedRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/feed`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: genPost.fullText,
+            access_token: activeToken
+          })
+        });
+        const feedData = await feedRes.json();
+        if (feedData && (feedData.id || feedData.post_id)) {
+          fbData = feedData;
+          errorMsg = null;
+        } else {
+          errorMsg = firstErr;
+        }
+      }
+
       if (fbData && (fbData.id || fbData.post_id)) {
         postId = fbData.post_id || fbData.id;
         postUrl = `https://facebook.com/${postId}`;
@@ -2010,18 +2196,58 @@ setInterval(async () => {
             let postUrl = null;
             let errorMsg = null;
 
-            if (page.accessToken && page.accessToken.trim().length > 20) {
+            let activeToken = page.accessToken ? page.accessToken.trim() : '';
+            let activePageId = page.id;
+
+            if (activeToken && activeToken.length > 20) {
               try {
-                const fbRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/photos`, {
+                const resolved = await resolvePageAccessToken(page.id, activeToken);
+                if (resolved && resolved.token && resolved.token !== activeToken) {
+                  activeToken = resolved.token;
+                  await updateFanpageInFarm(user.id, page.id, {
+                    accessToken: activeToken,
+                    name: resolved.pageName || page.name,
+                    category: resolved.category || page.category,
+                    avatar: resolved.avatar || page.avatar
+                  });
+                  page.accessToken = activeToken;
+                }
+                if (resolved && resolved.pageId) {
+                  activePageId = resolved.pageId;
+                }
+
+                // 1. Thử đăng ảnh qua /photos
+                let fbRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/photos`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
                     caption: genPost.fullText,
                     url: genPost.imageUrl,
-                    access_token: page.accessToken.trim()
+                    access_token: activeToken
                   })
                 });
-                const fbData = await fbRes.json();
+                let fbData = await fbRes.json();
+
+                // 2. Fallback sang /feed nếu /photos gặp lỗi
+                if (fbData && fbData.error) {
+                  const firstErr = fbData.error.message;
+                  const feedRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/feed`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      message: genPost.fullText,
+                      access_token: activeToken
+                    })
+                  });
+                  const feedData = await feedRes.json();
+                  if (feedData && (feedData.id || feedData.post_id)) {
+                    fbData = feedData;
+                    errorMsg = null;
+                  } else {
+                    errorMsg = firstErr;
+                  }
+                }
+
                 if (fbData && (fbData.id || fbData.post_id)) {
                   postId = fbData.post_id || fbData.id;
                   postUrl = `https://facebook.com/${postId}`;

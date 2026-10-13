@@ -7,10 +7,272 @@
       "name": "Quản Trị Viên (Lê Văn Thiện)",
       "role": "admin",
       "plan": "business",
-      "linksUsed": 1,
+      "linksUsed": 0,
       "linksLimit": 99999,
       "planExpiresAt": "2036-12-31T23:59:59.000Z",
       "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    "usr_TKYQWXyz": {
+      "id": "usr_TKYQWXyz",
+      "email": "user_1791854603412@gmail.com",
+      "passwordHash": "80a5e35f1e6b0730a9dee81cd91b77b5838395deaf8156514df5674f2c3591bd",
+      "name": "Le Van Thien",
+      "role": "user",
+      "plan": "pro",
+      "linksUsed": 0,
+      "linksLimit": 50,
+      "planExpiresAt": "2026-11-12T01:27:52.179Z",
+      "createdAt": "2026-10-13T01:23:24.234Z"
     }
+  },
+  "campaigns": {
+    "camp_oRUAxdVRiQ": {
+      "id": "camp_oRUAxdVRiQ",
+      "userId": "admin_root",
+      "name": "Chiến dịch Test Tai nghe",
+      "objective": "MESSAGES",
+      "dailyBudget": 150000,
+      "targetAge": "18-35",
+      "targetGender": "ALL",
+      "targetLocation": "Toàn quốc",
+      "postTitle": "Bài viết quảng cáo thu hút khách",
+      "postContent": "",
+      "status": "PAUSED",
+      "spent": 0,
+      "reach": "12.000 - 33.000",
+      "engagement": 1800,
+      "createdAt": "2026-10-13T01:53:08.577Z",
+      "updatedAt": "2026-10-13T02:06:58.632Z"
+    },
+    "camp_M1ypwUVkLm": {
+      "id": "camp_M1ypwUVkLm",
+      "userId": "admin_root",
+      "name": "Chiến dịch: Giày Sneaker Thể Thao Cao Cấp Siêu Êm",
+      "objective": "MESSAGES",
+      "dailyBudget": 50000,
+      "targetAge": "25-45",
+      "targetGender": "ALL",
+      "targetLocation": "Toàn quốc (Việt Nam)",
+      "postTitle": "Bài viết quảng cáo thu hút khách",
+      "postContent": "",
+      "status": "ACTIVE",
+      "spent": 0,
+      "reach": "4.000 - 11.000",
+      "engagement": 600,
+      "createdAt": "2026-10-13T02:30:49.982Z"
+    },
+    "camp_CSM0GkuVkN": {
+      "id": "camp_CSM0GkuVkN",
+      "userId": "admin_root",
+      "name": "Chiến dịch: Son Môi Lì Siêu Mịn Giữ Màu 12H Chính Hãng",
+      "objective": "MESSAGES",
+      "dailyBudget": 100000,
+      "targetAge": "25-45",
+      "targetGender": "ALL",
+      "targetLocation": "Toàn quốc (Việt Nam)",
+      "postTitle": "Bài viết quảng cáo thu hút khách",
+      "postContent": "",
+      "status": "ACTIVE",
+      "spent": 0,
+      "reach": "8.000 - 22.000",
+      "engagement": 1200,
+      "createdAt": "2026-10-13T02:51:32.409Z"
+    }
+  },
+  "autoReplies": {
+    "admin_root": {
+      "enabled": true,
+      "autoLike": true,
+      "hidePhone": true,
+      "replyTemplates": [
+        "Dạ em chào anh/chị ạ! Em đã gửi thông tin khuyến mãi và mã giảm giá 50k qua tin nhắn riêng cho mình rồi đó ạ, anh/chị check inbox giúp em nhé! ❤️",
+        "Chào bạn ơi, bên mình đang có Flash Sale giá sốc hôm nay ạ. Mình gửi thông tin chi tiết vào hộp thư Messenger cho bạn rồi nhé 🥰",
+        "Dạ bạn check tin nhắn chờ giúp shop nhé, shop vừa gửi mã ưu đãi freeship và quà tặng độc quyền cho bạn đó ạ! 🎁"
+      ],
+      "inboxMessage": "Dạ shop chào bạn! Cảm ơn bạn đã quan tâm đến sản phẩm bên shop. Hôm nay bên shop đang có chương trình FLASH SALE giảm giá đến 50% kèm miễn phí giao hàng toàn quốc! Bạn đặt hàng ngay hôm nay để nhận thêm quà tặng đặc biệt nhé: [LINK_DAT_HANG]"
+    }
+  },
+  "fbIntegrations": {
+    "admin_root": {
+      "autoScheduleEnabled": true,
+      "dailyPostTime": "20:30",
+      "autoRunAds": true,
+      "dailyBudget": 100000,
+      "selectedCategory": "cong_nghe",
+      "updatedAt": "2026-10-13T04:02:42.341Z",
+      "connected": true,
+      "accountType": "page",
+      "pageId": "congnghehayhorv",
+      "pageName": "Congnghehayhorv",
+      "pageCategory": "Trang Fanpage Doanh Nghiệp",
+      "pageAvatar": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150",
+      "pageAccessToken": "admin123",
+      "adAccountId": "admin@shopeefb.com",
+      "isSandbox": false,
+      "niche": "cong_nghe",
+      "fbTarget": "https://www.facebook.com/congnghehayhorv?notif_id=1791864098137455&notif_t=profile_plus_admin_invite&ref=notif",
+      "targetUrl": "https://www.facebook.com/congnghehayhorv?notif_id=1791864098137455&notif_t=profile_plus_admin_invite&ref=notif"
+    }
+  },
+  "scheduledQueues": {
+    "admin_root": [
+      {
+        "id": "post_O6l30Zbx",
+        "title": "Siêu Sale: Tai Nghe Bluetooth Chống Ồn P9 Pro Max",
+        "content": "🔥 [FLASH SALE HÔM NAY] Tai Nghe Bluetooth Chống Ồn P9 Pro Max!\n\nƯu đãi cực sốc giảm giá đến 50% duy nhất hôm nay cho khách hàng để lại bình luận hoặc nhắn tin trực tiếp cho shop!\n🎁 Tặng mã Freeship toàn quốc.\n👉 Nhắn tin ngay để giữ suất ưu đãi!",
+        "status": "PUBLISHED",
+        "postId": "61594900517066_1791860936036",
+        "postUrl": "https://facebook.com/61594900517066_1791860936036",
+        "publishedAt": "2026-10-13T03:08:56.165Z",
+        "adsLaunched": true,
+        "adsCampaignId": "camp_Z69rrS49MG"
+      },
+      {
+        "id": "post_8MhDbftL",
+        "title": "Siêu Sale: Tai Nghe Bluetooth Chống Ồn P9 Pro Max",
+        "content": "🔥 [FLASH SALE HÔM NAY] Tai Nghe Bluetooth Chống Ồn P9 Pro Max!\n\nƯu đãi cực sốc giảm giá đến 50% duy nhất hôm nay cho khách hàng để lại bình luận hoặc nhắn tin trực tiếp cho shop!\n🎁 Tặng mã Freeship toàn quốc.\n👉 Nhắn tin ngay để giữ suất ưu đãi!",
+        "status": "PUBLISHED",
+        "postId": "61594900517066_1791860765600",
+        "postUrl": "https://facebook.com/61594900517066_1791860765600",
+        "publishedAt": "2026-10-13T03:06:05.681Z",
+        "adsLaunched": true,
+        "adsCampaignId": "camp_IbsqjbfLU0"
+      },
+      {
+        "id": "post_lZvawort",
+        "title": "Siêu Sale: Tai Nghe Bluetooth Chống Ồn P9 Pro Max",
+        "content": "🔥 [FLASH SALE HÔM NAY] Tai Nghe Bluetooth Chống Ồn P9 Pro Max!\n\nƯu đãi cực sốc giảm giá đến 50% duy nhất hôm nay cho khách hàng để lại bình luận hoặc nhắn tin trực tiếp cho shop!\n🎁 Tặng mã Freeship toàn quốc.\n👉 Nhắn tin ngay để giữ suất ưu đãi!",
+        "status": "PUBLISHED",
+        "postId": "61594900517066_1791860748530",
+        "postUrl": "https://facebook.com/61594900517066_1791860748530",
+        "publishedAt": "2026-10-13T03:05:48.710Z",
+        "adsLaunched": true,
+        "adsCampaignId": "camp_LKY5Ik9Txm"
+      },
+      {
+        "id": "sched_yzTRHOzQ",
+        "title": "Bài đăng 20:30 tối nay",
+        "content": "Nội dung hẹn giờ tự động tối nay",
+        "scheduleTime": "2026-10-13T20:30",
+        "autoRunAds": true,
+        "dailyBudget": 100000,
+        "status": "PENDING",
+        "createdAt": "2026-10-13T02:47:54.163Z"
+      }
+    ]
+  },
+  "links": {},
+  "fanpageFarms": {
+    "admin_root": [
+      {
+        "id": "congnghehayhorv",
+        "name": "Congnghehayhorv",
+        "category": "Trang Fanpage Doanh Nghiệp",
+        "avatar": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150",
+        "accessToken": "admin123",
+        "niche": "cong_nghe",
+        "status": "ACTIVE",
+        "dailySlots": [
+          "20:30"
+        ],
+        "postsPerDay": 1,
+        "contentMix": "balanced",
+        "affiliateLink": "",
+        "autoRunAds": true,
+        "dailyBudget": 100000,
+        "totalPostsPublished": 2,
+        "lastPostedSlot": "TRIGGER_MANUAL",
+        "lastPostedDate": "2026-10-13",
+        "postHistory": [
+          {
+            "id": "fpost_FkFeNUvc",
+            "pageId": "congnghehayhorv",
+            "pageName": "Congnghehayhorv",
+            "title": "Đánh Giá Tai Nghe Bluetooth Chống Ồn Phân Khúc Học Sinh Sinh Viên",
+            "pillar": "review",
+            "pillarName": "Review trải nghiệm thực tế",
+            "content": "🎧 ĐÁNH GIÁ CHÂN THỰC: TAI NGHE KHÔNG DÂY CHỐNG ỒN DƯỚI 500K CÓ ĐÁNG TIỀN?\n\nCày cuốc trải nghiệm hơn 3 tuần liên tục từ đi làm, chạy bộ đến học tập trong quán cà phê ồn ào:\n\n✅ Điểm cộng:\n- Chống ồn chủ động (ANC) lọc tiếng xe cộ và tiếng nói chuyện xung quanh cực ổn áp.\n- Bass đánh chắc, nghe nhạc EDM hay Podcast đều rõ lời.\n- Pin trâu 6 tiếng liên tục, kèm dock sạc dùng cả tuần mới phải cắm điện một lần.\n\n❌ Điểm trừ: Mic đàm thoại ngoài gió to hơi bị vọng tiếng một chút, nhưng trong tầm giá này thì không có đối thủ!\n\n#ReviewCongNghe #TaiNgheBluetooth #AmThanhChatLuong #TechReview",
+            "imageUrl": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800",
+            "date": "2026-10-13",
+            "time": "06:12:43",
+            "slot": "TRIGGER_MANUAL",
+            "status": "SANDBOX_POSTED",
+            "isLiveApi": false,
+            "postId": "congnghehayhorv_1791871963149",
+            "postUrl": "https://facebook.com/congnghehayhorv",
+            "error": null,
+            "createdAt": "2026-10-13T06:12:43.149Z"
+          },
+          {
+            "id": "fpost_NZZkNeA5",
+            "pageId": "congnghehayhorv",
+            "pageName": "Congnghehayhorv",
+            "title": "3 Mẹo Tối Ưu Pin Điện Thoại Đơn Giản Ít Người Để Ý",
+            "pillar": "knowledge",
+            "pillarName": "Chia sẻ kiến thức & Mẹo hay",
+            "content": "⚡ 3 THỦ THUẬT KÉO DÀI TUỔI THỌ PIN ĐIỆN THOẠI THÊM 2 NĂM!\n\nPin chai là nỗi ám ảnh lớn nhất của người dùng smartphone. Bỏ túi ngay 3 thói quen cực kỳ hữu ích này:\n\n1️⃣ Đừng để pin sập nguồn về 0%: Cơ chế pin Lithium-ion hoạt động tốt nhất trong khoảng 20% - 85%. Việc xả cạn kiệt pin sẽ làm giảm chu kỳ sạc nhanh chóng.\n2️⃣ Tránh vừa dùng vừa sạc tác vụ nặng: Chơi game hoặc render video lúc sạc làm máy nóng ran, kẻ thù số 1 của tuổi thọ pin.\n3️⃣ Tắt định vị và Bluetooth chạy ngầm khi không dùng: Giúp tiết kiệm 15-20% dung lượng pin mỗi ngày.\n\nÁp dụng ngay hôm nay để bảo vệ chiếc dế yêu của bạn nhé! 📱\n\n#MeoCongNghe #BaoVePin #ThuThuatDienThoai #TechTips #SmartPhone",
+            "imageUrl": "https://images.unsplash.com/photo-1585060544812-6b45742d762f?w=800",
+            "date": "2026-10-13",
+            "time": "04:31:36",
+            "slot": "TRIGGER_MANUAL",
+            "status": "SANDBOX_POSTED",
+            "isLiveApi": false,
+            "postId": "congnghehayhorv_1791865896734",
+            "postUrl": "https://facebook.com/congnghehayhorv",
+            "error": null,
+            "createdAt": "2026-10-13T04:31:36.734Z"
+          }
+        ],
+        "createdAt": "2026-10-13T04:30:42.129Z"
+      },
+      {
+        "id": "886090074579264",
+        "name": "Đồ Công Nghệ Hay Ho",
+        "category": "Công nghệ",
+        "avatar": "https://scontent-iad3-2.xx.fbcdn.net/v/t39.30808-1/571141797_122096186847096292_7126697788486561846_n.jpg?stp=cp0_dst-jpg_s50x50_tt6&_nc_cat=105&ccb=1-7&_nc_sid=f907e8&_nc_ohc=Iqvd-o3-8aAQ7kNvwGL8N7P&_nc_oc=AdpeNzFUgYCAay8g39gUKjU5ASLs1A4Nkw2QNgWb_0OSJ95Xg0sDmZnld7n7bBMjEyM&_nc_zt=24&_nc_ht=scontent-iad3-2.xx&edm=ABzdmSoEAAAA&_nc_gid=PgsjNsF1RdSuS0YavdU-QA&_nc_tpa=Q5bMBQLkzTXZuVdMYnb1Ohv4qYmCclaxHR7WURnir3yPShl9KX45gqJ5lGrBoQIKqIkBF-vp__qS2MywDw&oh=00_AQPzotx_vmFBSQTwZ8ugMeqYsyNkVocqxnLrmzI0-OHUBA&oe=6AD38B69",
+        "followers": 4,
+        "accessToken": "EAAOrT1lXEG8BSmmZCImddZCcpCqfmmLCrZABwLDuHbaoLDhmaWzDjqhUxJTyMiUbqVOf1QK2obKq4ZAOCHzrlY8m5WirOZBytcDqDj2Fr9UdEF4fokZBGlxD6zUvJQa3uZCJTTe6DxAGwuZAZALeOjWjG8Qr7IVFZCNEI9zhPOc7pqlqukFqYzH9sZB8bR9SDaXFzSWW7H5h66ZB58ZBsQir8oeZBgRGqcKx12bZCgJ86mj8BN7U47y5jZCZAQojE58iXQ89s",
+        "niche": "cong_nghe",
+        "status": "ACTIVE",
+        "dailySlots": [
+          "08:00",
+          "11:30",
+          "19:30",
+          "20:30",
+          "22:00"
+        ],
+        "contentMix": "balanced",
+        "affiliateLink": "",
+        "autoRunAds": false,
+        "dailyBudget": 50000,
+        "isSandbox": false,
+        "totalPostsPublished": 1,
+        "lastPostedSlot": "TRIGGER_MANUAL",
+        "lastPostedDate": "2026-10-13",
+        "postHistory": [
+          {
+            "id": "fpost_0Oi8Bw5p",
+            "pageId": "886090074579264",
+            "pageName": "Đồ Công Nghệ Hay Ho",
+            "title": "3 Mẹo Tối Ưu Pin Điện Thoại Đơn Giản Ít Người Để Ý",
+            "pillar": "knowledge",
+            "pillarName": "Chia sẻ kiến thức & Mẹo hay",
+            "content": "⚡ 3 THỦ THUẬT KÉO DÀI TUỔI THỌ PIN ĐIỆN THOẠI THÊM 2 NĂM!\n\nPin chai là nỗi ám ảnh lớn nhất của người dùng smartphone. Bỏ túi ngay 3 thói quen cực kỳ hữu ích này:\n\n1️⃣ Đừng để pin sập nguồn về 0%: Cơ chế pin Lithium-ion hoạt động tốt nhất trong khoảng 20% - 85%. Việc xả cạn kiệt pin sẽ làm giảm chu kỳ sạc nhanh chóng.\n2️⃣ Tránh vừa dùng vừa sạc tác vụ nặng: Chơi game hoặc render video lúc sạc làm máy nóng ran, kẻ thù số 1 của tuổi thọ pin.\n3️⃣ Tắt định vị và Bluetooth chạy ngầm khi không dùng: Giúp tiết kiệm 15-20% dung lượng pin mỗi ngày.\n\nÁp dụng ngay hôm nay để bảo vệ chiếc dế yêu của bạn nhé! 📱\n\n#MeoCongNghe #BaoVePin #ThuThuatDienThoai #TechTips #SmartPhone",
+            "imageUrl": "https://images.unsplash.com/photo-1585060544812-6b45742d762f?w=800",
+            "date": "2026-10-13",
+            "time": "06:12:58",
+            "slot": "TRIGGER_MANUAL",
+            "status": "ERROR",
+            "isLiveApi": false,
+            "postId": "886090074579264_1791871978463",
+            "postUrl": "https://facebook.com/886090074579264",
+            "error": "(#200) The permission(s) publish_actions are not available. It has been deprecated. If you want to provide a way for your app users to share content to Facebook, we encourage you to use our Sharing products instead.",
+            "createdAt": "2026-10-13T06:12:58.463Z"
+          }
+        ],
+        "createdAt": "2026-10-13T06:11:48.973Z",
+        "updatedAt": "2026-10-13T06:19:34.076Z"
+      }
+    ]
   }
 }
