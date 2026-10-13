@@ -16,5 +16,23 @@
     "imageUrl": "https://www.google.com/imgres?q=%E1%BA%A3nh%20hot%20h%C3%B4m%20nay&imgurl=https%3A%2F%2Fxabuon.com%2Fuploads%2Fnews%2F24-05-23%2Fxabuon-girl-xinh-haivl-xemvn-sex-24-05-20231684945365312.jpg&imgrefurl=https%3A%2F%2Fxabuon.com%2Fcontent%2F388215-Buc-anh-hot-nhat-hom-nay.htm&docid=O6kI2n7vjFLAzM&tbnid=C-Tn_BShMt_LZM&vet=12ahUKEwjC98nv0LSXAxUz5DQHHQ10GOYQnPAOegQIUxAA..i&w=1000&h=1200&hcb=2&ved=2ahUKEwjC98nv0LSXAxUz5DQHHQ10GOYQnPAOegQIUxAA",
     "clicks": 1,
     "createdAt": "2026-10-12T13:57:06.953Z"
+  },
+  "Un72aG": {
+    "id": "Un72aG",
+    "userId": "admin_root",
+    "targetUrl": "https://shopee.vn/product/123/456?sub_id=fb_ads&utm_source=facebook_ads&utm_medium=cpc&utm_campaign=sale_1010&sub_id1=sale_1010",
+    "title": "Tai nghe Bluetooth Pro",
+    "description": "Bấm vào để xem chi tiết sản phẩm và nhận mã giảm giá độc quyền trên Shopee!",
+    "imageUrl": "https://cf.shopee.vn/file/default_shopee_og.png",
+    "voucher": "",
+    "subId": "",
+    "fomo": true,
+    "isAdsMode": true,
+    "fbPixel": "1234567890",
+    "tiktokPixel": "TT123456",
+    "zaloGroup": "https://zalo.me/g/test",
+    "utmCampaign": "sale_1010",
+    "createdAt": "2026-10-13T01:19:03.751Z",
+    "clicks": 0
   }
 }

@@ -3,10 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const {
   PLANS,
+  ROOT_ADMIN,
   getAllUsers,
   getUserById,
   getUserByEmail,
   saveUser,
+  deleteUser,
   hashPassword,
   generateToken,
   verifyToken
@@ -43,7 +45,7 @@ async function authMiddleware(req, res, next) {
 
 app.use(authMiddleware);
 
-// Đọc dữ liệu link lưu trữ (cho môi trường local)
+// Đọc dữ liệu link lưu trữ local
 function getStoredLinks() {
   try {
     if (fs.existsSync(DATA_FILE)) {
@@ -82,19 +84,31 @@ function decodePayload(str) {
   }
 }
 
-function attachSubId(url, subId) {
-  if (!subId) return url;
+// Gắn Sub-ID và UTM Tracking vào Shopee URL
+function attachTrackingParams(url, { subId, utmSource, utmMedium, utmCampaign }) {
   try {
     const parsed = new URL(url);
-    parsed.searchParams.set('sub_id', subId);
+    if (subId) parsed.searchParams.set('sub_id', subId);
+    if (utmSource) parsed.searchParams.set('utm_source', utmSource);
+    if (utmMedium) parsed.searchParams.set('utm_medium', utmMedium);
+    if (utmCampaign) {
+      parsed.searchParams.set('utm_campaign', utmCampaign);
+      parsed.searchParams.set('sub_id1', utmCampaign);
+    }
     return parsed.toString();
   } catch (e) {
-    const sep = url.includes('?') ? '&' : '?';
-    return `${url}${sep}sub_id=${encodeURIComponent(subId)}`;
+    let res = url;
+    const sep = res.includes('?') ? '&' : '?';
+    const params = [];
+    if (subId) params.push(`sub_id=${encodeURIComponent(subId)}`);
+    if (utmSource) params.push(`utm_source=${encodeURIComponent(utmSource)}`);
+    if (utmMedium) params.push(`utm_medium=${encodeURIComponent(utmMedium)}`);
+    if (utmCampaign) params.push(`utm_campaign=${encodeURIComponent(utmCampaign)}&sub_id1=${encodeURIComponent(utmCampaign)}`);
+    return params.length > 0 ? `${res}${sep}${params.join('&')}` : res;
   }
 }
 
-// ----------------- API AUTH -----------------
+// ----------------- API AUTH & USER MANAGEMENT -----------------
 
 // Đăng ký tài khoản
 app.post('/api/auth/register', async (req, res) => {
@@ -106,7 +120,7 @@ app.post('/api/auth/register', async (req, res) => {
 
   const existing = await getUserByEmail(email);
   if (existing) {
-    return res.status(400).json({ error: 'Email này đã được sử dụng. Vui lòng đăng nhập!' });
+    return res.status(400).json({ error: 'Email này đã tồn tại trên hệ thống. Vui lòng đăng nhập!' });
   }
 
   const userId = 'usr_' + generateShortCode(8);
@@ -116,7 +130,7 @@ app.post('/api/auth/register', async (req, res) => {
     passwordHash: hashPassword(password),
     name: (name || email.split('@')[0]).trim(),
     role: 'user',
-    plan: 'free', // Tặng gói dùng thử ban đầu
+    plan: 'free', // Tặng 2 link dùng thử
     linksUsed: 0,
     linksLimit: PLANS.free.linkLimit,
     planExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -165,7 +179,7 @@ app.get('/api/auth/me', (req, res) => {
   });
 });
 
-// Lấy thông tin 4 gói cước
+// Danh sách các gói cước
 app.get('/api/plans', (req, res) => {
   res.json({
     success: true,
@@ -182,9 +196,24 @@ function sanitizeUser(user) {
   };
 }
 
-// ----------------- API TẠO LINK (KIỂM TRA HẠN MỨC GÓI) -----------------
+// ----------------- API TẠO LINK (KIỂM TRA HẠN MỨC & PHÂN QUYỀN ADS) -----------------
 app.post('/api/create', async (req, res) => {
-  let { targetUrl, title, description, imageUrl, voucher, subId, fomo } = req.body;
+  let {
+    targetUrl,
+    title,
+    description,
+    imageUrl,
+    voucher,
+    subId,
+    fomo,
+    isAdsMode,
+    fbPixel,
+    tiktokPixel,
+    zaloGroup,
+    utmSource,
+    utmMedium,
+    utmCampaign
+  } = req.body;
 
   if (!targetUrl) {
     return res.status(400).json({ error: 'Vui lòng cung cấp link Shopee' });
@@ -193,28 +222,28 @@ app.post('/api/create', async (req, res) => {
   // 1. Kiểm tra đăng nhập
   if (!req.user) {
     return res.status(401).json({
-      error: 'Vui lòng Đăng ký hoặc Đăng nhập tài khoản để tạo link Shopee!'
+      error: 'Vui lòng Đăng nhập hoặc Đăng ký tài khoản để tạo link Shopee!'
     });
   }
 
   const user = req.user;
+  const planInfo = PLANS[user.plan] || PLANS.free;
 
-  // 2. Kiểm tra ngày hết hạn gói
-  if (user.plan !== 'free' && user.planExpiresAt && new Date(user.planExpiresAt) < new Date()) {
-    // Gói đã hết hạn -> đưa về gói free
-    user.plan = 'free';
-    user.linksLimit = PLANS.free.linkLimit;
-    await saveUser(user);
-    return res.status(403).json({
-      error: `Gói ${user.plan.toUpperCase()} của bạn đã hết hạn. Vui lòng gia hạn để tiếp tục sử dụng!`
-    });
+  // 2. Kiểm tra phân quyền tính năng ADS
+  if (isAdsMode && (fbPixel || tiktokPixel || zaloGroup)) {
+    if (!planInfo.allowAds && user.role !== 'admin') {
+      return res.status(403).json({
+        error: `Tính năng gắn Facebook Pixel, TikTok Ads và Zalo VIP yêu cầu gói PRO hoặc BUSINESS! Gói hiện tại của bạn là ${planInfo.name}.`,
+        upgradeRequired: true
+      });
+    }
   }
 
   // 3. Kiểm tra hạn mức link trong tháng
-  const limit = user.linksLimit || (PLANS[user.plan] ? PLANS[user.plan].linkLimit : 2);
-  if (user.linksUsed >= limit) {
+  const limit = user.linksLimit || planInfo.linkLimit;
+  if (user.linksUsed >= limit && user.role !== 'admin') {
     return res.status(403).json({
-      error: `Bạn đã sử dụng hết hạn mức (${user.linksUsed}/${limit} link) của gói ${PLANS[user.plan]?.name || user.plan}. Vui lòng nâng cấp gói để tạo thêm link!`,
+      error: `Bạn đã sử dụng hết hạn mức (${user.linksUsed}/${limit} link) của gói ${planInfo.name}. Vui lòng nâng cấp gói để tạo thêm link!`,
       limitExceeded: true,
       currentPlan: user.plan
     });
@@ -224,9 +253,13 @@ app.post('/api/create', async (req, res) => {
     targetUrl = 'https://' + targetUrl;
   }
 
-  if (subId) {
-    targetUrl = attachSubId(targetUrl, subId);
-  }
+  // Gắn tham số tracking & UTM
+  targetUrl = attachTrackingParams(targetUrl, {
+    subId: subId || (isAdsMode ? 'fb_ads' : ''),
+    utmSource: utmSource || (isAdsMode ? 'facebook_ads' : ''),
+    utmMedium: utmMedium || (isAdsMode ? 'cpc' : ''),
+    utmCampaign: utmCampaign || ''
+  });
 
   const id = generateShortCode();
   const linkData = {
@@ -239,10 +272,15 @@ app.post('/api/create', async (req, res) => {
     voucher: (voucher || '').trim().toUpperCase(),
     subId: (subId || '').trim(),
     fomo: fomo !== false,
+    isAdsMode: Boolean(isAdsMode),
+    fbPixel: (fbPixel || '').trim(),
+    tiktokPixel: (tiktokPixel || '').trim(),
+    zaloGroup: (zaloGroup || '').trim(),
+    utmCampaign: (utmCampaign || '').trim(),
     createdAt: new Date().toISOString()
   };
 
-  // Tăng số lượt đã dùng của user
+  // Cập nhật số link đã dùng của user
   user.linksUsed = (user.linksUsed || 0) + 1;
   await saveUser(user);
 
@@ -251,13 +289,18 @@ app.post('/api/create', async (req, res) => {
   links[id] = { ...linkData, clicks: 0 };
   saveStoredLinks(links);
 
+  // Tạo mã stateless để hoạt động vĩnh viễn trên Vercel
   const statelessCode = encodePayload({
     u: linkData.targetUrl,
     t: linkData.title,
     d: linkData.description,
     i: linkData.imageUrl,
     v: linkData.voucher,
-    f: linkData.fomo ? 1 : 0
+    f: linkData.fomo ? 1 : 0,
+    ads: linkData.isAdsMode ? 1 : 0,
+    fb: linkData.fbPixel,
+    tt: linkData.tiktokPixel,
+    zg: linkData.zaloGroup
   });
 
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;
@@ -278,7 +321,7 @@ app.post('/api/create', async (req, res) => {
   });
 });
 
-// Lịch sử link của user
+// Lấy lịch sử link cá nhân
 app.get('/api/links', (req, res) => {
   const links = getStoredLinks();
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;
@@ -299,9 +342,9 @@ app.get('/api/links', (req, res) => {
   res.json({ success: true, list });
 });
 
-// ----------------- API ADMIN QUẢN TRỊ GÓI & KHÁCH HÀNG -----------------
+// ----------------- API ADMIN QUẢN TRỊ TOÀN DIỆN -----------------
 
-// Lấy danh sách toàn bộ khách hàng (chỉ admin)
+// Danh sách người dùng
 app.get('/api/admin/users', async (req, res) => {
   if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Chỉ Quản trị viên (Admin) mới có quyền truy cập!' });
@@ -312,20 +355,20 @@ app.get('/api/admin/users', async (req, res) => {
   res.json({ success: true, users });
 });
 
-// Kích hoạt / Nâng cấp gói cho khách hàng
+// Kích hoạt / Nâng cấp gói cho khách
 app.post('/api/admin/upgrade', async (req, res) => {
   if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Chỉ Quản trị viên mới có quyền nâng cấp!' });
   }
 
-  const { targetEmail, planId, days } = req.body;
+  const { targetEmail, planId, days, customLimit } = req.body;
   if (!targetEmail || !planId) {
     return res.status(400).json({ error: 'Vui lòng cung cấp Email khách hàng và Gói cần kích hoạt' });
   }
 
   const user = await getUserByEmail(targetEmail);
   if (!user) {
-    return res.status(404).json({ error: `Không tìm thấy tài khoản với email: ${targetEmail}` });
+    return res.status(404).json({ error: `Không tìm thấy tài khoản: ${targetEmail}` });
   }
 
   const plan = PLANS[planId];
@@ -335,8 +378,8 @@ app.post('/api/admin/upgrade', async (req, res) => {
 
   const durationDays = parseInt(days, 10) || 30;
   user.plan = planId;
-  user.linksLimit = plan.linkLimit;
-  user.linksUsed = 0; // Làm mới lượt khi kích hoạt gói mới
+  user.linksLimit = customLimit ? parseInt(customLimit, 10) : plan.linkLimit;
+  user.linksUsed = 0; // Làm mới lượt link
   user.planExpiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
   await saveUser(user);
@@ -348,12 +391,46 @@ app.post('/api/admin/upgrade', async (req, res) => {
   });
 });
 
-// ----------------- ROUTE CHUYỂN HƯỚNG DEEP LINK (SIÊU TỐC 0ms) -----------------
+// Reset số link đã dùng cho người dùng
+app.post('/api/admin/reset-quota', async (req, res) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Chỉ Quản trị viên mới có quyền thao tác!' });
+  }
+
+  const { targetEmail } = req.body;
+  const user = await getUserByEmail(targetEmail);
+  if (!user) return res.status(404).json({ error: 'Không tìm thấy người dùng' });
+
+  user.linksUsed = 0;
+  await saveUser(user);
+
+  res.json({ success: true, message: `Đã đặt lại lượt dùng về 0 cho ${user.email}` });
+});
+
+// Xóa tài khoản người dùng
+app.delete('/api/admin/users/:id', async (req, res) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Chỉ Quản trị viên mới có quyền xóa!' });
+  }
+
+  const { id } = req.params;
+  const success = await deleteUser(id);
+  if (!success) {
+    return res.status(400).json({ error: 'Không thể xóa tài khoản này (hoặc là Admin gốc)' });
+  }
+  res.json({ success: true, message: 'Đã xóa người dùng thành công' });
+});
+
+// ----------------- ROUTE CHUYỂN HƯỚNG DEEP LINK (TÍCH HỢP ADS & PIXEL) -----------------
 function renderBridgePage(req, res, linkData, currentUrl) {
   const userAgent = req.headers['user-agent'] || '';
   const isBot = /facebookexternalhit|Facebot|Twitterbot|Pinterest|LinkedInBot|WhatsApp|TelegramBot|Slackbot|Googlebot|bingbot/i.test(userAgent);
   const hasVoucher = Boolean(linkData.voucher);
   const showFomo = linkData.fomo !== false;
+  const hasFbPixel = Boolean(linkData.fbPixel);
+  const hasTiktokPixel = Boolean(linkData.tiktokPixel);
+  const hasZaloGroup = Boolean(linkData.zaloGroup);
+  const isAds = Boolean(linkData.isAdsMode || hasFbPixel || hasTiktokPixel);
 
   const html = `<!DOCTYPE html>
 <html lang="vi">
@@ -384,8 +461,40 @@ function renderBridgePage(req, res, linkData, currentUrl) {
   <meta name="twitter:description" content="${escapeHtml(linkData.description)}">
   <meta name="twitter:image" content="${escapeHtml(linkData.imageUrl)}">
 
-  <!-- ULTRA-FAST 0ms INSTANT REDIRECT -->
-  ${isBot ? '<!-- Bot crawl meta: không redirect -->' : `
+  <!-- ==================== TÍCH HỢP ADS PIXEL ==================== -->
+  ${hasFbPixel ? `
+  <!-- Facebook Pixel Code -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '${escapeHtml(linkData.fbPixel)}');
+    fbq('track', 'PageView');
+    fbq('track', 'ViewContent', { content_name: '${escapeHtml(linkData.title)}' });
+    fbq('track', 'AddToCart');
+  </script>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${escapeHtml(linkData.fbPixel)}&ev=PageView&noscript=1"/></noscript>
+  ` : ''}
+
+  ${hasTiktokPixel ? `
+  <!-- TikTok Pixel Code -->
+  <script>
+    !function (w, d, t) {
+      w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+      ttq.load('${escapeHtml(linkData.tiktokPixel)}');
+      ttq.page();
+      ttq.track('ViewContent');
+    }(window, document, 'ttq');
+  </script>
+  ` : ''}
+
+  <!-- ULTRA-FAST DEEP LINK REDIRECT -->
+  ${isBot ? '<!-- Bot crawl meta -->' : `
   <script>
     (function() {
       var targetUrl = ${JSON.stringify(linkData.targetUrl)};
@@ -396,18 +505,28 @@ function renderBridgePage(req, res, linkData, currentUrl) {
       var ua = navigator.userAgent || '';
       var isAndroid = /android/i.test(ua);
       var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+      var hasPixel = ${hasFbPixel || hasTiktokPixel ? 'true' : 'false'};
+      var delay = hasPixel ? 250 : 0; // Đợi pixel phát sự kiện chuyển đổi
 
-      if (isAndroid) {
-        var cleanUrl = targetUrl.replace(/^https?:\\/\\//, '');
-        var fallback = encodeURIComponent(targetUrl);
-        window.location.replace('intent://' + cleanUrl + '#Intent;scheme=https;package=com.shopee.vn;S.browser_fallback_url=' + fallback + ';end;');
-      } else if (isIOS) {
-        window.location.replace('shopee://open?url=' + encodeURIComponent(targetUrl));
-        setTimeout(function() {
+      function doRedirect() {
+        if (isAndroid) {
+          var cleanUrl = targetUrl.replace(/^https?:\\/\\//, '');
+          var fallback = encodeURIComponent(targetUrl);
+          window.location.replace('intent://' + cleanUrl + '#Intent;scheme=https;package=com.shopee.vn;S.browser_fallback_url=' + fallback + ';end;');
+        } else if (isIOS) {
+          window.location.replace('shopee://open?url=' + encodeURIComponent(targetUrl));
+          setTimeout(function() {
+            window.location.replace(targetUrl);
+          }, 300);
+        } else {
           window.location.replace(targetUrl);
-        }, 250);
+        }
+      }
+
+      if (delay > 0) {
+        setTimeout(doRedirect, delay);
       } else {
-        window.location.replace(targetUrl);
+        doRedirect();
       }
     })();
   </script>
@@ -551,6 +670,22 @@ function renderBridgePage(req, res, linkData, currentUrl) {
     .btn:active {
       transform: scale(0.98);
     }
+    .btn-zalo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      background: #0068ff;
+      color: white;
+      text-decoration: none;
+      padding: 11px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 13px;
+      box-sizing: border-box;
+      margin-top: 10px;
+    }
     .tips {
       margin-top: 14px;
       font-size: 12px;
@@ -565,7 +700,7 @@ function renderBridgePage(req, res, linkData, currentUrl) {
 
     ${showFomo ? `
     <div class="fomo-box">
-      <div><span class="live-dot"></span><span id="liveViewers">48</span> người đang xem</div>
+      <div><span class="live-dot"></span><span id="liveViewers">62</span> người đang săn deal</div>
       <div>⏳ <span id="countdown">04:59</span></div>
     </div>
     ` : ''}
@@ -575,19 +710,25 @@ function renderBridgePage(req, res, linkData, currentUrl) {
       <div class="voucher-title">🎁 Đã tự động sao chép mã:</div>
       <div class="voucher-code-wrap">
         <span class="voucher-code">${escapeHtml(linkData.voucher)}</span>
-        <span class="copy-pill">Đã chép</span>
+        <span class="copy-pill">Đã lưu</span>
       </div>
-      <div style="font-size: 10px; color: #047857; margin-top: 5px;">* Dán mã này khi thanh toán Shopee để được giảm giá.</div>
+      <div style="font-size: 10px; color: #047857; margin-top: 5px;">* Dán mã này khi thanh toán Shopee để được giảm tiền.</div>
     </div>
     ` : ''}
 
     <div class="spinner"></div>
 
     <a id="openBtn" href="${escapeHtml(linkData.targetUrl)}" class="btn">
-      🛍️ MỞ SHOPEE MUA NGAY
+      🛍️ MỞ ỨNG DỤNG SHOPEE NGAY
     </a>
 
-    <div class="tips">Đang mở App Shopee... Nếu không tự mở, hãy bấm nút cam phía trên.</div>
+    ${hasZaloGroup ? `
+    <a href="${escapeHtml(linkData.zaloGroup)}" target="_blank" class="btn-zalo">
+      💬 Nhận Thêm Mã Giảm Giá Tại Nhóm Zalo VIP
+    </a>
+    ` : ''}
+
+    <div class="tips">Đang kết nối ứng dụng Shopee... Nếu không tự mở, hãy bấm nút cam phía trên.</div>
   </div>
 </body>
 </html>`;
@@ -610,7 +751,11 @@ app.get('/p/:code', (req, res) => {
     description: decoded.d,
     imageUrl: decoded.i,
     voucher: decoded.v,
-    fomo: decoded.f !== 0
+    fomo: decoded.f !== 0,
+    isAdsMode: decoded.ads === 1,
+    fbPixel: decoded.fb,
+    tiktokPixel: decoded.tt,
+    zaloGroup: decoded.zg
   };
 
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;

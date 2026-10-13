@@ -3,15 +3,14 @@
     "admin_root": {
       "id": "admin_root",
       "email": "admin@shopeefb.com",
-      "passwordHash": "589c3aa75dfc79c8821cf1544a47d33d8205fe22dbeff7fe6ef1b70c3ba573d8",
+      "passwordHash": "4828194cfd07aec484700fb9054ecf453661e5d93d1c2967326a7d832bbca7ba",
       "name": "Quản Trị Viên (Lê Văn Thiện)",
       "role": "admin",
       "plan": "business",
-      "linksUsed": 0,
+      "linksUsed": 1,
       "linksLimit": 99999,
-      "planExpiresAt": "2036-01-01T00:00:00.000Z",
+      "planExpiresAt": "2036-12-31T23:59:59.000Z",
       "createdAt": "2026-01-01T00:00:00.000Z"
     }
-  },
-  "links": {}
+  }
 }
