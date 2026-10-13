@@ -1236,7 +1236,7 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
 
     if (postsData.error) {
       if (postsData.error.code === 200) {
-        summary.permissionError = 'Meta API: Cần thêm quyền pages_read_user_content để đọc nội dung bình luận của khách.';
+        summary.permissionError = 'Meta API: Cần thêm quyền "pages_read_user_content" để đọc nội dung bình luận của khách.';
       }
       return { success: false, error: postsData.error.message, code: postsData.error.code, summary };
     }
@@ -1245,10 +1245,12 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
     summary.checkedPosts = posts.length;
 
     const repliedHistory = await getRepliedCommentIds(userId);
+    const existingLogs = await getAutoReplyLogs(userId);
+    const alreadyInboxedCommentIds = new Set(existingLogs.filter(l => l.didInbox).map(l => l.commentId));
     const repliedIds = new Set(repliedHistory);
 
     for (const post of posts) {
-      // 2. Lấy danh sách bình luận trên bài viết
+      // 2. Lấy danh sách bình luận trên bài viết kèm các câu trả lời con
       const commentsRes = await fetch(`https://graph.facebook.com/v19.0/${post.id}/comments?fields=id,from,message,created_time,can_reply_privately,comments{id,from}&limit=25&order=reverse_chronological&access_token=${token}`);
       const commentsData = await commentsRes.json();
 
@@ -1267,16 +1269,12 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
           continue;
         }
 
-        // Bỏ qua nếu đã từng xử lý comment này
-        if (repliedIds.has(comment.id)) {
-          continue;
-        }
-
         // Kiểm tra xem trong các câu trả lời con đã có Fanpage trả lời chưa
         const subComments = comment.comments?.data || [];
-        const alreadyAnswered = subComments.some(sub => sub.from && (sub.from.id === pageId || sub.from.name === page.name));
-        if (alreadyAnswered) {
-          repliedIds.add(comment.id);
+        const alreadyAnsweredOnFb = subComments.some(sub => sub.from && (sub.from.id === pageId || sub.from.name === page.name));
+
+        // Nếu trên FB đã có câu trả lời của Page và đã nằm trong lịch sử hoàn tất thì bỏ qua
+        if (alreadyAnsweredOnFb && repliedIds.has(comment.id)) {
           continue;
         }
 
@@ -1288,8 +1286,11 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
 
         let didLike = false;
         let didHide = false;
+        let didReplyComment = false;
+        let replyError = null;
         let replyText = null;
         let didInbox = false;
+        let inboxError = null;
 
         // A. Tự động LIKE bình luận
         if (config.autoLike !== false) {
@@ -1336,25 +1337,39 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
           .replace(/\{name\}|\{\{name\}\}|\[NAME\]/gi, customerName)
           .replace(/\{page\}|\{\{page\}\}/gi, page.name);
 
-        try {
-          const replyRes = await fetch(`https://graph.facebook.com/v19.0/${comment.id}/comments`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              message: replyText,
-              access_token: token
-            })
-          });
-          const replyData = await replyRes.json();
-          if (replyData && (replyData.id || replyData.post_id)) {
-            summary.repliedCount++;
+        if (!alreadyAnsweredOnFb) {
+          try {
+            const replyRes = await fetch(`https://graph.facebook.com/v19.0/${comment.id}/comments`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                message: replyText,
+                access_token: token
+              })
+            });
+            const replyData = await replyRes.json();
+            if (replyData && (replyData.id || replyData.post_id)) {
+              didReplyComment = true;
+              summary.repliedCount++;
+            } else if (replyData && replyData.error) {
+              console.error('Lỗi Graph API Comment Reply:', replyData.error);
+              if (replyData.error.code === 200) {
+                summary.permissionError = 'Meta API: Cần cấp thêm quyền "pages_manage_engagement" trong Graph API Explorer để Fanpage có thể đăng bình luận công khai trả lời khách hàng.';
+                replyError = 'Thiếu quyền pages_manage_engagement (#200)';
+              } else {
+                replyError = replyData.error.message || `Lỗi Meta (#${replyData.error.code})`;
+              }
+            }
+          } catch (e) {
+            console.error('Lỗi fetch comment reply:', e.message);
+            replyError = e.message;
           }
-        } catch (e) {
-          console.error('Lỗi gửi comment reply:', e.message);
+        } else {
+          didReplyComment = true;
         }
 
         // D. Tự động gửi tin nhắn riêng Messenger (Private Reply to Comment)
-        if (config.inboxMessage && comment.can_reply_privately !== false) {
+        if (config.inboxMessage && comment.can_reply_privately !== false && !alreadyInboxedCommentIds.has(comment.id)) {
           let inboxBody = config.inboxMessage
             .replace(/\{name\}|\{\{name\}\}|\[NAME\]/gi, customerName)
             .replace(/\{page\}|\{\{page\}\}/gi, page.name);
@@ -1373,8 +1388,14 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
             if (msgData && msgData.message_id) {
               didInbox = true;
               summary.inboxedCount++;
+            } else if (msgData && msgData.error) {
+              inboxError = msgData.error.message;
             }
-          } catch (e) {}
+          } catch (e) {
+            inboxError = e.message;
+          }
+        } else if (alreadyInboxedCommentIds.has(comment.id)) {
+          didInbox = true;
         }
 
         const logEntry = {
@@ -1387,13 +1408,18 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
           commentMessage: commentMsg,
           didLike,
           didHide,
+          didReplyComment,
+          replyError,
           replyText,
           didInbox,
+          inboxError,
           timestamp: new Date().toISOString()
         };
 
         await addRepliedCommentLog(userId, logEntry);
-        repliedIds.add(comment.id);
+        if (didReplyComment) {
+          repliedIds.add(comment.id);
+        }
         summary.processedItems.push(logEntry);
       }
     }
@@ -1404,7 +1430,7 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
       message: summary.permissionError
         ? `⚠️ ${summary.permissionError}`
         : (summary.newCommentsFound > 0
-            ? `🎉 Đã quét ${summary.checkedPosts} bài viết, phát hiện ${summary.newCommentsFound} bình luận mới: Đã Like (${summary.likedCount}), Ẩn SĐT (${summary.hiddenCount}), Phản hồi (${summary.repliedCount})!`
+            ? `🎉 Đã quét ${summary.checkedPosts} bài viết, phát hiện ${summary.newCommentsFound} bình luận mới: Like (${summary.likedCount}), Ẩn SĐT (${summary.hiddenCount}), Trả lời cmt (${summary.repliedCount}), Inbox (${summary.inboxedCount})!`
             : `Đã quét ${summary.checkedPosts} bài viết gần nhất. Tất cả bình luận đều đã được phản hồi đầy đủ!`)
     };
   } catch (err) {
@@ -1434,10 +1460,14 @@ app.get('/api/ads/auto-reply', async (req, res) => {
           isValid: debugData.data.is_valid,
           scopes,
           hasManagePosts: scopes.includes('pages_manage_posts'),
+          hasManageEngagement: scopes.includes('pages_manage_engagement'),
           hasReadEngagement: scopes.includes('pages_read_engagement'),
           hasReadUserContent: scopes.includes('pages_read_user_content'),
           hasMessaging: scopes.includes('pages_messaging'),
-          allRequiredGranted: scopes.includes('pages_manage_posts') && scopes.includes('pages_read_user_content')
+          allRequiredGranted: scopes.includes('pages_manage_posts') &&
+                              scopes.includes('pages_manage_engagement') &&
+                              scopes.includes('pages_read_user_content') &&
+                              scopes.includes('pages_messaging')
         };
       }
     } catch (e) {}
@@ -1522,7 +1552,7 @@ app.get('/api/fb/auto-reply/logs', async (req, res) => {
   res.json({ success: true, logs });
 });
 
-// Facebook Webhook Verification & Listener
+// Facebook Webhook Verification & Real-time Auto-Reply Listener
 app.get('/api/fb/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
@@ -1536,14 +1566,294 @@ app.get('/api/fb/webhook', (req, res) => {
   res.sendStatus(400);
 });
 
+// Xử lý sự kiện Webhook thời gian thực từ Meta (Real-time Instant Auto-Reply 0s)
+async function handleRealtimeCommentWebhook(pageId, val) {
+  const commentId = val.comment_id;
+  const postId = val.post_id || val.parent_id || 'feed';
+  const commentMsg = (val.message || '').trim();
+  const customer = val.from;
+
+  if (!customer || customer.id === pageId) return;
+  const customerName = customer.name || 'bạn';
+
+  const usersMap = await getAllUsers();
+  let ownerUser = null;
+  let targetPage = null;
+
+  for (const user of Object.values(usersMap)) {
+    const farm = await getFanpageFarm(user.id);
+    const found = farm.find(p => p.id === pageId);
+    if (found && found.accessToken && found.accessToken.length > 20) {
+      ownerUser = user;
+      targetPage = found;
+      break;
+    }
+    const integration = await getFbIntegration(user.id);
+    if (integration && integration.pageId === pageId && integration.pageAccessToken && integration.pageAccessToken.length > 20) {
+      ownerUser = user;
+      targetPage = {
+        id: integration.pageId,
+        name: integration.pageName || 'Fanpage',
+        accessToken: integration.pageAccessToken,
+        status: 'ACTIVE'
+      };
+      break;
+    }
+  }
+
+  if (!ownerUser || !targetPage) {
+    return;
+  }
+
+  const token = targetPage.accessToken.trim();
+  const config = await getAutoReplyConfig(ownerUser.id);
+  if (config.enabled === false) return;
+
+  const repliedHistory = await getRepliedCommentIds(ownerUser.id);
+  if (repliedHistory.includes(commentId)) {
+    return;
+  }
+
+  const existingLogs = await getAutoReplyLogs(ownerUser.id);
+  const alreadyInboxed = existingLogs.some(l => l.commentId === commentId && l.didInbox);
+
+  const hasPhone = /(03|05|07|08|09)\d{8}/.test(commentMsg) || /\d{10,11}/.test(commentMsg);
+  let didLike = false;
+  let didHide = false;
+  let didReplyComment = false;
+  let replyError = null;
+  let didInbox = alreadyInboxed;
+  let inboxError = null;
+
+  // A. Like
+  if (config.autoLike !== false) {
+    try {
+      const likeRes = await fetch(`https://graph.facebook.com/v19.0/${commentId}/likes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token: token })
+      });
+      const likeData = await likeRes.json();
+      if (likeData && likeData.success) didLike = true;
+    } catch (e) {}
+  }
+
+  // B. Hide phone
+  if (config.hidePhone !== false && hasPhone) {
+    try {
+      const hideRes = await fetch(`https://graph.facebook.com/v19.0/${commentId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_hidden: true, access_token: token })
+      });
+      const hideData = await hideRes.json();
+      if (hideData && hideData.success) didHide = true;
+    } catch (e) {}
+  }
+
+  // C. Reply Comment
+  const templates = Array.isArray(config.replyTemplates) && config.replyTemplates.length > 0
+    ? config.replyTemplates
+    : [
+        `Dạ em chào ${customerName} ạ! Em đã gửi thông tin ưu đãi và quà tặng qua tin nhắn riêng cho mình rồi đó ạ, ${customerName} kiểm tra hộp thư giúp em nhé! ❤️`,
+        `Chào ${customerName} ơi, shop đang có Flash Sale giá sốc hôm nay ạ. Shop đã nhắn tin tư vấn trực tiếp cho ${customerName} rồi nhé 🥰`
+      ];
+  let template = templates[Math.floor(Math.random() * templates.length)];
+  const replyText = template
+    .replace(/\{name\}|\{\{name\}\}|\[NAME\]/gi, customerName)
+    .replace(/\{page\}|\{\{page\}\}/gi, targetPage.name);
+
+  try {
+    const replyRes = await fetch(`https://graph.facebook.com/v19.0/${commentId}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: replyText, access_token: token })
+    });
+    const replyData = await replyRes.json();
+    if (replyData && (replyData.id || replyData.post_id)) {
+      didReplyComment = true;
+    } else if (replyData && replyData.error) {
+      if (replyData.error.code === 200) {
+        replyError = 'Thiếu quyền pages_manage_engagement (#200)';
+      } else {
+        replyError = replyData.error.message || `Lỗi Meta (#${replyData.error.code})`;
+      }
+    }
+  } catch (e) {
+    replyError = e.message;
+  }
+
+  // D. Messenger Private Reply
+  if (config.inboxMessage && !alreadyInboxed) {
+    let inboxBody = config.inboxMessage
+      .replace(/\{name\}|\{\{name\}\}|\[NAME\]/gi, customerName)
+      .replace(/\{page\}|\{\{page\}\}/gi, targetPage.name);
+
+    try {
+      const msgRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipient: { comment_id: commentId },
+          message: { text: inboxBody },
+          access_token: token
+        })
+      });
+      const msgData = await msgRes.json();
+      if (msgData && msgData.message_id) {
+        didInbox = true;
+      } else if (msgData && msgData.error) {
+        inboxError = msgData.error.message;
+      }
+    } catch (e) {
+      inboxError = e.message;
+    }
+  }
+
+  const logEntry = {
+    id: generateId('crlog', 8),
+    commentId: commentId,
+    postId: postId,
+    pageId: pageId,
+    pageName: targetPage.name,
+    customerName: customerName,
+    commentMessage: commentMsg,
+    didLike,
+    didHide,
+    didReplyComment,
+    replyError,
+    replyText,
+    didInbox,
+    inboxError,
+    source: 'WEBHOOK_REALTIME',
+    timestamp: new Date().toISOString()
+  };
+
+  await addRepliedCommentLog(ownerUser.id, logEntry);
+}
+
 app.post('/api/fb/webhook', async (req, res) => {
   res.status(200).send('EVENT_RECEIVED');
   try {
     const body = req.body;
-    if (body.object === 'page') {
-      console.log('FB Webhook Page Event received');
+    if (body && body.object === 'page' && Array.isArray(body.entry)) {
+      for (const entry of body.entry) {
+        const pageId = entry.id;
+        const changes = Array.isArray(entry.changes) ? entry.changes : [];
+        for (const change of changes) {
+          if (change.field === 'feed' && change.value) {
+            const val = change.value;
+            if (val.item === 'comment' && val.verb === 'add' && val.comment_id) {
+              await handleRealtimeCommentWebhook(pageId, val);
+            }
+          }
+        }
+      }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error('Lỗi Webhook POST:', e.message);
+  }
+});
+
+// ----------------- VERCEL CRON JOBS (TỰ ĐỘNG CHẠY SERVERLESS 24/7) -----------------
+// Cron Tự động Quét & Phản hồi bình luận mọi Fanpage trên hệ thống
+app.get('/api/cron/auto-reply', async (req, res) => {
+  const startTime = Date.now();
+  const summary = {
+    timestamp: new Date().toISOString(),
+    usersProcessed: 0,
+    pagesProcessed: 0,
+    results: []
+  };
+
+  try {
+    const usersMap = await getAllUsers();
+    for (const user of Object.values(usersMap)) {
+      summary.usersProcessed++;
+      const farm = await getFanpageFarm(user.id);
+      for (const page of farm) {
+        if (page.status === 'ACTIVE' && page.accessToken && page.accessToken.trim().length > 20) {
+          summary.pagesProcessed++;
+          try {
+            const scanRes = await scanAndReplyPageComments(user.id, page);
+            summary.results.push({
+              userId: user.id,
+              pageId: page.id,
+              pageName: page.name,
+              success: scanRes.success,
+              summary: scanRes.summary,
+              message: scanRes.message
+            });
+          } catch (pageErr) {
+            summary.results.push({
+              userId: user.id,
+              pageId: page.id,
+              pageName: page.name,
+              success: false,
+              error: pageErr.message
+            });
+          }
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      durationMs: Date.now() - startTime,
+      summary
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      durationMs: Date.now() - startTime
+    });
+  }
+});
+
+// Cron Tự động Đăng Bài Nuôi Fanpage Theo Lịch Giờ Vàng
+app.get('/api/cron/farm-autopilot', async (req, res) => {
+  const startTime = Date.now();
+  const summary = {
+    timestamp: new Date().toISOString(),
+    usersProcessed: 0,
+    postsChecked: 0,
+    results: []
+  };
+
+  try {
+    const usersMap = await getAllUsers();
+    const now = new Date();
+    const currentHours = String(now.getHours()).padStart(2, '0');
+    const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+    const currentTimeStr = `${currentHours}:${currentMinutes}`;
+    const todayStr = now.toISOString().slice(0, 10);
+
+    for (const user of Object.values(usersMap)) {
+      summary.usersProcessed++;
+      const farm = await getFanpageFarm(user.id);
+      for (const page of farm) {
+        if (page.status === 'ACTIVE' && page.accessToken && page.accessToken.trim().length > 20) {
+          const slots = Array.isArray(page.dailySlots) && page.dailySlots.length > 0 ? page.dailySlots : ['08:00', '11:30', '19:30', '20:30', '22:00'];
+          summary.postsChecked += slots.length;
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      currentTime: currentTimeStr,
+      today: todayStr,
+      durationMs: Date.now() - startTime,
+      summary
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      durationMs: Date.now() - startTime
+    });
+  }
 });
 
 // Mô phỏng kịch bản (Live Simulator)

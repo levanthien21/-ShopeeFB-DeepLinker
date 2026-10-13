@@ -11,5 +11,15 @@
       "src": "/(.*)",
       "dest": "server.js"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/auto-reply",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/farm-autopilot",
+      "schedule": "*/10 * * * *"
+    }
   ]
 }

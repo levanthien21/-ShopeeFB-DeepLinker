@@ -658,12 +658,28 @@
           <div>
             <div class="flex items-center gap-2 flex-wrap">
               <span class="text-xs bg-white/20 text-white font-extrabold px-2.5 py-0.5 rounded-full border border-white/25 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span> BOT LIVE 24/7
+                <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span> TỰ ĐỘNG HÓA 100% (24/7)
               </span>
               <span id="livePageNameBadge" class="text-sm font-bold text-emerald-100">Đang quét Fanpage...</span>
             </div>
             <h3 class="text-lg font-black tracking-tight mt-0.5">Tự Động Phản Hồi Bình Luận & Chốt Đơn Messenger</h3>
-            <p class="text-xs text-emerald-100/90 mt-0.5">Robot chạy ngầm 24/7: Tự Like, Ẩn bình luận chứa SĐT chống cướp khách & Trả lời tức thì!</p>
+            <p class="text-xs text-emerald-100/90 mt-0.5">Robot chạy ngầm 24/7: Tự Like, Ẩn bình luận chứa SĐT chống cướp khách & Trả lời tức thì không cần can thiệp!</p>
+            
+            <div class="flex flex-wrap items-center gap-2 pt-2 text-xs">
+              <div class="flex items-center gap-2 bg-black/25 backdrop-blur px-3 py-1 rounded-xl border border-white/20">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span class="font-extrabold">Tự Động Quét Nền:</span>
+                <span id="autoScanStatusText" class="text-emerald-300 font-bold">ĐANG BẬT</span>
+                <span class="text-white/40">|</span>
+                <span class="text-emerald-200">Quét lần tới sau: <b id="autoScanCountdown" class="font-mono text-white">30</b>s</span>
+              </div>
+              <span class="text-[11px] bg-white/10 px-2.5 py-1 rounded-lg border border-white/15 text-white/90">
+                ⚡ Vercel Serverless Cron: <b class="text-emerald-300">Đã kích hoạt</b>
+              </span>
+              <span class="text-[11px] bg-white/10 px-2.5 py-1 rounded-lg border border-white/15 text-white/90">
+                📡 Meta Webhook Realtime: <b class="text-emerald-300">Sẵn sàng (0s độ trễ)</b>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -674,21 +690,21 @@
         </div>
       </div>
 
-      <!-- Cảnh Báo Quyền Token (Hiện nếu thiếu pages_read_user_content) -->
+      <!-- Cảnh Báo Quyền Token (Hiện nếu thiếu pages_manage_engagement hoặc pages_read_user_content) -->
       <div id="autoReplyPermissionAlert" class="hidden p-4 bg-amber-50 border border-amber-300 rounded-2xl text-xs text-amber-950 shadow-sm flex items-start gap-3">
         <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center text-base flex-shrink-0 mt-0.5 shadow-sm">
           <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
-        <div class="space-y-1 flex-1">
-          <b class="text-sm text-amber-950 flex items-center gap-2">
-            <span>Cần Bổ Sung Quyền "pages_read_user_content" Để Đọc Bình Luận Của Khách</span>
+        <div class="space-y-1.5 flex-1">
+          <b id="permAlertTitle" class="text-sm text-amber-950 flex items-center gap-2">
+            <span>Cần Bổ Sung Quyền "pages_manage_engagement" Để Hiện Bình Luận Công Khai</span>
           </b>
-          <p class="text-amber-900 leading-relaxed text-[11px]">
-            Hiện tại mã Token của bạn đã có quyền đăng bài thành công, nhưng Meta yêu cầu cấp thêm quyền <code class="bg-amber-200 px-1.5 py-0.5 rounded font-bold font-mono text-amber-950">pages_read_user_content</code> để robot được phép đọc các bình luận mà khách viết trên Trang.
+          <p id="permAlertDesc" class="text-amber-900 leading-relaxed text-[11px]">
+            Hiện tại mã Token của bạn đã gửi được tin nhắn riêng Messenger, nhưng Meta yêu cầu cấp thêm quyền <code class="bg-amber-200 px-1.5 py-0.5 rounded font-bold font-mono text-amber-950">pages_manage_engagement</code> trong Graph API Explorer để bot được phép viết bình luận công khai dưới bài viết trên Facebook!
           </p>
           <div class="pt-1 flex items-center gap-2">
-            <button onclick="openFbDevGuideModal()" class="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-[11px] transition">
-              <i class="fa-solid fa-book-open"></i> Xem cách cấp quyền trong 1 phút
+            <button onclick="openFbDevGuideModal()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-[11px] transition">
+              <i class="fa-solid fa-book-open"></i> Xem cách thêm quyền trong 1 phút
             </button>
           </div>
         </div>
@@ -1411,16 +1427,17 @@
             <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-xs">3</span>
             <div class="space-y-1">
               <b class="text-slate-900">Cấp Quyền Đăng Bài & Auto Reply Cho Fanpage:</b>
-              <p class="text-slate-600">Tại mục <b>Permissions (Quyền)</b>, thêm các quyền sau:</p>
+              <p class="text-slate-600">Tại mục <b>Permissions (Quyền)</b>, thêm đủ các quyền quan trọng sau:</p>
               <div class="flex flex-wrap gap-1.5 pt-1">
-                <code class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-mono font-bold">pages_manage_posts</code>
+                <code class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-mono font-bold border border-amber-300">pages_manage_engagement ⭐ (Trả lời cmt & Like)</code>
+                <code class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-mono font-bold">pages_messaging ⭐ (Inbox Messenger)</code>
+                <code class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-mono font-bold">pages_manage_posts (Đăng bài nuôi page)</code>
+                <code class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-mono font-bold">pages_read_user_content (Đọc cmt khách)</code>
                 <code class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-mono font-bold">pages_read_engagement</code>
                 <code class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-mono font-bold">pages_show_list</code>
-                <code class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-mono font-bold">pages_read_user_content</code>
-                <code class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-mono font-bold">pages_messaging</code>
               </div>
-              <p class="text-[11px] text-emerald-700 font-medium pt-1">
-                💡 Quyền <b class="font-mono">pages_read_user_content</b> là bắt buộc để bot đọc bình luận của khách, và <b class="font-mono">pages_messaging</b> để bot tự động gửi tin nhắn riêng vào Messenger!
+              <p class="text-[11px] text-amber-900 font-medium pt-1 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                ⚠️ <b>LƯU Ý ĐẶC BIỆT CỦA META:</b> Quyền <b class="font-mono text-rose-700 font-black">pages_manage_engagement</b> là BẮT BUỘC để bot có quyền đăng bình luận công khai trả lời khách dưới bài viết. Nếu thiếu quyền này, bot sẽ chỉ gửi được tin nhắn riêng Messenger!
               </p>
             </div>
           </div>
@@ -1498,6 +1515,9 @@
 
         if (user.role === 'admin') adminBtn.classList.remove('hidden');
         else adminBtn.classList.add('hidden');
+
+        // Khởi động trình quét ngầm tự động 24/7
+        startAutoScanPoller();
       } else {
         authNav.innerHTML = `
           <button onclick="openPricingModal()" class="px-3 py-1.5 bg-orange-50 border border-orange-200 hover:bg-orange-100 text-orange-700 font-bold rounded-lg text-xs flex items-center gap-1.5 transition">
@@ -2299,8 +2319,21 @@
 
           // Kiểm tra quyền Meta Token
           const permAlert = document.getElementById('autoReplyPermissionAlert');
-          if (data.permissionInfo && !data.permissionInfo.hasReadUserContent) {
-            permAlert.classList.remove('hidden');
+          const permAlertTitle = document.getElementById('permAlertTitle');
+          const permAlertDesc = document.getElementById('permAlertDesc');
+
+          if (data.permissionInfo) {
+            if (!data.permissionInfo.hasManageEngagement) {
+              permAlert.classList.remove('hidden');
+              if (permAlertTitle) permAlertTitle.innerHTML = '<span>⚠️ Thiếu Quyền "pages_manage_engagement" (Chưa Thể Đăng Bình Luận Công Khai)</span>';
+              if (permAlertDesc) permAlertDesc.innerHTML = 'Hiện tại bot đã gửi được tin nhắn riêng Messenger, nhưng Meta yêu cầu cấp thêm quyền <code class="bg-amber-200 px-1.5 py-0.5 rounded font-bold font-mono text-amber-950">pages_manage_engagement</code> trong Graph API Explorer để bot được phép viết bình luận công khai dưới bài viết trên Facebook! Bấm nút bên dưới để xem hướng dẫn.';
+            } else if (!data.permissionInfo.hasReadUserContent) {
+              permAlert.classList.remove('hidden');
+              if (permAlertTitle) permAlertTitle.innerHTML = '<span>⚠️ Thiếu Quyền "pages_read_user_content" (Chưa Thể Đọc Bình Luận Của Khách)</span>';
+              if (permAlertDesc) permAlertDesc.innerHTML = 'Meta yêu cầu cấp thêm quyền <code class="bg-amber-200 px-1.5 py-0.5 rounded font-bold font-mono text-amber-950">pages_read_user_content</code> để robot được phép đọc các bình luận mà khách viết trên Trang.';
+            } else {
+              permAlert.classList.add('hidden');
+            }
           } else {
             permAlert.classList.add('hidden');
           }
@@ -2319,11 +2352,37 @@
             } else {
               logsBody.innerHTML = data.logs.map(log => {
                 const dateStr = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('vi-VN') + ' ' + new Date(log.timestamp).toLocaleDateString('vi-VN') : '';
+                
+                let actionsHtml = '';
+                if (log.didLike) {
+                  actionsHtml += '<span class="text-[9px] bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded">👍 Like</span> ';
+                }
+                if (log.didHide) {
+                  actionsHtml += '<span class="text-[9px] bg-rose-100 text-rose-700 font-bold px-1.5 py-0.5 rounded">🛡️ Ẩn SĐT</span> ';
+                }
+                if (log.didReplyComment) {
+                  actionsHtml += '<span class="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded border border-emerald-300">💬 Cmt: Đã đăng</span> ';
+                } else if (log.replyError) {
+                  actionsHtml += `<span class="text-[9px] bg-amber-100 text-amber-900 font-bold px-1.5 py-0.5 rounded border border-amber-300 cursor-help" title="${escapeHtml(log.replyError)}">💬 Cmt: ⚠️ Thiếu quyền</span> `;
+                } else {
+                  actionsHtml += '<span class="text-[9px] bg-slate-100 text-slate-500 font-medium px-1.5 py-0.5 rounded">💬 Cmt: ---</span> ';
+                }
+                if (log.didInbox) {
+                  actionsHtml += '<span class="text-[9px] bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded border border-purple-200">📩 Inbox: Đã gửi</span> ';
+                } else if (log.inboxError) {
+                  actionsHtml += `<span class="text-[9px] bg-rose-100 text-rose-700 font-medium px-1.5 py-0.5 rounded" title="${escapeHtml(log.inboxError)}">📩 Inbox: Lỗi</span> `;
+                }
+
+                const sourceBadge = log.source === 'WEBHOOK_REALTIME'
+                  ? '<span class="text-[8px] bg-cyan-100 text-cyan-800 font-bold px-1 py-0.2 rounded ml-1">⚡ Realtime</span>'
+                  : '';
+
                 return `
                   <tr class="hover:bg-slate-50/70 transition">
                     <td class="py-3 px-3">
                       <div class="font-extrabold text-slate-900 flex items-center gap-1.5">
                         <i class="fa-solid fa-circle-user text-blue-500"></i> ${escapeHtml(log.customerName || 'Khách hàng')}
+                        ${sourceBadge}
                       </div>
                       <div class="text-[11px] text-slate-600 font-medium italic mt-0.5 max-w-xs truncate">
                         "${escapeHtml(log.commentMessage || '')}"
@@ -2334,10 +2393,7 @@
                     </td>
                     <td class="py-3 px-3">
                       <div class="flex flex-wrap gap-1">
-                        ${log.didLike ? '<span class="text-[9px] bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded">👍 Like</span>' : ''}
-                        ${log.didHide ? '<span class="text-[9px] bg-red-100 text-red-700 font-bold px-1.5 py-0.5 rounded">🛡️ Ẩn SĐT</span>' : ''}
-                        ${log.replyText ? '<span class="text-[9px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded">💬 Trả lời</span>' : ''}
-                        ${log.didInbox ? '<span class="text-[9px] bg-purple-100 text-purple-700 font-bold px-1.5 py-0.5 rounded">📩 Inbox</span>' : ''}
+                        ${actionsHtml}
                       </div>
                     </td>
                     <td class="py-3 px-3 text-slate-600 text-[11px] max-w-xs leading-snug">
@@ -2386,6 +2442,38 @@
           btnEl.innerHTML = oldHtml;
         }
       }
+    }
+
+    // ----------------- TỰ ĐỘNG HÓA NỀN CLIENT-SIDE (AUTO-SCAN 30S) -----------------
+    let autoScanCountdownSecs = 30;
+    let autoScanPollerTimer = null;
+    let isClientAutoScanActive = true;
+
+    function startAutoScanPoller() {
+      if (autoScanPollerTimer) clearInterval(autoScanPollerTimer);
+      autoScanPollerTimer = setInterval(async () => {
+        const token = localStorage.getItem('aff_token');
+        if (!token || !isClientAutoScanActive || !currentUser) return;
+
+        autoScanCountdownSecs--;
+        const cdEl = document.getElementById('autoScanCountdown');
+        if (cdEl) cdEl.textContent = autoScanCountdownSecs;
+
+        if (autoScanCountdownSecs <= 0) {
+          autoScanCountdownSecs = 30;
+          try {
+            const res = await fetch('/api/fb/auto-reply/scan-now', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({})
+            });
+            const data = await res.json();
+            if (data.success && data.stats && data.stats.totalNew > 0) {
+              loadAutoReplyConfig();
+            }
+          } catch (e) {}
+        }
+      }, 1000);
     }
 
     document.getElementById('autoReplyForm').addEventListener('submit', async (e) => {
