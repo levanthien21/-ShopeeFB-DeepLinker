@@ -18,6 +18,12 @@ const {
   saveFbIntegration,
   getScheduledQueue,
   saveScheduledQueue,
+  getFanpageFarm,
+  saveFanpageToFarm,
+  updateFanpageInFarm,
+  deleteFanpageFromFarm,
+  toggleFanpageFarmStatus,
+  addPostToFarmHistory,
   getStoredLinks,
   getStoredLink,
   saveStoredLink,
@@ -27,6 +33,7 @@ const {
   generateToken,
   verifyToken
 } = require('./lib/db');
+const { generateAutonomousPost, NICHE_DATA } = require('./lib/autopilot-ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -1398,7 +1405,33 @@ app.post('/api/fb/publish-now', async (req, res) => {
     return res.status(401).json({ error: 'Vui lòng đăng nhập' });
   }
 
-  let integration = await getFbIntegration(req.user.id);
+  const { postTitle, postContent, autoRunAds, dailyBudget, imageUrl, pageId } = req.body;
+  if (!postContent) {
+    return res.status(400).json({ error: 'Vui lòng nhập nội dung bài viết' });
+  }
+
+  let integration = null;
+  if (pageId) {
+    const farm = await getFanpageFarm(req.user.id);
+    const foundPage = farm.find(p => p.id === pageId);
+    if (foundPage) {
+      integration = {
+        connected: true,
+        accountType: 'page',
+        pageId: foundPage.id,
+        pageName: foundPage.name,
+        pageAccessToken: foundPage.accessToken,
+        autoRunAds: foundPage.autoRunAds,
+        dailyBudget: foundPage.dailyBudget,
+        targetUrl: `https://facebook.com/${foundPage.id}`
+      };
+    }
+  }
+
+  if (!integration) {
+    integration = await getFbIntegration(req.user.id);
+  }
+
   if (!integration || !integration.connected) {
     integration = await saveFbIntegration(req.user.id, {
       connected: true,
@@ -1409,11 +1442,6 @@ app.post('/api/fb/publish-now', async (req, res) => {
       pageAvatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100',
       isSandbox: true
     });
-  }
-
-  const { postTitle, postContent, autoRunAds, dailyBudget, imageUrl } = req.body;
-  if (!postContent) {
-    return res.status(400).json({ error: 'Vui lòng nhập nội dung bài viết' });
   }
 
   let realPostId = null;
@@ -1581,6 +1609,208 @@ app.post('/api/fb/cancel-scheduled', async (req, res) => {
   queue = queue.filter(q => q.id !== itemId);
   await saveScheduledQueue(req.user.id, queue);
   res.json({ success: true, message: 'Đã hủy bài viết trong hàng đợi lịch đăng' });
+});
+
+// ----------------- HỆ THỐNG NUÔI DÀN FANPAGE TỰ ĐỘNG (MULTI-FANPAGE FARM) -----------------
+
+// Lấy danh sách Dàn Fanpage của người dùng
+app.get('/api/fb/farm', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const farm = await getFanpageFarm(req.user.id);
+  res.json({ success: true, farm });
+});
+
+// Lấy thông tin các lĩnh vực & trụ cột nội dung
+app.get('/api/fb/farm/niches', (req, res) => {
+  res.json({ success: true, niches: NICHE_DATA });
+});
+
+// Thêm Fanpage mới vào Dàn Nuôi
+app.post('/api/fb/farm/add', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const { fbTarget, pageId, pageAccessToken, niche, dailySlots, contentMix, affiliateLink, autoRunAds, dailyBudget } = req.body;
+
+  const target = (fbTarget || pageId || '').trim();
+  if (!target && !pageAccessToken) {
+    return res.status(400).json({ error: 'Vui lòng nhập Link Fanpage, Page ID hoặc Page Access Token' });
+  }
+
+  const { cleanId, cleanName } = parseFacebookTarget(target || 'page_shop');
+  const cleanToken = (pageAccessToken || '').trim();
+
+  let verifiedAccount = null;
+
+  // Nếu có Page Access Token thật, gọi Meta Graph API lấy thông tin chính xác
+  if (cleanToken && cleanToken.length > 20) {
+    try {
+      const fbRes = await fetch(`https://graph.facebook.com/v19.0/${cleanId}?fields=id,name,category,link,picture,followers_count,fan_count&access_token=${cleanToken}`);
+      const fbData = await fbRes.json();
+      if (fbData && fbData.id) {
+        verifiedAccount = {
+          id: fbData.id,
+          name: fbData.name,
+          category: fbData.category || 'Trang Fanpage Doanh Nghiệp',
+          avatar: fbData.picture?.data?.url || `https://graph.facebook.com/${fbData.id}/picture?type=normal`,
+          followers: fbData.followers_count || fbData.fan_count || 0
+        };
+      }
+    } catch (err) {
+      console.error('Lỗi Graph API verify Fanpage Farm:', err.message);
+    }
+  }
+
+  if (!verifiedAccount) {
+    verifiedAccount = {
+      id: cleanId || ('page_' + Date.now().toString().slice(-6)),
+      name: cleanName || 'Fanpage Bán Hàng Trực Tuyến',
+      category: 'Trang Doanh Nghiệp',
+      avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120',
+      followers: 0,
+      isSandbox: !cleanToken
+    };
+  }
+
+  const newPage = {
+    id: verifiedAccount.id,
+    name: verifiedAccount.name,
+    category: verifiedAccount.category,
+    avatar: verifiedAccount.avatar,
+    followers: verifiedAccount.followers,
+    accessToken: cleanToken,
+    niche: niche || 'cong_nghe',
+    status: 'ACTIVE',
+    dailySlots: Array.isArray(dailySlots) && dailySlots.length ? dailySlots : ['08:00', '11:30', '20:00'],
+    contentMix: contentMix || 'balanced',
+    affiliateLink: affiliateLink || '',
+    autoRunAds: !!autoRunAds,
+    dailyBudget: parseInt(dailyBudget, 10) || 50000,
+    isSandbox: !cleanToken
+  };
+
+  const updatedFarm = await saveFanpageToFarm(req.user.id, newPage);
+
+  res.json({
+    success: true,
+    message: `🎉 Đã thêm Fanpage "${verifiedAccount.name}" vào Dàn Nuôi Tự Động!`,
+    page: newPage,
+    farm: updatedFarm
+  });
+});
+
+// Bật / Tắt trạng thái nuôi tự động của 1 Fanpage
+app.post('/api/fb/farm/toggle', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const { pageId } = req.body;
+  if (!pageId) return res.status(400).json({ error: 'Thiếu pageId' });
+
+  const updated = await toggleFanpageFarmStatus(req.user.id, pageId);
+  if (!updated) return res.status(404).json({ error: 'Không tìm thấy Fanpage' });
+
+  res.json({
+    success: true,
+    item: updated,
+    message: updated.status === 'ACTIVE'
+      ? `Đã kích hoạt chế độ nuôi tự động cho Fanpage "${updated.name}"`
+      : `Đã tạm dừng nuôi Fanpage "${updated.name}"`
+  });
+});
+
+// Xóa Fanpage khỏi Dàn Nuôi
+app.delete('/api/fb/farm/:id', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const ok = await deleteFanpageFromFarm(req.user.id, req.params.id);
+  res.json({
+    success: ok,
+    message: ok ? 'Đã xóa Fanpage khỏi dàn nuôi' : 'Không tìm thấy Fanpage'
+  });
+});
+
+// Kích hoạt nuôi tức thì 1 bài (Trigger Now Live Test)
+app.post('/api/fb/farm/trigger-now', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const { pageId, mix, customAffiliateLink } = req.body;
+  if (!pageId) return res.status(400).json({ error: 'Vui lòng chọn Fanpage cần nuôi' });
+
+  const farm = await getFanpageFarm(req.user.id);
+  const page = farm.find(p => p.id === pageId);
+  if (!page) return res.status(404).json({ error: 'Không tìm thấy Fanpage trong dàn nuôi của bạn' });
+
+  // Tự động sản xuất nội dung nuôi page phù hợp
+  const genPost = generateAutonomousPost(page.niche, mix || page.contentMix, customAffiliateLink || page.affiliateLink);
+
+  let isLive = false;
+  let postId = null;
+  let postUrl = null;
+  let errorMsg = null;
+
+  if (page.accessToken && page.accessToken.trim().length > 20) {
+    try {
+      const fbRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/photos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          caption: genPost.fullText,
+          url: genPost.imageUrl,
+          access_token: page.accessToken.trim()
+        })
+      });
+      const fbData = await fbRes.json();
+      if (fbData && (fbData.id || fbData.post_id)) {
+        postId = fbData.post_id || fbData.id;
+        postUrl = `https://facebook.com/${postId}`;
+        isLive = true;
+      } else if (fbData && fbData.error) {
+        errorMsg = fbData.error.message;
+      }
+    } catch (err) {
+      errorMsg = err.message;
+    }
+  }
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const timeStr = new Date().toLocaleTimeString('vi-VN');
+
+  const logEntry = {
+    id: generateId('fpost', 8),
+    pageId: page.id,
+    pageName: page.name,
+    title: genPost.title,
+    pillar: genPost.pillar,
+    pillarName: genPost.pillarName,
+    content: genPost.fullText,
+    imageUrl: genPost.imageUrl,
+    date: todayStr,
+    time: timeStr,
+    slot: 'TRIGGER_MANUAL',
+    status: isLive ? 'PUBLISHED' : (errorMsg ? 'ERROR' : 'SANDBOX_POSTED'),
+    isLiveApi: isLive,
+    postId: postId || `${page.id}_${Date.now()}`,
+    postUrl: postUrl || `https://facebook.com/${page.id}`,
+    error: errorMsg,
+    createdAt: new Date().toISOString()
+  };
+
+  await addPostToFarmHistory(req.user.id, page.id, logEntry);
+
+  res.json({
+    success: true,
+    isLiveApi: isLive,
+    post: logEntry,
+    message: isLive
+      ? `🎉 Tuyệt vời! AI đã tự động sản xuất bài [${genPost.pillarName}] và đăng trực tiếp lên Fanpage "${page.name}" thành công!`
+      : (errorMsg
+          ? `⚠️ Meta Graph API phản hồi: "${errorMsg}". Bài viết mẫu đã được tạo và lưu vào lịch sử nuôi của Page.`
+          : `🎉 AI đã tự động sản xuất bài viết mẫu [${genPost.pillarName}] cho Fanpage "${page.name}" (Nhập Page Token để đăng trực tiếp lên Facebook!).`)
+  });
+});
+
+// Xem lịch sử bài đã đăng của 1 Fanpage
+app.get('/api/fb/farm/:id/history', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const farm = await getFanpageFarm(req.user.id);
+  const page = farm.find(p => p.id === req.params.id);
+  if (!page) return res.status(404).json({ error: 'Không tìm thấy Fanpage' });
+  res.json({ success: true, history: page.postHistory || [] });
 });
 
 // ----------------- 5. ADMIN MANAGEMENT -----------------
@@ -1761,6 +1991,72 @@ setInterval(async () => {
         }
         if (modified) {
           await saveScheduledQueue(user.id, queue);
+        }
+      }
+
+      // 3. Quét TẤT CẢ FANPAGE trong DÀN NUÔI (Multi-Fanpage Farm Auto-Pilot)
+      const farm = await getFanpageFarm(user.id);
+      for (const page of farm) {
+        if (page.status === 'ACTIVE' && Array.isArray(page.dailySlots) && page.dailySlots.includes(currentTimeStr)) {
+          const slotKey = `${todayStr}_${currentTimeStr}`;
+          if (page.lastPostedSlotKey !== slotKey) {
+            page.lastPostedSlotKey = slotKey;
+            
+            // Tự động sản xuất nội dung bài viết nuôi page theo đúng lĩnh vực và định hướng nội dung
+            const genPost = generateAutonomousPost(page.niche, page.contentMix, page.affiliateLink);
+
+            let isLive = false;
+            let postId = null;
+            let postUrl = null;
+            let errorMsg = null;
+
+            if (page.accessToken && page.accessToken.trim().length > 20) {
+              try {
+                const fbRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/photos`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    caption: genPost.fullText,
+                    url: genPost.imageUrl,
+                    access_token: page.accessToken.trim()
+                  })
+                });
+                const fbData = await fbRes.json();
+                if (fbData && (fbData.id || fbData.post_id)) {
+                  postId = fbData.post_id || fbData.id;
+                  postUrl = `https://facebook.com/${postId}`;
+                  isLive = true;
+                } else if (fbData && fbData.error) {
+                  errorMsg = fbData.error.message;
+                }
+              } catch (err) {
+                errorMsg = err.message;
+              }
+            }
+
+            const logEntry = {
+              id: generateId('fpost', 8),
+              pageId: page.id,
+              pageName: page.name,
+              title: genPost.title,
+              pillar: genPost.pillar,
+              pillarName: genPost.pillarName,
+              content: genPost.fullText,
+              imageUrl: genPost.imageUrl,
+              date: todayStr,
+              time: currentTimeStr,
+              slot: currentTimeStr,
+              status: isLive ? 'PUBLISHED' : (errorMsg ? 'ERROR' : 'SANDBOX_POSTED'),
+              isLiveApi: isLive,
+              postId: postId || `${page.id}_${Date.now()}`,
+              postUrl: postUrl || `https://facebook.com/${page.id}`,
+              error: errorMsg,
+              createdAt: new Date().toISOString()
+            };
+
+            await addPostToFarmHistory(user.id, page.id, logEntry);
+            await updateFanpageInFarm(user.id, page.id, { lastPostedSlotKey: slotKey, lastPostedDate: todayStr });
+          }
         }
       }
     }

@@ -94,7 +94,7 @@
       </button>
       <button id="navTab3" onclick="switchMainTab('tab3')" class="flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2 transition">
         <i class="fa-solid fa-robot text-emerald-600"></i>
-        <span>3. Fanpage Auto-Pilot</span>
+        <span>3. Nuôi Dàn Fanpage Tự Động</span>
       </button>
       <button id="navTab4" onclick="switchMainTab('tab4')" class="flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2 transition">
         <i class="fa-solid fa-comments text-cyan-600"></i>
@@ -471,238 +471,179 @@
       </div>
     </div>
 
-    <!-- ==================== MODULE 3: FANPAGE AUTO-PILOT (TỰ ĐỘNG ĐĂNG BÀI LÊN PAGE) ==================== -->
+    <!-- ==================== MODULE 3: NUÔI DÀN FANPAGE TỰ ĐỘNG (MULTI-PAGE AUTO-PILOT) ==================== -->
     <div id="module3Content" class="hidden space-y-6">
       
-      <!-- Thẻ trạng thái kết nối Fanpage (Live Status Card) -->
-      <div id="fbStatusCard" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-        <div class="flex items-center gap-4">
-          <div id="fbPageAvatar" class="w-16 h-16 rounded-2xl bg-blue-600/30 border-2 border-blue-400/40 flex items-center justify-center text-2xl font-black overflow-hidden shadow-md flex-shrink-0">
-            <i class="fa-brands fa-facebook-f text-blue-400"></i>
+      <!-- Thẻ Điều Khiển Trung Tâm Dàn Nuôi (Farm Control Center) -->
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 text-white shadow-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div class="space-y-2 max-w-2xl">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Auto-Pilot 24/7 Engine Active
+            </span>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-500/30">
+              Meta Graph API v19.0
+            </span>
           </div>
-          <div>
-            <div class="flex items-center gap-2 mb-1">
-              <span id="fbConnectionBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-800 text-slate-300">
-                ○ Chưa Liên Kết Fanpage
-              </span>
-              <span id="fbAutoPilotBadge" class="hidden px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                ⚡ Auto-Pilot 24/7 Đang Bật
-              </span>
+          <h2 class="text-2xl font-black text-white flex items-center gap-2.5">
+            <i class="fa-solid fa-network-wired text-indigo-400"></i>
+            Hệ Thống Nuôi Dàn Fanpage Tự Động (Multi-Page Farm)
+          </h2>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Hệ thống nuôi nhiều Fanpage cùng lúc hoàn toàn tự động 24/7. AI tự động sáng tạo nội dung đa dạng (<b class="text-white">Kiến thức chuyên sâu, Tương tác cộng đồng, Review chân thực, Deal Hot Shopee Deeplink</b>) và tự động đăng bài theo khung giờ vàng máy chủ không cần copy dán thủ công!
+          </p>
+
+          <!-- Thống kê dàn page -->
+          <div class="flex flex-wrap items-center gap-3 pt-2">
+            <div class="bg-slate-800/80 px-3.5 py-2 rounded-xl border border-slate-700/60 flex items-center gap-2.5">
+              <i class="fa-solid fa-layer-group text-blue-400"></i>
+              <div>
+                <div class="text-[10px] text-slate-400 uppercase font-bold">Tổng Fanpage</div>
+                <div id="farmStatTotal" class="text-base font-black text-white leading-tight">0</div>
+              </div>
             </div>
-            <h2 id="fbPageName" class="text-xl font-black text-white">Chưa Kết Nối Fanpage Facebook</h2>
-            <p id="fbPageSubtext" class="text-xs text-slate-400 mt-0.5">Nhập Page ID & Page Access Token bên dưới để kích hoạt chế độ tự động đăng bài hoàn toàn.</p>
+
+            <div class="bg-slate-800/80 px-3.5 py-2 rounded-xl border border-slate-700/60 flex items-center gap-2.5">
+              <i class="fa-solid fa-robot text-emerald-400"></i>
+              <div>
+                <div class="text-[10px] text-slate-400 uppercase font-bold">Đang Nuôi 24/7</div>
+                <div id="farmStatActive" class="text-base font-black text-emerald-400 leading-tight">0</div>
+              </div>
+            </div>
+
+            <div class="bg-slate-800/80 px-3.5 py-2 rounded-xl border border-slate-700/60 flex items-center gap-2.5">
+              <i class="fa-solid fa-paper-plane text-purple-400"></i>
+              <div>
+                <div class="text-[10px] text-slate-400 uppercase font-bold">Bài Đã Tự Đăng</div>
+                <div id="farmStatPosts" class="text-base font-black text-purple-300 leading-tight">0</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="flex items-center gap-3">
-          <button onclick="triggerQuickTestPost()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl text-xs transition shadow-lg shadow-blue-600/30 flex items-center gap-2">
-            <i class="fa-solid fa-paper-plane"></i> Đăng Thử 1 Bài Lên Page Ngay
+
+        <!-- Các nút hành động chính -->
+        <div class="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto flex-shrink-0">
+          <button onclick="openAddFarmModal()" class="w-full px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black rounded-xl text-xs transition shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus-circle text-sm"></i> THÊM FANPAGE VÀO DÀN NUÔI
+          </button>
+          <button onclick="openFbDevGuideModal()" class="w-full px-4 py-2.5 bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2">
+            <i class="fa-brands fa-facebook text-blue-400"></i> Hướng Dẫn Lấy Token FB Dev (1 Phút)
           </button>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- Cột Trái (5 cols): Cài đặt Kết Nối Fanpage & Đặt Lịch Hàng Ngày -->
-        <div class="lg:col-span-5 space-y-6">
-          
-          <!-- Box 1: Cấu hình Kết Nối Fanpage -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div class="font-black text-slate-900 text-sm flex items-center gap-2">
-                <i class="fa-brands fa-facebook text-blue-600 text-base"></i>
-                <span>1. Kết Nối Fanpage Facebook (Meta API)</span>
-              </div>
-              <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">Tự Động 100%</span>
-            </div>
-
-            <!-- Chọn Lĩnh vực chính của Fanpage -->
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">
-                Lĩnh Vực / Ngành Hàng Của Fanpage <span class="text-red-500">*</span>:
-              </label>
-              <select id="fbNicheSelect" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500">
-                <option value="thoi_trang">👗 Thời trang & Giày dép</option>
-                <option value="my_pham">💄 Mỹ phẩm & Chăm sóc sắc đẹp</option>
-                <option value="cong_nghe" selected>📱 Công nghệ & Phụ kiện điện tử</option>
-                <option value="gia_dung">🏠 Đồ gia dụng & Tiện ích thông minh</option>
-                <option value="me_be">🍼 Mẹ & Bé</option>
-                <option value="suc_khoe">🌿 Sức khỏe & Thực phẩm chức năng</option>
-                <option value="am_thuc">🍕 Ẩm thực & Đồ ăn vặt</option>
-                <option value="sach_giaoduc">📚 Sách & Giáo dục / Khóa học</option>
-                <option value="xe_co">🚗 Xe cộ & Phụ kiện ô tô xe máy</option>
-                <option value="khac">🛒 Ngành hàng khác / Đa năng</option>
-              </select>
-              <p class="text-[10px] text-slate-400 mt-1">Robot Auto-Pilot sẽ tự động sinh nội dung chuyên biệt theo đúng lĩnh vực này để thu hút đúng tệp khách hàng tiềm năng.</p>
-            </div>
-
-            <form id="fbConnectionForm" class="space-y-3.5">
-              <!-- Ô Nhập Link hoặc ID Fanpage -->
-              <div>
-                <label id="fbTargetLabel" class="block text-xs font-bold text-slate-700 mb-1">
-                  Đường dẫn (Link) Fanpage hoặc ID Trang <span class="text-red-500">*</span>:
-                </label>
-                <div class="relative">
-                  <input type="text" id="fbTargetInput" required placeholder="Dán link facebook.com/tenpage hoặc ID" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-blue-500 pr-10">
-                  <span class="absolute right-3 top-2.5 text-slate-400 text-xs"><i class="fa-solid fa-paste"></i></span>
-                </div>
-                <p id="fbTargetHint" class="text-[10px] text-slate-400 mt-1">
-                  Ví dụ: <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-600">https://facebook.com/tenfanpage</code> hoặc <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-600">104589234981</code>
-                </p>
-              </div>
-
-              <!-- Nút chuyển đổi chế độ Nâng cao (Có Token Graph API) -->
-              <div class="pt-1">
-                <button type="button" onclick="toggleAdvancedToken()" class="text-[11px] text-blue-600 hover:underline font-bold flex items-center gap-1">
-                  <i class="fa-solid fa-sliders"></i> <span id="advancedTokenToggleText">Thêm Page Access Token (Để đăng ngầm bằng máy chủ)</span>
-                </button>
-              </div>
-
-              <div id="advancedTokenSection" class="hidden space-y-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                <div>
-                  <div class="flex items-center justify-between mb-1">
-                    <label class="block text-[11px] font-bold text-slate-700">Page Access Token (Meta Graph API):</label>
-                    <button type="button" onclick="showTokenGuideModal()" class="text-[10px] text-blue-600 hover:underline">Cách lấy token trong 1 phút?</button>
-                  </div>
-                  <input type="password" id="fbPageTokenInput" placeholder="EAAxxxxxxx... (Dán token vào đây)" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono focus:outline-none focus:border-blue-500">
-                  <p class="text-[10px] text-emerald-700 mt-1">✓ Có token: Máy chủ sẽ tự động đăng bài 100% không cần mở tab trình duyệt.</p>
-                </div>
-
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-700 mb-1">Ad Account ID (Tùy chọn Ads):</label>
-                  <input type="text" id="fbAdAccountInput" placeholder="VD: act_1234567890" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-blue-500">
-                </div>
-              </div>
-
-              <button type="submit" id="fbVerifyBtn" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl text-xs transition shadow-md shadow-blue-500/25 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-link"></i> XÁC NHẬN & LIÊN KẾT FANPAGE NGAY
-              </button>
-            </form>
+      <!-- Danh Sách Dàn Fanpage Đang Nuôi (Grid Cards) -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
+          <div>
+            <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
+              <i class="fa-solid fa-cubes-stacked text-blue-600"></i>
+              <span>Dàn Fanpage Đang Hoạt Động (Farm Multi-Pages)</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Mỗi Fanpage có lĩnh vực riêng, khung giờ riêng và được AI tự động chăm sóc độc lập.</p>
           </div>
-
-          <!-- Box 2: Cài Đặt Đặt Lịch Hàng Ngày (Auto-Pilot) -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div class="font-black text-slate-900 text-sm flex items-center gap-2">
-                <i class="fa-solid fa-clock text-amber-500 text-base"></i>
-                <span>2. Đặt Lịch Auto-Pilot Đăng Bài Mỗi Ngày</span>
-              </div>
-              <span class="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded">Tự Động Hóa 24/7</span>
-            </div>
-
-            <form id="fbAutoPilotForm" class="space-y-3.5">
-              <div class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl">
-                <label class="flex items-center gap-2.5 cursor-pointer font-extrabold text-xs text-amber-950">
-                  <input type="checkbox" id="fbAutoPilotToggle" class="w-4 h-4 text-amber-600 accent-amber-600 rounded">
-                  <span>Kích Hoạt Chế Độ Tự Động Đăng Bài Mỗi Ngày (Auto-Pilot 24/7)</span>
-                </label>
-                <p class="text-[11px] text-amber-800 mt-1 pl-6">Hệ thống máy chủ sẽ tự động sản xuất bài viết AI đúng theo lĩnh vực Fanpage và đăng bài đều đặn vào khung giờ vàng bạn chọn.</p>
-              </div>
-
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Khung Giờ Vàng Đăng Bài Mỗi Ngày:</label>
-                <select id="fbDailyTimeSelect" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none">
-                  <option value="08:30">🌅 08:30 Sáng (Bắt đầu ngày mới - Dân văn phòng check tin)</option>
-                  <option value="11:30">🍱 11:30 Trưa (Giờ nghỉ trưa - Lượng lướt Facebook cao)</option>
-                  <option value="19:30">🍲 19:30 Tối (Sau bữa tối - Thư giãn lướt Newfeed)</option>
-                  <option value="20:30" selected>🔥 20:30 Tối (KHUNG GIỜ VÀNG - Tỷ lệ mua sắm cao nhất)</option>
-                  <option value="22:00">🌙 22:00 Đêm (Khách hàng thức khuya mua sắm online)</option>
-                </select>
-              </div>
-
-              <div class="space-y-2 pt-1 border-t border-slate-100">
-                <label class="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-800">
-                  <input type="checkbox" id="fbAutoRunAdsToggle" class="w-4 h-4 text-purple-600 accent-purple-600 rounded">
-                  <span>Kèm kích hoạt chiến dịch quảng cáo cho bài đăng</span>
-                </label>
-                
-                <div id="fbBudgetSelectBox" class="pl-6 space-y-1">
-                  <span class="block text-[11px] text-slate-500">Ngân sách dự kiến:</span>
-                  <select id="fbDailyBudgetSelect" class="w-full p-2 rounded-xl border border-slate-200 text-xs font-bold text-purple-700 focus:outline-none">
-                    <option value="50000">50.000đ / ngày</option>
-                    <option value="100000" selected>100.000đ / ngày (Khuyên dùng)</option>
-                    <option value="200000">200.000đ / ngày</option>
-                  </select>
-                </div>
-              </div>
-
-              <button type="submit" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl text-xs transition shadow-md">
-                Lưu Cấu Hình Đặt Lịch Hàng Ngày
-              </button>
-            </form>
+          <div class="flex items-center gap-2">
+            <button onclick="loadFanpageFarm()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-rotate text-slate-500"></i> Làm mới danh sách
+            </button>
+            <button onclick="openAddFarmModal()" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition flex items-center gap-1">
+              <i class="fa-solid fa-plus"></i> Thêm Page
+            </button>
           </div>
-
         </div>
 
-        <!-- Cột Phải (7 cols): Soạn Bài Hẹn Giờ & Danh Sách Hàng Đợi (Queue) -->
-        <div class="lg:col-span-7 space-y-6">
-          
-          <!-- Box Đăng Ngay Hoặc Đặt Giờ Cho Bài Viết Cụ Thể -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div class="font-black text-slate-900 text-sm flex items-center gap-2">
-                <i class="fa-solid fa-calendar-plus text-indigo-600 text-base"></i>
-                <span>3. Đăng Bài Ngay Hoặc Hẹn Giờ Cho Bài Viết Này</span>
-              </div>
-              <button onclick="pullContentFromTabAI()" class="text-xs text-purple-600 hover:underline font-bold flex items-center gap-1">
-                <i class="fa-solid fa-arrows-rotate"></i> Lấy Bài Vừa Tạo Ở Tab 2
-              </button>
+        <!-- Container Grid chứa các Card Fanpage -->
+        <div id="farmCardsContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <!-- Cards sẽ được render bằng Javascript -->
+          <div class="col-span-full text-center py-12 text-slate-400 text-xs">
+            <i class="fa-solid fa-spinner fa-spin text-2xl text-blue-500 mb-2"></i>
+            <div>Đang tải dàn Fanpage của bạn...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Soạn Bài Nhanh & Lên Lịch Đăng Cho Bài Cụ Thể (Single Post & Queue) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Cột Trái (6 cols): Soạn bài & Đăng nhanh -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="font-black text-slate-900 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-paper-plane text-indigo-600 text-base"></i>
+              <span>Đăng Nhanh Hoặc Hẹn Giờ Cho 1 Bài Viết Riêng Biệt</span>
             </div>
-
-            <div class="space-y-3">
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Tiêu Đề / Tên Sản Phẩm:</label>
-                <input type="text" id="fbPostTitleInput" placeholder="VD: Siêu Sale Tai Nghe P9 Pro Max Hôm Nay" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-indigo-500">
-              </div>
-
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Nội Dung Bài Đăng Lên Fanpage:</label>
-                <textarea id="fbPostContentInput" rows="5" placeholder="Nhập nội dung hoặc bấm 'Lấy Bài Vừa Tạo Ở Tab 2'..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs leading-relaxed focus:outline-none focus:border-indigo-500 font-sans"></textarea>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Thời Gian Hẹn Giờ (Để trống nếu đăng ngay):</label>
-                  <input type="datetime-local" id="fbScheduleTimeInput" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none">
-                </div>
-                <div class="flex items-end">
-                  <label class="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-800 pb-2">
-                    <input type="checkbox" id="fbSinglePostAutoAds" class="w-4 h-4 text-purple-600 accent-purple-600 rounded">
-                    <span>Kèm chiến dịch Ads</span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="flex flex-col sm:flex-row gap-2.5 pt-2">
-                <button type="button" onclick="submitPublishNow()" class="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl text-xs transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
-                  <i class="fa-solid fa-paper-plane"></i> ĐĂNG NGAY LÊN FANPAGE
-                </button>
-                <button type="button" onclick="submitSchedulePost()" class="py-3 px-5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl text-xs transition shadow-md shadow-amber-500/20 flex items-center justify-center gap-2">
-                  <i class="fa-solid fa-clock"></i> LÊN LỊCH HẸN GIỜ
-                </button>
-              </div>
-            </div>
+            <button onclick="pullContentFromTabAI()" class="text-xs text-purple-600 hover:underline font-bold flex items-center gap-1">
+              <i class="fa-solid fa-arrows-rotate"></i> Lấy Bài Từ Tab 2
+            </button>
           </div>
 
-          <!-- Bảng Hàng Đợi & Lịch Sử Bài Đăng (Queue & History) -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div class="font-black text-slate-900 text-sm flex items-center gap-2">
-                <i class="fa-solid fa-list-check text-emerald-600 text-base"></i>
-                <span>4. Hàng Đợi Đặt Lịch & Lịch Sử Bài Đăng Fanpage</span>
+          <div class="space-y-3.5">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Chọn Fanpage Cần Đăng:</label>
+              <select id="quickPostTargetPage" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
+                <option value="">-- Chọn Fanpage Trong Dàn Nuôi --</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Tiêu Đề Bài Đăng:</label>
+              <input type="text" id="fbPostTitleInput" placeholder="VD: Khuyến Mãi Flash Sale Đặc Biệt Hôm Nay" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-indigo-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nội Dung Bài Đăng Lên Fanpage:</label>
+              <textarea id="fbPostContentInput" rows="5" placeholder="Nhập nội dung hoặc bấm 'Lấy Bài Từ Tab 2' bên trên..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs leading-relaxed focus:outline-none focus:border-indigo-500 font-sans"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Link Ảnh (Tùy chọn):</label>
+              <input type="url" id="fbPostImageInput" placeholder="https://images.unsplash.com/photo-..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Thời Gian Hẹn Giờ (Để trống nếu đăng ngay):</label>
+                <input type="datetime-local" id="fbScheduleTimeInput" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none">
               </div>
-              <button onclick="loadFbSettings()" class="text-xs text-slate-500 hover:text-slate-800 font-bold">
-                <i class="fa-solid fa-rotate"></i> Làm mới
+              <div class="flex items-end">
+                <label class="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-800 pb-2">
+                  <input type="checkbox" id="fbSinglePostAutoAds" class="w-4 h-4 text-purple-600 accent-purple-600 rounded">
+                  <span>Kèm kích hoạt Ads</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2.5 pt-2">
+              <button type="button" onclick="submitPublishNow()" class="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl text-xs transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i> ĐĂNG NGAY LÊN FANPAGE
+              </button>
+              <button type="button" onclick="submitSchedulePost()" class="py-3 px-5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl text-xs transition shadow-md shadow-amber-500/20 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-clock"></i> LÊN LỊCH HẸN GIỜ
               </button>
             </div>
+          </div>
+        </div>
 
-            <div id="fbQueueContainer" class="space-y-3 max-h-96 overflow-y-auto pr-1">
-              <div class="text-center py-8 text-xs text-slate-400">Đang tải danh sách bài hẹn giờ...</div>
+        <!-- Cột Phải (6 cols): Hàng Đợi Bài Viết Hẹn Giờ & Lịch Sử Đăng -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="font-black text-slate-900 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-emerald-600 text-base"></i>
+              <span>Hàng Đợi Hẹn Giờ & Lịch Sử Đăng Bài Của Hệ Thống</span>
             </div>
+            <button onclick="loadFbSettings()" class="text-xs text-slate-500 hover:text-slate-800 font-bold">
+              <i class="fa-solid fa-rotate"></i> Làm mới
+            </button>
           </div>
 
+          <div id="fbQueueContainer" class="space-y-3 max-h-[460px] overflow-y-auto pr-1">
+            <div class="text-center py-10 text-xs text-slate-400">Đang tải lịch sử đăng bài...</div>
+          </div>
         </div>
 
       </div>
+
     </div>
 
     <!-- ==================== MODULE 4: AUTO REPLY COMMENT & AUTO INBOX ==================== -->
@@ -1200,6 +1141,197 @@
             Bấm vào đây để thêm Page Access Token của Meta
           </button>
         </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL THÊM FANPAGE VÀO DÀN NUÔI ==================== -->
+  <div id="addFarmModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative my-auto">
+      <button onclick="closeAddFarmModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl flex-shrink-0">
+          <i class="fa-solid fa-plus-circle"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-black text-slate-900">Thêm Fanpage Vào Dàn Nuôi Auto-Pilot</h3>
+          <p class="text-xs text-slate-500">Mỗi Fanpage có lĩnh vực riêng và được máy chủ tự động đăng bài 24/7</p>
+        </div>
+      </div>
+
+      <form id="addFarmForm" onsubmit="submitAddFarmPage(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">
+            Link Fanpage hoặc Page ID <span class="text-red-500">*</span>:
+          </label>
+          <input type="text" id="farmPageTargetInput" required placeholder="https://facebook.com/tenfanpage hoặc Page ID" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500">
+          <p class="text-[10px] text-slate-400 mt-1">Ví dụ: <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-600">https://facebook.com/myphamchinhhang</code> hoặc ID <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-600">104859203948</code></p>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="font-bold text-slate-700">Page Access Token (Meta API):</label>
+            <button type="button" onclick="openFbDevGuideModal()" class="text-[10px] text-blue-600 hover:underline font-bold">Lấy token vĩnh viễn ở đâu?</button>
+          </div>
+          <input type="password" id="farmPageTokenInput" placeholder="EAAxxxxxxx... (Dán token để đăng tự động 100%)" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono focus:outline-none focus:border-blue-500">
+          <p class="text-[10px] text-emerald-600 mt-0.5">✓ Có token: Robot tự động đăng bài qua Meta Graph API mà bạn không cần mở máy hay copy dán.</p>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">
+            Lĩnh Vực Hoạt Động Của Fanpage <span class="text-red-500">*</span>:
+          </label>
+          <select id="farmPageNicheSelect" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-slate-800 focus:outline-none focus:border-blue-500">
+            <option value="thoi_trang">👗 Thời trang & Phụ kiện</option>
+            <option value="my_pham">💄 Mỹ phẩm & Chăm sóc da</option>
+            <option value="cong_nghe" selected>📱 Đồ công nghệ & Phụ kiện ĐT</option>
+            <option value="gia_dung">🏠 Đồ gia dụng & Nhà cửa thông minh</option>
+            <option value="me_be">🍼 Mẹ & Bé</option>
+            <option value="suc_khoe">💪 Sức khỏe, Gym & Dinh dưỡng</option>
+            <option value="am_thuc">🍜 Ẩm thực & Đồ ăn vặt</option>
+            <option value="sach_giaoduc">📚 Sách, Kỹ năng & Giáo dục</option>
+            <option value="xe_co">🚗 Phụ kiện Xe & Lái xe an toàn</option>
+            <option value="khac">🛒 Đa ngành / Phong cách sống</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">
+            Khung Giờ Tự Động Nuôi Hàng Ngày:
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] font-bold text-slate-700">
+              <input type="checkbox" name="farmSlot" value="08:00" checked class="rounded text-blue-600 accent-blue-600"> 🌅 08:00 (Sáng)
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] font-bold text-slate-700">
+              <input type="checkbox" name="farmSlot" value="11:30" checked class="rounded text-blue-600 accent-blue-600"> 🍱 11:30 (Trưa)
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] font-bold text-slate-700">
+              <input type="checkbox" name="farmSlot" value="19:30" class="rounded text-blue-600 accent-blue-600"> 🍲 19:30 (Tối)
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] font-bold text-slate-700">
+              <input type="checkbox" name="farmSlot" value="20:30" checked class="rounded text-blue-600 accent-blue-600"> 🔥 20:30 (Giờ vàng)
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] font-bold text-slate-700">
+              <input type="checkbox" name="farmSlot" value="22:00" class="rounded text-blue-600 accent-blue-600"> 🌙 22:00 (Đêm)
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Định Hướng Nội Dung (Content Strategy):</label>
+          <select id="farmPageMixSelect" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-slate-800 focus:outline-none focus:border-blue-500">
+            <option value="balanced" selected>🌟 Cân Bằng (40% Kiến thức/tips + 30% Tương tác hỏi đáp + 30% Deal Shopee)</option>
+            <option value="knowledge">📚 Tập Trung Xây Kênh (Chỉ chia sẻ kinh nghiệm, mẹo hay & tăng tương tác)</option>
+            <option value="sales">🔥 Bán Hàng Trực Diện (Tập trung review, flash sale & mã giảm giá shopee)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Link Shopee Deeplink Gắn Mặc Định (Tùy chọn):</label>
+          <input type="url" id="farmPageAffiliateLink" placeholder="https://aff-tau-nine.vercel.app/r/... hoặc link shopee" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none">
+          <p class="text-[10px] text-slate-400 mt-0.5">AI sẽ tự động chèn link mở App Shopee này vào các bài viết Flash Sale để bạn nhận hoa hồng affiliate.</p>
+        </div>
+
+        <button type="submit" id="addFarmSubmitBtn" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl transition shadow-md shadow-blue-500/25 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-plus-circle"></i> XÁC NHẬN & THÊM VÀO DÀN NUÔI NGAY
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL NHẬT KÝ NUÔI FANPAGE (FARM POST HISTORY) ==================== -->
+  <div id="farmHistoryModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 relative my-auto">
+      <button onclick="closeFarmHistoryModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4 border-b border-slate-100 pb-3">
+        <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-black text-slate-900" id="farmHistoryPageTitle">Nhật Ký Nuôi Fanpage</h3>
+          <p class="text-xs text-slate-500">Danh sách các bài viết do AI tự động sản xuất và đăng lên Facebook</p>
+        </div>
+      </div>
+
+      <div id="farmHistoryList" class="space-y-3 max-h-[480px] overflow-y-auto pr-1">
+        <div class="text-center py-10 text-xs text-slate-400">Đang tải nhật ký...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL HƯỚNG DẪN FB DEVELOPERS & LẤY TOKEN VĨNH VIỄN ==================== -->
+  <div id="fbDevGuideModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative my-auto max-h-[90vh] overflow-y-auto">
+      <button onclick="closeFbDevGuideModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="text-center mb-5">
+        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-xl mx-auto mb-2 shadow-sm">
+          <i class="fa-brands fa-facebook"></i>
+        </div>
+        <h3 class="text-lg font-black text-slate-900">Hướng Dẫn Lấy Page Access Token Meta (FB Developers)</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Cách lấy Token Fanpage vĩnh viễn không bao giờ hết hạn chỉ với 4 bước đơn giản</p>
+      </div>
+
+      <div class="space-y-4 text-xs text-slate-700">
+        <div class="p-3.5 bg-blue-50/70 border border-blue-200 rounded-2xl space-y-1">
+          <b class="text-blue-900 flex items-center gap-1.5"><i class="fa-solid fa-circle-question text-blue-600"></i> Tại sao cần Page Access Token?</b>
+          <p class="text-blue-800 leading-relaxed text-[11px]">Meta (Facebook) yêu cầu Page Access Token để xác nhận bạn là Quản trị viên của Fanpage. Khi có Token, hệ thống máy chủ có thể đăng bài hoàn toàn tự động 24/7 mà bạn không cần phải mở tab trình duyệt hay ấn nút đăng thủ công.</p>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-xs">1</span>
+            <div class="space-y-1">
+              <b class="text-slate-900">Truy Cập Meta for Developers & Tạo App:</b>
+              <p class="text-slate-600">Vào <a href="https://developers.facebook.com" target="_blank" class="text-blue-600 font-bold underline">developers.facebook.com</a> -> Đăng nhập Facebook -> Chọn <b>Ứng dụng của tôi (My Apps)</b> -> Bấm <b>Tạo ứng dụng</b> (Loại: <i>Khác / Doanh nghiệp</i>).</p>
+            </div>
+          </div>
+
+          <div class="flex gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-xs">2</span>
+            <div class="space-y-1">
+              <b class="text-slate-900">Mở Graph API Explorer:</b>
+              <p class="text-slate-600">Vào mục <a href="https://developers.facebook.com/tools/explorer/" target="_blank" class="text-blue-600 font-bold underline">Graph API Explorer</a> -> Tại mục <b>Meta App</b>, chọn tên ứng dụng bạn vừa tạo.</p>
+            </div>
+          </div>
+
+          <div class="flex gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-xs">3</span>
+            <div class="space-y-1">
+              <b class="text-slate-900">Cấp Quyền Quản Lý Đăng Bài Cho Fanpage:</b>
+              <p class="text-slate-600">Tại mục <b>Permissions (Quyền)</b>, thêm 3 quyền bắt buộc sau:</p>
+              <div class="flex flex-wrap gap-1.5 pt-1">
+                <code class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-mono font-bold">pages_manage_posts</code>
+                <code class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-mono font-bold">pages_read_engagement</code>
+                <code class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-mono font-bold">pages_show_list</code>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-xs">4</span>
+            <div class="space-y-1">
+              <b class="text-slate-900">Lấy Page Token Vĩnh Viễn:</b>
+              <p class="text-slate-600">Tại ô <b>User or Page</b>, bấm chuyển sang <b>Tên Fanpage</b> của bạn -> Bấm <b>Generate Access Token</b>. Sao chép đoạn mã token (bắt đầu bằng <code class="font-mono text-purple-700">EAA...</code>) và dán vào ô Token trong công cụ này.</p>
+              <div class="p-2 bg-emerald-50 text-emerald-900 rounded-lg text-[11px] mt-1">
+                💡 <b>Mẹo Lấy Token Vĩnh Viễn 100%:</b> Trong Trình quản lý kinh doanh (Meta Business Suite/BM), vào <i>Cài đặt doanh nghiệp -> Người dùng hệ thống (System User) -> Tạo Token hệ thống</i>, chọn Trang của bạn. Token này sẽ <b>không bao giờ hết hạn</b>!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="closeFbDevGuideModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition text-center block">
+          Đã Hiểu, Đóng Hướng Dẫn
+        </button>
       </div>
     </div>
   </div>
@@ -2124,16 +2256,363 @@
       } catch (e) { alert('Lỗi mô phỏng'); }
     }
 
-    // ----------------- MODULE 3: FANPAGE INTEGRATION & AUTO-PILOT SCHEDULER -----------------
-    function toggleAdvancedToken() {
-      const section = document.getElementById('advancedTokenSection');
-      const text = document.getElementById('advancedTokenToggleText');
-      if (section.classList.contains('hidden')) {
-        section.classList.remove('hidden');
-        text.innerText = 'Ẩn tùy chọn Token Meta API';
-      } else {
-        section.classList.add('hidden');
-        text.innerText = 'Thêm Page Access Token (Để đăng ngầm bằng máy chủ)';
+    // ----------------- MODULE 3: HỆ THỐNG NUÔI DÀN FANPAGE TỰ ĐỘNG (MULTI-FANPAGE FARM) -----------------
+    let currentFarmList = [];
+
+    const NICHE_LABELS = {
+      thoi_trang: { label: 'Thời trang & Phụ kiện', icon: 'fa-shirt', color: 'text-pink-600 bg-pink-50 border-pink-200' },
+      my_pham: { label: 'Mỹ phẩm & Chăm sóc da', icon: 'fa-wand-magic-sparkles', color: 'text-rose-600 bg-rose-50 border-rose-200' },
+      cong_nghe: { label: 'Đồ công nghệ & Phụ kiện ĐT', icon: 'fa-mobile-screen', color: 'text-blue-600 bg-blue-50 border-blue-200' },
+      gia_dung: { label: 'Đồ gia dụng & Tiện ích nhà', icon: 'fa-house', color: 'text-amber-600 bg-amber-50 border-amber-200' },
+      me_be: { label: 'Mẹ & Bé', icon: 'fa-baby', color: 'text-sky-600 bg-sky-50 border-sky-200' },
+      suc_khoe: { label: 'Sức khỏe & Dinh dưỡng', icon: 'fa-heart-pulse', color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
+      am_thuc: { label: 'Ẩm thực & Đồ ăn vặt', icon: 'fa-bowl-food', color: 'text-orange-600 bg-orange-50 border-orange-200' },
+      sach_giaoduc: { label: 'Sách & Giáo dục', icon: 'fa-book-open', color: 'text-indigo-600 bg-indigo-50 border-indigo-200' },
+      xe_co: { label: 'Phụ kiện Xe & Lái xe', icon: 'fa-car', color: 'text-slate-700 bg-slate-100 border-slate-300' },
+      khac: { label: 'Đa ngành / Phong cách sống', icon: 'fa-shapes', color: 'text-purple-600 bg-purple-50 border-purple-200' }
+    };
+
+    function openAddFarmModal() {
+      document.getElementById('addFarmModal').classList.remove('hidden');
+    }
+    function closeAddFarmModal() {
+      document.getElementById('addFarmModal').classList.add('hidden');
+    }
+    function openFbDevGuideModal() {
+      document.getElementById('fbDevGuideModal').classList.remove('hidden');
+    }
+    function closeFbDevGuideModal() {
+      document.getElementById('fbDevGuideModal').classList.add('hidden');
+    }
+    function closeFarmHistoryModal() {
+      document.getElementById('farmHistoryModal').classList.add('hidden');
+    }
+
+    async function loadFanpageFarm() {
+      const token = localStorage.getItem('aff_token');
+      if (!token) return;
+
+      try {
+        const res = await fetch('/api/fb/farm', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          currentFarmList = data.farm || [];
+          renderFanpageFarm(currentFarmList);
+        }
+      } catch (e) {
+        console.error('Lỗi tải farm:', e);
+      }
+    }
+
+    function renderFanpageFarm(farm) {
+      // 1. Cập nhật số liệu thống kê
+      const totalEl = document.getElementById('farmStatTotal');
+      const activeEl = document.getElementById('farmStatActive');
+      const postsEl = document.getElementById('farmStatPosts');
+      const container = document.getElementById('farmCardsContainer');
+      const selectEl = document.getElementById('quickPostTargetPage');
+
+      if (totalEl) totalEl.innerText = farm.length;
+      const activeCount = farm.filter(p => p.status === 'ACTIVE').length;
+      if (activeEl) activeEl.innerText = activeCount;
+      const totalPosts = farm.reduce((acc, p) => acc + (p.totalPostsPublished || (p.postHistory ? p.postHistory.length : 0)), 0);
+      if (postsEl) postsEl.innerText = totalPosts;
+
+      // 2. Cập nhật dropdown chọn page để đăng nhanh
+      if (selectEl) {
+        const currentSelected = selectEl.value;
+        selectEl.innerHTML = '<option value="">-- Chọn Fanpage Trong Dàn Nuôi --</option>' + 
+          farm.map(p => `<option value="${p.id}" ${p.id === currentSelected ? 'selected' : ''}>${escapeHtml(p.name)} (${p.id})</option>`).join('');
+      }
+
+      // 3. Render danh sách Card
+      if (!container) return;
+      if (!farm || farm.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl p-10 text-center space-y-3">
+            <div class="w-16 h-16 rounded-3xl bg-blue-100 text-blue-600 flex items-center justify-center text-3xl mx-auto">
+              <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <h4 class="text-base font-black text-slate-800">Chưa có Fanpage nào trong Dàn Nuôi Auto-Pilot</h4>
+            <p class="text-xs text-slate-500 max-w-md mx-auto">
+              Hãy thêm các Fanpage của bạn vào dàn để AI bắt đầu tự động viết bài đa dạng (Kiến thức, Tương tác, Review, Deal Hot Shopee) và tự động đăng bài theo giờ vàng 24/7!
+            </p>
+            <div class="pt-2">
+              <button onclick="openAddFarmModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-xs shadow-md shadow-blue-500/20 transition inline-flex items-center gap-2">
+                <i class="fa-solid fa-plus-circle"></i> Thêm Fanpage Đầu Tiên Ngay
+              </button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = farm.map(page => {
+        const nicheInfo = NICHE_LABELS[page.niche] || NICHE_LABELS.khac;
+        const isActive = page.status === 'ACTIVE';
+        const hasToken = page.accessToken && page.accessToken.trim().length > 20;
+        const publishedCount = page.totalPostsPublished || (page.postHistory ? page.postHistory.length : 0);
+        const slots = Array.isArray(page.dailySlots) && page.dailySlots.length ? page.dailySlots : ['20:00'];
+
+        return `
+          <div class="bg-slate-50/70 border border-slate-200 hover:border-blue-400 rounded-2xl p-5 shadow-sm hover:shadow-md transition space-y-4 flex flex-col justify-between">
+            
+            <!-- Header Card: Avatar & Tên Page -->
+            <div class="space-y-3">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-400/20 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                    ${page.avatar ? `<img src="${page.avatar}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120'">` : `<i class="fa-brands fa-facebook-f text-blue-600 text-xl"></i>`}
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="font-black text-slate-900 text-sm truncate" title="${escapeHtml(page.name)}">${escapeHtml(page.name)}</h4>
+                    <p class="text-[11px] text-slate-400 font-mono truncate">ID: ${escapeHtml(page.id)}</p>
+                  </div>
+                </div>
+
+                <!-- Status Toggle Badge -->
+                <button onclick="toggleFarmPage('${page.id}')" title="Bấm để ${isActive ? 'Tạm Dừng' : 'Kích Hoạt'} Auto-Pilot" class="flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider transition ${
+                  isActive 
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200' 
+                    : 'bg-slate-200 text-slate-600 border border-slate-300 hover:bg-slate-300'
+                }">
+                  ${isActive ? '● ĐANG NUÔI' : '⏸ TẠM DỪNG'}
+                </button>
+              </div>
+
+              <!-- Lĩnh vực & Chế độ Meta API -->
+              <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border flex items-center gap-1 ${nicheInfo.color}">
+                  <i class="fa-solid ${nicheInfo.icon}"></i> ${nicheInfo.label}
+                </span>
+
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${hasToken ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-amber-50 text-amber-700 border-amber-200'}">
+                  ${hasToken ? '✓ Meta API Tự Động' : '⚡ 1-Click Copy'}
+                </span>
+              </div>
+
+              <!-- Lịch đăng bài & Định hướng nội dung -->
+              <div class="bg-white p-3 rounded-xl border border-slate-200 text-[11px] space-y-2">
+                <div>
+                  <span class="text-slate-400 font-semibold block mb-1">Khung Giờ Tự Đăng Bài:</span>
+                  <div class="flex flex-wrap gap-1">
+                    ${slots.map(s => `<span class="bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono font-bold px-1.5 py-0.5 rounded text-[10px]">⏰ ${s}</span>`).join('')}
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-slate-500">
+                  <span>Bài đã tự xuất bản:</span>
+                  <b class="text-purple-600 font-black">${publishedCount} bài</b>
+                </div>
+
+                ${page.affiliateLink ? `
+                  <div class="text-[10px] text-slate-400 truncate pt-0.5">
+                    🔗 Deeplink: <span class="text-blue-600 font-mono">${escapeHtml(page.affiliateLink)}</span>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-2 pt-2 border-t border-slate-200/80">
+              <button onclick="triggerFarmPostNow('${page.id}', this)" class="w-full py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-bolt"></i> Nuôi Ngay 1 Bài (Test Live)
+              </button>
+
+              <div class="flex items-center gap-2">
+                <button onclick="openFarmHistory('${page.id}', \`${escapeJs(page.name)}\`)" class="flex-1 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold rounded-lg text-[11px] transition flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Xem Nhật Ký
+                </button>
+                <button onclick="deleteFarmPage('${page.id}', \`${escapeJs(page.name)}\`)" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Xóa Fanpage khỏi dàn">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Submit Thêm Fanpage mới vào Dàn Nuôi
+    async function submitAddFarmPage(e) {
+      e.preventDefault();
+      if (!currentUser) { alert('Vui lòng đăng nhập tài khoản'); return; }
+
+      const target = document.getElementById('farmPageTargetInput').value.trim();
+      const tokenInput = document.getElementById('farmPageTokenInput').value.trim();
+      const niche = document.getElementById('farmPageNicheSelect').value;
+      const mix = document.getElementById('farmPageMixSelect').value;
+      const affiliateLink = document.getElementById('farmPageAffiliateLink').value.trim();
+
+      const checkedSlots = [];
+      document.querySelectorAll('input[name="farmSlot"]:checked').forEach(cb => {
+        checkedSlots.push(cb.value);
+      });
+
+      const btn = document.getElementById('addFarmSubmitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang Xác Thực Fanpage...';
+
+      const payload = {
+        fbTarget: target,
+        pageAccessToken: tokenInput,
+        niche: niche,
+        dailySlots: checkedSlots.length ? checkedSlots : ['20:00'],
+        contentMix: mix,
+        affiliateLink: affiliateLink
+      };
+
+      const token = localStorage.getItem('aff_token');
+      try {
+        const res = await fetch('/api/fb/farm/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(data.message);
+          closeAddFarmModal();
+          document.getElementById('addFarmForm').reset();
+          loadFanpageFarm();
+        } else {
+          alert('Lỗi: ' + data.error);
+        }
+      } catch (err) {
+        alert('Lỗi kết nối: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> XÁC NHẬN & THÊM VÀO DÀN NUÔI NGAY';
+      }
+    }
+
+    // Kích hoạt nuôi tức thì 1 bài (Trigger Now Live)
+    async function triggerFarmPostNow(pageId, btnEl) {
+      if (!currentUser) { alert('Vui lòng đăng nhập'); return; }
+
+      const oldText = btnEl ? btnEl.innerHTML : '';
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI Đang Viết & Đăng...';
+      }
+
+      const token = localStorage.getItem('aff_token');
+      try {
+        const res = await fetch('/api/fb/farm/trigger-now', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ pageId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(data.message);
+          if (data.isLiveApi && data.post && data.post.postUrl) {
+            window.open(data.post.postUrl, '_blank');
+          }
+          loadFanpageFarm();
+          loadFbSettings();
+        } else {
+          alert('Lỗi: ' + data.error);
+        }
+      } catch (err) {
+        alert('Lỗi kết nối: ' + err.message);
+      } finally {
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.innerHTML = oldText;
+        }
+      }
+    }
+
+    // Bật / Tắt trạng thái Fanpage
+    async function toggleFarmPage(pageId) {
+      const token = localStorage.getItem('aff_token');
+      try {
+        const res = await fetch('/api/fb/farm/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ pageId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          loadFanpageFarm();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Xóa Fanpage khỏi dàn
+    async function deleteFarmPage(pageId, pageName) {
+      if (!confirm(`Bạn có chắc chắn muốn xóa Fanpage "${pageName}" khỏi dàn nuôi tự động?`)) return;
+
+      const token = localStorage.getItem('aff_token');
+      try {
+        const res = await fetch(`/api/fb/farm/${pageId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('Đã xóa Fanpage khỏi dàn nuôi');
+          loadFanpageFarm();
+        } else {
+          alert('Lỗi: ' + data.error);
+        }
+      } catch (e) {
+        alert('Lỗi xóa: ' + e.message);
+      }
+    }
+
+    // Mở lịch sử nuôi của 1 Fanpage
+    async function openFarmHistory(pageId, pageName) {
+      document.getElementById('farmHistoryPageTitle').innerText = `Nhật Ký Nuôi Fanpage: ${pageName}`;
+      const listEl = document.getElementById('farmHistoryList');
+      listEl.innerHTML = '<div class="text-center py-10 text-xs text-slate-400"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải nhật ký bài viết...</div>';
+      document.getElementById('farmHistoryModal').classList.remove('hidden');
+
+      const token = localStorage.getItem('aff_token');
+      try {
+        const res = await fetch(`/api/fb/farm/${pageId}/history`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          const list = data.history || [];
+          if (list.length === 0) {
+            listEl.innerHTML = '<div class="text-center py-10 text-xs text-slate-400">Fanpage này chưa có bài viết nào được đăng. Hãy bấm "Nuôi Ngay 1 Bài" để thử nghiệm!</div>';
+            return;
+          }
+
+          listEl.innerHTML = list.map(item => `
+            <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-2 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-extrabold text-slate-900 line-clamp-1">${escapeHtml(item.title || 'Bài viết Auto-Pilot')}</span>
+                <span class="px-2 py-0.5 rounded-full font-black text-[10px] ${
+                  item.status === 'PUBLISHED' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'
+                }">
+                  ${item.isLiveApi ? '✓ META API TRỰC TIẾP' : '📋 BÀI MẪU AI'}
+                </span>
+              </div>
+
+              <div class="text-slate-600 line-clamp-3 bg-white p-2.5 rounded-xl border border-slate-100 text-[11px] whitespace-pre-line">
+                ${escapeHtml(item.content)}
+              </div>
+
+              <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                <span>
+                  ⏰ ${item.time || ''} - ${item.date || ''} | <b class="text-indigo-600">${item.pillarName || item.pillar || 'Auto'}</b>
+                </span>
+                ${item.postUrl ? `<a href="${item.postUrl}" target="_blank" class="text-blue-600 hover:underline font-bold flex items-center gap-1">Xem bài trên FB <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>` : ''}
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        listEl.innerHTML = '<div class="text-center py-8 text-xs text-red-500">Lỗi tải nhật ký</div>';
       }
     }
 
@@ -2147,53 +2626,6 @@
         });
         const data = await res.json();
         if (data.success) {
-          const it = data.integration || {};
-          
-          // Render Status Card
-          const avatarEl = document.getElementById('fbPageAvatar');
-          const nameEl = document.getElementById('fbPageName');
-          const subEl = document.getElementById('fbPageSubtext');
-          const badgeEl = document.getElementById('fbConnectionBadge');
-          const autoBadgeEl = document.getElementById('fbAutoPilotBadge');
-
-          if (it.connected) {
-            const hasToken = it.pageAccessToken && it.pageAccessToken.trim().length > 20;
-            badgeEl.className = "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
-            badgeEl.innerText = hasToken ? "● ĐÃ KẾT NỐI FANPAGE (META API 100%)" : "● ĐÃ KẾT NỐI FANPAGE (1-CLICK DIRECT)";
-            nameEl.innerText = it.pageName || it.pageId;
-            subEl.innerText = hasToken 
-              ? `Fanpage: ${it.pageId} | Lĩnh vực: ${it.niche || 'Bán hàng'} | Chế độ Meta Graph API: Tự động đăng ngầm 100% bằng máy chủ` 
-              : `Fanpage: ${it.pageId} | Chế độ Đăng Nhanh 1-Click: Tự copy bài & mở Fanpage dán đăng trong 1 giây`;
-            if (it.pageAvatar) {
-              avatarEl.innerHTML = `<img src="${it.pageAvatar}" class="w-full h-full object-cover rounded-xl">`;
-            }
-          } else {
-            badgeEl.className = "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-800 text-slate-300";
-            badgeEl.innerText = "○ Chưa Liên Kết Fanpage";
-            nameEl.innerText = "Chưa Kết Nối Fanpage Facebook";
-            subEl.innerText = "Dán link Fanpage và Token API bên dưới để kích hoạt chế độ tự động hóa hoàn toàn.";
-            avatarEl.innerHTML = `<i class="fa-brands fa-facebook-f text-blue-400"></i>`;
-          }
-
-          if (it.autoScheduleEnabled) {
-            autoBadgeEl.classList.remove('hidden');
-          } else {
-            autoBadgeEl.classList.add('hidden');
-          }
-
-          // Điền form
-          if (it.niche && document.getElementById('fbNicheSelect')) {
-            document.getElementById('fbNicheSelect').value = it.niche;
-          }
-          if (it.pageId && document.getElementById('fbTargetInput')) document.getElementById('fbTargetInput').value = it.pageId;
-          if (it.pageAccessToken && document.getElementById('fbPageTokenInput')) document.getElementById('fbPageTokenInput').value = it.pageAccessToken;
-          if (it.adAccountId && document.getElementById('fbAdAccountInput')) document.getElementById('fbAdAccountInput').value = it.adAccountId;
-          document.getElementById('fbAutoPilotToggle').checked = !!it.autoScheduleEnabled;
-          if (it.dailyPostTime) document.getElementById('fbDailyTimeSelect').value = it.dailyPostTime;
-          document.getElementById('fbAutoRunAdsToggle').checked = it.autoRunAds !== false;
-          if (it.dailyBudget) document.getElementById('fbDailyBudgetSelect').value = it.dailyBudget;
-
-          // Render Queue
           renderFbQueue(data.queue || []);
         }
       } catch (err) {
@@ -2203,10 +2635,11 @@
 
     function renderFbQueue(queue) {
       const container = document.getElementById('fbQueueContainer');
+      if (!container) return;
       if (!queue || queue.length === 0) {
         container.innerHTML = `
           <div class="text-center py-10 text-xs text-slate-400">
-            Chưa có bài viết nào trong hàng đợi lịch đăng. Hãy soạn nội dung bên trên hoặc bật chế độ Auto-Pilot mỗi ngày!
+            Chưa có bài viết nào trong hàng đợi lịch đăng. Hãy soạn nội dung bên cạnh hoặc bật chế độ Auto-Pilot trong dàn page!
           </div>
         `;
         return;
@@ -2249,75 +2682,6 @@
         </div>
       `).join('');
     }
-
-    // Submit Verify Connection
-    document.getElementById('fbConnectionForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!currentUser) { alert('Vui lòng đăng nhập'); return; }
-
-      const btn = document.getElementById('fbVerifyBtn');
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang Xác Nhận Kết Nối...';
-
-      const payload = {
-        fbTarget: document.getElementById('fbTargetInput').value.trim(),
-        niche: document.getElementById('fbNicheSelect') ? document.getElementById('fbNicheSelect').value : 'cong_nghe',
-        pageAccessToken: document.getElementById('fbPageTokenInput') ? document.getElementById('fbPageTokenInput').value.trim() : '',
-        adAccountId: document.getElementById('fbAdAccountInput') ? document.getElementById('fbAdAccountInput').value.trim() : ''
-      };
-
-      const token = localStorage.getItem('aff_token');
-      try {
-        const res = await fetch('/api/fb/verify-connection', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert(data.message);
-          loadFbSettings();
-        } else {
-          alert('Lỗi: ' + data.error);
-        }
-      } catch (err) {
-        alert('Lỗi kết nối: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-link"></i> XÁC NHẬN & LIÊN KẾT FANPAGE NGAY';
-      }
-    });
-
-    // Submit Auto-Pilot Settings
-    document.getElementById('fbAutoPilotForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!currentUser) { alert('Vui lòng đăng nhập'); return; }
-
-      const payload = {
-        autoScheduleEnabled: document.getElementById('fbAutoPilotToggle').checked,
-        dailyPostTime: document.getElementById('fbDailyTimeSelect').value,
-        autoRunAds: document.getElementById('fbAutoRunAdsToggle').checked,
-        dailyBudget: document.getElementById('fbDailyBudgetSelect').value
-      };
-
-      const token = localStorage.getItem('aff_token');
-      try {
-        const res = await fetch('/api/fb/save-settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert('✅ ' + data.message);
-          loadFbSettings();
-        } else {
-          alert('Lỗi: ' + data.error);
-        }
-      } catch (err) {
-        alert('Lỗi kết nối: ' + err.message);
-      }
-    });
 
     // Lấy bài viết từ Tab AI
     function pullContentFromTabAI() {
@@ -2391,9 +2755,14 @@
         console.warn('Clipboard write error', e);
       }
 
+      const selectedPageId = document.getElementById('quickPostTargetPage') ? document.getElementById('quickPostTargetPage').value : '';
+      const imgUrl = document.getElementById('fbPostImageInput') ? document.getElementById('fbPostImageInput').value.trim() : '';
+
       const payload = {
         postTitle: document.getElementById('fbPostTitleInput').value.trim(),
         postContent: content,
+        pageId: selectedPageId,
+        imageUrl: imgUrl,
         autoRunAds: document.getElementById('fbSinglePostAutoAds').checked
       };
 
@@ -2423,6 +2792,7 @@
             });
           }
           loadFbSettings();
+          loadFanpageFarm();
         } else {
           alert('Lỗi: ' + data.error);
         }
@@ -2441,9 +2811,14 @@
       if (!content) { alert('Vui lòng nhập nội dung bài viết'); return; }
       if (!schedTime) { alert('Vui lòng chọn thời gian hẹn giờ (ngày & giờ)'); return; }
 
+      const selectedPageId = document.getElementById('quickPostTargetPage') ? document.getElementById('quickPostTargetPage').value : '';
+      const imgUrl = document.getElementById('fbPostImageInput') ? document.getElementById('fbPostImageInput').value.trim() : '';
+
       const payload = {
         postTitle: document.getElementById('fbPostTitleInput').value.trim(),
         postContent: content,
+        pageId: selectedPageId,
+        imageUrl: imgUrl,
         scheduleTime: schedTime,
         autoRunAds: document.getElementById('fbSinglePostAutoAds').checked
       };
@@ -2459,6 +2834,7 @@
         if (data.success) {
           alert('✅ ' + data.message);
           loadFbSettings();
+          loadFanpageFarm();
         } else {
           alert('Lỗi: ' + data.error);
         }
@@ -2654,6 +3030,7 @@
     checkAuth();
     applyProductPreset('headphone');
     loadShopeeLinks();
+    loadFanpageFarm();
   </script>
 </body>
 </html>
