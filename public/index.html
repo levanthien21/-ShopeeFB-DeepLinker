@@ -651,8 +651,11 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-2.5 w-full md:w-auto">
-          <button onclick="scanAutoReplyNow(this)" id="scanAutoReplyBtn" class="w-full md:w-auto px-5 py-3 bg-white hover:bg-emerald-50 text-emerald-900 font-black rounded-2xl text-xs transition shadow-md flex items-center justify-center gap-2 flex-shrink-0">
+        <div class="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
+          <button type="button" onclick="openCurrentFarmPageSettings()" class="w-full sm:w-auto px-4 py-3 bg-white/20 hover:bg-white/30 text-white font-bold rounded-2xl text-xs transition border border-white/30 flex items-center justify-center gap-2 flex-shrink-0">
+            <i class="fa-solid fa-key text-amber-300"></i> Cập Nhật Token Cho Page
+          </button>
+          <button type="button" onclick="scanAutoReplyNow(this)" id="scanAutoReplyBtn" class="w-full sm:w-auto px-5 py-3 bg-white hover:bg-emerald-50 text-emerald-900 font-black rounded-2xl text-xs transition shadow-md flex items-center justify-center gap-2 flex-shrink-0">
             <i class="fa-solid fa-bolt text-emerald-600"></i> Quét & Phản Hồi Bình Luận Ngay
           </button>
         </div>
@@ -2029,6 +2032,19 @@
     const pullContentFromTab1 = pullContentFromDeepLink;
 
     // ----------------- MODULE 3: AUTO REPLY & INBOX -----------------
+    let currentActivePageId = null;
+
+    function openCurrentFarmPageSettings() {
+      if (currentActivePageId) {
+        openEditFarmModal(currentActivePageId);
+      } else if (currentFarmList && currentFarmList.length > 0) {
+        openEditFarmModal(currentFarmList[0].id);
+      } else {
+        alert('Chưa có Fanpage nào được thêm vào dàn nuôi! Đang chuyển bạn sang Tab Nuôi Fanpage để thêm Page...');
+        switchMainTab('tab2');
+      }
+    }
+
     async function loadAutoReplyConfig() {
       const token = localStorage.getItem('aff_token');
       if (!token) return;
@@ -2045,28 +2061,44 @@
 
           // Cập nhật thông tin Fanpage đang được giám sát
           if (data.activePage) {
+            currentActivePageId = data.activePage.id;
             document.getElementById('livePageNameBadge').textContent = `${data.activePage.name} (#${data.activePage.id.slice(-6)})`;
             if (data.activePage.avatar) {
               document.getElementById('livePageAvatarBox').innerHTML = `<img src="${data.activePage.avatar}" class="w-full h-full object-cover">`;
             }
           }
 
-          // Kiểm tra quyền Meta Token
+          // Kiểm tra quyền Meta Token & Hạn sử dụng
           const permAlert = document.getElementById('autoReplyPermissionAlert');
           const permAlertTitle = document.getElementById('permAlertTitle');
           const permAlertDesc = document.getElementById('permAlertDesc');
 
           if (data.permissionInfo) {
-            if (!data.permissionInfo.hasManageEngagement) {
+            if (data.permissionInfo.isExpired || !data.permissionInfo.isValid) {
+              permAlert.className = 'p-4 bg-red-50 border-2 border-red-400 rounded-2xl text-xs text-red-950 shadow-sm flex items-start gap-3';
+              permAlert.classList.remove('hidden');
+              if (permAlertTitle) permAlertTitle.innerHTML = '<span class="text-red-700 font-black">🔴 TOKEN CỦA FANPAGE ĐÃ HẾT HẠN (SESSION EXPIRED - LỖI #190)</span>';
+              if (permAlertDesc) permAlertDesc.innerHTML = 'Mã Token của Fanpage đã hết hạn trên Meta Graph API. Hệ thống không thể đọc bình luận, không thể trả lời và không thể gửi tin nhắn Messenger cho đến khi bạn cập nhật Token mới.<br><span class="text-slate-700 font-semibold mt-1 block">👉 Vui lòng dán Token mới cho Fanpage trong Tab "2. Nuôi Dàn Fanpage Tự Động" (bấm nút ⚙️ Cài Đặt trên Page) hoặc tạo Token dài hạn (60 ngày / vĩnh viễn) trên Meta!</span>';
+            } else if (!data.permissionInfo.hasManageEngagement) {
+              permAlert.className = 'p-4 bg-amber-50 border border-amber-300 rounded-2xl text-xs text-amber-950 shadow-sm flex items-start gap-3';
               permAlert.classList.remove('hidden');
               if (permAlertTitle) permAlertTitle.innerHTML = '<span>⚠️ Thiếu Quyền "pages_manage_engagement" (Chưa Thể Đăng Bình Luận Công Khai)</span>';
               if (permAlertDesc) permAlertDesc.innerHTML = 'Hiện tại bot đã gửi được tin nhắn riêng Messenger, nhưng Meta yêu cầu cấp thêm quyền <code class="bg-amber-200 px-1.5 py-0.5 rounded font-bold font-mono text-amber-950">pages_manage_engagement</code> trong Graph API Explorer để bot được phép viết bình luận công khai dưới bài viết trên Facebook! Bấm nút bên dưới để xem hướng dẫn.';
+            } else if (!data.permissionInfo.hasMessaging) {
+              permAlert.className = 'p-4 bg-amber-50 border border-amber-300 rounded-2xl text-xs text-amber-950 shadow-sm flex items-start gap-3';
+              permAlert.classList.remove('hidden');
+              if (permAlertTitle) permAlertTitle.innerHTML = '<span>⚠️ Thiếu Quyền "pages_messaging" (Chưa Thể Nhắn Tin Riêng Messenger Cho Khách)</span>';
+              if (permAlertDesc) permAlertDesc.innerHTML = 'Meta yêu cầu cấp thêm quyền <code class="bg-amber-200 px-1.5 py-0.5 rounded font-bold font-mono text-amber-950">pages_messaging</code> trong Graph API Explorer để bot được phép tự động gửi tin nhắn riêng vào hộp thư Messenger của khách hàng khi họ bình luận.';
             } else if (!data.permissionInfo.hasReadUserContent) {
+              permAlert.className = 'p-4 bg-amber-50 border border-amber-300 rounded-2xl text-xs text-amber-950 shadow-sm flex items-start gap-3';
               permAlert.classList.remove('hidden');
               if (permAlertTitle) permAlertTitle.innerHTML = '<span>⚠️ Thiếu Quyền "pages_read_user_content" (Chưa Thể Đọc Bình Luận Của Khách)</span>';
               if (permAlertDesc) permAlertDesc.innerHTML = 'Meta yêu cầu cấp thêm quyền <code class="bg-amber-200 px-1.5 py-0.5 rounded font-bold font-mono text-amber-950">pages_read_user_content</code> để robot được phép đọc các bình luận mà khách viết trên Trang.';
             } else {
-              permAlert.classList.add('hidden');
+              permAlert.className = 'p-4 bg-emerald-50 border border-emerald-300 rounded-2xl text-xs text-emerald-950 shadow-sm flex items-start gap-3';
+              permAlert.classList.remove('hidden');
+              if (permAlertTitle) permAlertTitle.innerHTML = '<span class="text-emerald-800 font-bold">✅ SẴN SÀNG 100%: BOT ĐÃ CÓ ĐỦ QUYỀN TRẢ LỜI BÌNH LUẬN & GỬI TIN NHẮN MESSENGER</span>';
+              if (permAlertDesc) permAlertDesc.innerHTML = 'Toàn bộ quyền Meta cần thiết (Đọc bình luận, Trả lời công khai, Nhắn tin riêng Messenger, Đăng bài) đều đang hoạt động hoàn hảo!';
             }
           } else {
             permAlert.classList.add('hidden');

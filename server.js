@@ -1230,15 +1230,17 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
   };
 
   try {
-    // 1. Lấy danh sách 5 bài viết mới nhất trên Fanpage
-    const postsRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/posts?fields=id,message,created_time&limit=5&access_token=${token}`);
+    // 1. Lấy danh sách 15 bài viết mới nhất trên Fanpage
+    const postsRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/posts?fields=id,message,created_time&limit=15&access_token=${token}`);
     const postsData = await postsRes.json();
 
     if (postsData.error) {
-      if (postsData.error.code === 200) {
+      if (postsData.error.code === 190) {
+        summary.permissionError = 'Mã Token của Fanpage đã hết hạn (Session Expired - Lỗi #190). Vui lòng cập nhật Token mới trong cài đặt Fanpage để tiếp tục tự động trả lời!';
+      } else if (postsData.error.code === 200) {
         summary.permissionError = 'Meta API: Cần thêm quyền "pages_read_user_content" để đọc nội dung bình luận của khách.';
       }
-      return { success: false, error: postsData.error.message, code: postsData.error.code, summary };
+      return { success: false, error: summary.permissionError || postsData.error.message, code: postsData.error.code, summary };
     }
 
     const posts = Array.isArray(postsData.data) ? postsData.data : [];
@@ -1251,11 +1253,13 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
 
     for (const post of posts) {
       // 2. Lấy danh sách bình luận trên bài viết kèm các câu trả lời con
-      const commentsRes = await fetch(`https://graph.facebook.com/v19.0/${post.id}/comments?fields=id,from,message,created_time,can_reply_privately,comments{id,from}&limit=25&order=reverse_chronological&access_token=${token}`);
+      const commentsRes = await fetch(`https://graph.facebook.com/v19.0/${post.id}/comments?fields=id,from,message,created_time,can_reply_privately,comments{id,from}&limit=50&access_token=${token}`);
       const commentsData = await commentsRes.json();
 
       if (commentsData.error) {
-        if (commentsData.error.code === 200) {
+        if (commentsData.error.code === 190) {
+          summary.permissionError = 'Mã Token của Fanpage đã hết hạn (Session Expired - #190). Vui lòng dán Token mới!';
+        } else if (commentsData.error.code === 200) {
           summary.permissionError = 'Token Meta đang thiếu quyền "pages_read_user_content" để đọc bình luận của khách hàng.';
         }
         continue;
@@ -1272,9 +1276,11 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
         // Kiểm tra xem trong các câu trả lời con đã có Fanpage trả lời chưa
         const subComments = comment.comments?.data || [];
         const alreadyAnsweredOnFb = subComments.some(sub => sub.from && (sub.from.id === pageId || sub.from.name === page.name));
+        const needsCommentReply = !alreadyAnsweredOnFb;
+        const needsInbox = !alreadyInboxedCommentIds.has(comment.id);
 
-        // Nếu trên FB đã có câu trả lời của Page và đã nằm trong lịch sử hoàn tất thì bỏ qua
-        if (alreadyAnsweredOnFb && repliedIds.has(comment.id)) {
+        // Chỉ bỏ qua nếu CẢ 2 việc (trả lời comment & gửi messenger) đều đã hoàn tất
+        if (!needsCommentReply && !needsInbox) {
           continue;
         }
 
@@ -1295,10 +1301,9 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
         // A. Tự động LIKE bình luận
         if (config.autoLike !== false) {
           try {
-            const likeRes = await fetch(`https://graph.facebook.com/v19.0/${comment.id}/likes`, {
+            const likeRes = await fetch(`https://graph.facebook.com/v19.0/${comment.id}/likes?access_token=${encodeURIComponent(token)}`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ access_token: token })
+              headers: { 'Content-Type': 'application/json' }
             });
             const likeData = await likeRes.json();
             if (likeData && likeData.success) {
@@ -1311,10 +1316,10 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
         // B. Tự động ẨN bình luận nếu có số điện thoại
         if (config.hidePhone !== false && hasPhone) {
           try {
-            const hideRes = await fetch(`https://graph.facebook.com/v19.0/${comment.id}`, {
+            const hideRes = await fetch(`https://graph.facebook.com/v19.0/${comment.id}?access_token=${encodeURIComponent(token)}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ is_hidden: true, access_token: token })
+              body: JSON.stringify({ is_hidden: true })
             });
             const hideData = await hideRes.json();
             if (hideData && hideData.success) {
@@ -1337,15 +1342,12 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
           .replace(/\{name\}|\{\{name\}\}|\[NAME\]/gi, customerName)
           .replace(/\{page\}|\{\{page\}\}/gi, page.name);
 
-        if (!alreadyAnsweredOnFb) {
+        if (needsCommentReply) {
           try {
-            const replyRes = await fetch(`https://graph.facebook.com/v19.0/${comment.id}/comments`, {
+            const replyRes = await fetch(`https://graph.facebook.com/v19.0/${comment.id}/comments?access_token=${encodeURIComponent(token)}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                message: replyText,
-                access_token: token
-              })
+              body: JSON.stringify({ message: replyText })
             });
             const replyData = await replyRes.json();
             if (replyData && (replyData.id || replyData.post_id)) {
@@ -1356,6 +1358,9 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
               if (replyData.error.code === 200) {
                 summary.permissionError = 'Meta API: Cần cấp thêm quyền "pages_manage_engagement" trong Graph API Explorer để Fanpage có thể đăng bình luận công khai trả lời khách hàng.';
                 replyError = 'Thiếu quyền pages_manage_engagement (#200)';
+              } else if (replyData.error.code === 190) {
+                summary.permissionError = 'Mã Token của Fanpage đã hết hạn (Session Expired - #190)';
+                replyError = 'Token hết hạn (#190)';
               } else {
                 replyError = replyData.error.message || `Lỗi Meta (#${replyData.error.code})`;
               }
@@ -1368,33 +1373,65 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
           didReplyComment = true;
         }
 
-        // D. Tự động gửi tin nhắn riêng Messenger (Private Reply to Comment)
-        if (config.inboxMessage && comment.can_reply_privately !== false && !alreadyInboxedCommentIds.has(comment.id)) {
-          let inboxBody = config.inboxMessage
-            .replace(/\{name\}|\{\{name\}\}|\[NAME\]/gi, customerName)
-            .replace(/\{page\}|\{\{page\}\}/gi, page.name);
+        // D. Tự động gửi tin nhắn riêng Messenger ĐỒNG THỜI (Private Reply to Comment)
+        let inboxBody = (config.inboxMessage && config.inboxMessage.trim().length > 0)
+          ? config.inboxMessage
+          : "Dạ em chào {name} ạ! Cảm ơn {name} đã quan tâm đến bài viết của shop. Shop gửi thông tin ưu đãi và link đặt hàng trực tiếp cho mình đây ạ! 🥰";
 
+        inboxBody = inboxBody
+          .replace(/\{name\}|\{\{name\}\}|\[NAME\]/gi, customerName)
+          .replace(/\{page\}|\{\{page\}\}/gi, page.name);
+
+        if (page.affiliateLink) {
+          inboxBody = inboxBody.replace(/\[LINK_DAT_HANG\]|\[LINK_SAN_PHAM\]|\[LINK\]/gi, page.affiliateLink);
+        }
+
+        if (needsInbox && comment.can_reply_privately !== false) {
           try {
-            const msgRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/messages`, {
+            // Thử endpoint chuẩn /me/messages với access_token query param
+            let msgRes = await fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${encodeURIComponent(token)}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 recipient: { comment_id: comment.id },
-                message: { text: inboxBody },
-                access_token: token
+                message: { text: inboxBody }
               })
             });
-            const msgData = await msgRes.json();
-            if (msgData && msgData.message_id) {
+            let msgData = await msgRes.json();
+
+            // Nếu /me/messages thất bại, fallback sang /${pageId}/messages
+            if (msgData && msgData.error && msgData.error.code !== 200) {
+              msgRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/messages?access_token=${encodeURIComponent(token)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  recipient: { comment_id: comment.id },
+                  message: { text: inboxBody }
+                })
+              });
+              msgData = await msgRes.json();
+            }
+
+            if (msgData && (msgData.message_id || msgData.recipient_id)) {
               didInbox = true;
               summary.inboxedCount++;
             } else if (msgData && msgData.error) {
-              inboxError = msgData.error.message;
+              console.error('Lỗi Graph API Messenger Private Reply:', msgData.error);
+              if (msgData.error.code === 200 || msgData.error.code === 230) {
+                summary.permissionError = 'Meta API: Cần cấp thêm quyền "pages_messaging" trong Graph API Explorer để Fanpage có thể nhắn tin riêng Messenger cho khách.';
+                inboxError = 'Thiếu quyền pages_messaging (#200)';
+              } else if (msgData.error.code === 10900) {
+                inboxError = 'Khách đã từng được gửi tin nhắn riêng cho bình luận này';
+                didInbox = true;
+              } else {
+                inboxError = msgData.error.message || `Lỗi Meta (#${msgData.error.code})`;
+              }
             }
           } catch (e) {
+            console.error('Lỗi fetch Messenger Private Reply:', e.message);
             inboxError = e.message;
           }
-        } else if (alreadyInboxedCommentIds.has(comment.id)) {
+        } else if (!needsInbox) {
           didInbox = true;
         }
 
@@ -1452,12 +1489,13 @@ app.get('/api/ads/auto-reply', async (req, res) => {
   let permissionInfo = null;
   if (activePage && activePage.accessToken && activePage.accessToken.length > 20) {
     try {
-      const debugRes = await fetch(`https://graph.facebook.com/v19.0/debug_token?input_token=${activePage.accessToken}&access_token=${activePage.accessToken}`);
+      const debugRes = await fetch(`https://graph.facebook.com/v19.0/debug_token?input_token=${encodeURIComponent(activePage.accessToken)}&access_token=${encodeURIComponent(activePage.accessToken)}`);
       const debugData = await debugRes.json();
       if (debugData && debugData.data) {
         const scopes = debugData.data.scopes || [];
         permissionInfo = {
           isValid: debugData.data.is_valid,
+          isExpired: !debugData.data.is_valid,
           scopes,
           hasManagePosts: scopes.includes('pages_manage_posts'),
           hasManageEngagement: scopes.includes('pages_manage_engagement'),
@@ -1469,8 +1507,17 @@ app.get('/api/ads/auto-reply', async (req, res) => {
                               scopes.includes('pages_read_user_content') &&
                               scopes.includes('pages_messaging')
         };
+      } else if (debugData && debugData.error) {
+        permissionInfo = {
+          isValid: false,
+          isExpired: true,
+          error: debugData.error.message || 'Token đã hết hạn (Session expired)',
+          code: debugData.error.code
+        };
       }
-    } catch (e) {}
+    } catch (e) {
+      permissionInfo = { isValid: false, isExpired: true, error: e.message };
+    }
   }
 
   res.json({ success: true, config, logs, activePage, permissionInfo });
@@ -1684,26 +1731,53 @@ async function handleRealtimeCommentWebhook(pageId, val) {
   }
 
   // D. Messenger Private Reply
-  if (config.inboxMessage && !alreadyInboxed) {
-    let inboxBody = config.inboxMessage
+  if (!alreadyInboxed) {
+    let inboxBody = (config.inboxMessage && config.inboxMessage.trim().length > 0)
+      ? config.inboxMessage
+      : "Dạ em chào {name} ạ! Cảm ơn {name} đã quan tâm đến bài viết của shop. Shop gửi thông tin ưu đãi và link đặt hàng trực tiếp cho mình đây ạ! 🥰";
+
+    inboxBody = inboxBody
       .replace(/\{name\}|\{\{name\}\}|\[NAME\]/gi, customerName)
       .replace(/\{page\}|\{\{page\}\}/gi, targetPage.name);
 
+    if (targetPage.affiliateLink) {
+      inboxBody = inboxBody.replace(/\[LINK_DAT_HANG\]|\[LINK_SAN_PHAM\]|\[LINK\]/gi, targetPage.affiliateLink);
+    }
+
     try {
-      const msgRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/messages`, {
+      let msgRes = await fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${encodeURIComponent(token)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipient: { comment_id: commentId },
-          message: { text: inboxBody },
-          access_token: token
+          message: { text: inboxBody }
         })
       });
-      const msgData = await msgRes.json();
-      if (msgData && msgData.message_id) {
+      let msgData = await msgRes.json();
+
+      if (msgData && msgData.error && msgData.error.code !== 200) {
+        msgRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/messages?access_token=${encodeURIComponent(token)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipient: { comment_id: commentId },
+            message: { text: inboxBody }
+          })
+        });
+        msgData = await msgRes.json();
+      }
+
+      if (msgData && (msgData.message_id || msgData.recipient_id)) {
         didInbox = true;
       } else if (msgData && msgData.error) {
-        inboxError = msgData.error.message;
+        if (msgData.error.code === 200 || msgData.error.code === 230) {
+          inboxError = 'Thiếu quyền pages_messaging (#200)';
+        } else if (msgData.error.code === 10900) {
+          inboxError = 'Khách đã từng được gửi tin nhắn riêng cho bình luận này';
+          didInbox = true;
+        } else {
+          inboxError = msgData.error.message;
+        }
       }
     } catch (e) {
       inboxError = e.message;
