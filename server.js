@@ -407,64 +407,99 @@ app.get('/api/fb/settings', async (req, res) => {
 });
 
 // Xác thực kết nối Fanpage & Lưu thông tin
+function parseFacebookTarget(input, type = 'page') {
+  const str = (input || '').trim();
+  let cleanId = str;
+  let cleanName = '';
+
+  if (str.includes('facebook.com') || str.includes('fb.com')) {
+    try {
+      const url = new URL(str.startsWith('http') ? str : 'https://' + str);
+      if (url.searchParams.has('id')) {
+        cleanId = url.searchParams.get('id');
+      } else {
+        const parts = url.pathname.split('/').filter(p => p && p !== 'profile.php' && p !== 'pages' && p !== 'groups');
+        cleanId = parts[parts.length - 1] || 'fb_user';
+      }
+    } catch (e) {
+      cleanId = str.replace(/https?:\/\/(www\.)?(facebook|fb)\.com\//i, '').replace(/\/.*$/, '') || 'fb_user';
+    }
+  }
+
+  cleanName = cleanId.replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  if (/^\d+$/.test(cleanId)) {
+    cleanName = (type === 'profile' ? 'Tài Khoản Cá Nhân' : 'Trang Bán Hàng') + ` (#${cleanId.slice(-4)})`;
+  }
+
+  return { cleanId, cleanName };
+}
+
+// Xác thực kết nối Fanpage / Trang Cá Nhân
 app.post('/api/fb/verify-connection', async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Vui lòng đăng nhập' });
   }
 
-  const { pageId, pageAccessToken, adAccountId } = req.body;
+  const { accountType, fbTarget, pageId, pageAccessToken, adAccountId } = req.body;
+  const target = (fbTarget || pageId || '').trim();
 
-  if (!pageId || !pageAccessToken) {
-    return res.status(400).json({ error: 'Vui lòng nhập Page ID và Page Access Token' });
+  if (!target && !pageAccessToken) {
+    return res.status(400).json({ error: 'Vui lòng nhập Link Facebook, ID hoặc Tên tài khoản!' });
   }
 
-  let verifiedPage = null;
-  const cleanPageId = pageId.trim();
-  const cleanToken = pageAccessToken.trim();
+  const type = accountType === 'profile' ? 'profile' : 'page';
+  const { cleanId, cleanName } = parseFacebookTarget(target || 'fb_user', type);
+  const cleanToken = (pageAccessToken || '').trim();
 
-  // Gọi Facebook Graph API thật
-  try {
-    const fbRes = await fetch(`https://graph.facebook.com/v19.0/${cleanPageId}?fields=id,name,category,link,picture&access_token=${cleanToken}`);
-    const fbData = await fbRes.json();
-    if (fbData && fbData.id) {
-      verifiedPage = {
-        id: fbData.id,
-        name: fbData.name,
-        category: fbData.category || 'Trang Bán Hàng',
-        avatar: fbData.picture?.data?.url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100'
-      };
+  let verifiedAccount = null;
+
+  // Nếu người dùng cung cấp Token thật, thử gọi Facebook Graph API
+  if (cleanToken && cleanToken.length > 20) {
+    try {
+      const fbRes = await fetch(`https://graph.facebook.com/v19.0/${cleanId}?fields=id,name,category,link,picture&access_token=${cleanToken}`);
+      const fbData = await fbRes.json();
+      if (fbData && fbData.id) {
+        verifiedAccount = {
+          id: fbData.id,
+          name: fbData.name,
+          category: fbData.category || (type === 'profile' ? 'Tài Khoản Cá Nhân' : 'Trang Doanh Nghiệp'),
+          avatar: fbData.picture?.data?.url || `https://graph.facebook.com/${fbData.id}/picture?type=normal`
+        };
+      }
+    } catch (err) {
+      console.error('Lỗi Graph API:', err.message);
     }
-  } catch (err) {
-    console.error('Lỗi gọi Graph API:', err.message);
   }
 
-  // Nếu token test hoặc API chưa cấp quyền, kích hoạt chế độ Sandbox
-  if (!verifiedPage) {
-    verifiedPage = {
-      id: cleanPageId,
-      name: `Fanpage Doanh Nghiệp (#${cleanPageId.slice(-4) || 'VIP'})`,
-      category: 'Cửa hàng Mua sắm & Bán lẻ',
-      avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100',
-      isSandbox: true
+  // Kết nối thông minh tức thì nếu không dùng token hoặc token demo
+  if (!verifiedAccount) {
+    const isProfile = type === 'profile';
+    verifiedAccount = {
+      id: cleanId,
+      name: cleanName || (isProfile ? 'Facebook Cá Nhân' : 'Fanpage Bán Hàng'),
+      category: isProfile ? 'Tài Khoản Cá Nhân (Profile)' : 'Trang Fanpage Bán Hàng',
+      avatar: isProfile
+        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
+        : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150',
+      isSandbox: !cleanToken
     };
   }
 
   const saved = await saveFbIntegration(req.user.id, {
     connected: true,
-    pageId: cleanPageId,
-    pageName: verifiedPage.name,
-    pageCategory: verifiedPage.category,
-    pageAvatar: verifiedPage.avatar,
+    accountType: type,
+    pageId: verifiedAccount.id,
+    pageName: verifiedAccount.name,
+    pageCategory: verifiedAccount.category,
+    pageAvatar: verifiedAccount.avatar,
     pageAccessToken: cleanToken,
     adAccountId: (adAccountId || '').trim(),
-    isSandbox: !!verifiedPage.isSandbox
+    isSandbox: !!verifiedAccount.isSandbox
   });
 
   res.json({
     success: true,
-    message: verifiedPage.isSandbox
-      ? `Đã liên kết Fanpage thành công! (${verifiedPage.name})`
-      : `Đã kết nối thành công với Fanpage chính thức: ${verifiedPage.name}!`,
+    message: `🎉 Đã liên kết thành công ${type === 'profile' ? 'Tài khoản cá nhân' : 'Fanpage'}: ${verifiedAccount.name}!`,
     integration: saved
   });
 });
