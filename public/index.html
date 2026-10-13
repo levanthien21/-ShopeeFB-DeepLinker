@@ -81,32 +81,201 @@
     </div>
   </div>
 
-  <!-- Navigation Bar: 4 Module Chính -->
+  <!-- Navigation Bar: 5 Module Chính -->
   <div class="max-w-7xl mx-auto px-4 mt-6">
     <div class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-2">
       <button id="navTab1" onclick="switchMainTab('tab1')" class="flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active">
-        <i class="fa-solid fa-pen-nib text-blue-500"></i>
-        <span>1. Viết Bài & Tạo Banner</span>
+        <i class="fa-solid fa-link text-orange-500"></i>
+        <span>1. ShopeeFB DeepLinker</span>
       </button>
       <button id="navTab2" onclick="switchMainTab('tab2')" class="flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2 transition">
-        <i class="fa-solid fa-rocket text-purple-600"></i>
-        <span>2. Lên Chiến Dịch Ads</span>
+        <i class="fa-solid fa-wand-magic-sparkles text-blue-500"></i>
+        <span>2. AI Content Đa Lĩnh Vực</span>
       </button>
       <button id="navTab3" onclick="switchMainTab('tab3')" class="flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2 transition">
-        <i class="fa-solid fa-comments text-emerald-600"></i>
-        <span>3. Auto Reply & Inbox</span>
+        <i class="fa-solid fa-robot text-emerald-600"></i>
+        <span>3. Fanpage Auto-Pilot</span>
       </button>
       <button id="navTab4" onclick="switchMainTab('tab4')" class="flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2 transition">
-        <i class="fa-solid fa-clock-rotate-left text-amber-500"></i>
-        <span>4. Liên Kết FB & Đặt Lịch Tự Động</span>
+        <i class="fa-solid fa-comments text-cyan-600"></i>
+        <span>4. Auto Reply & Inbox</span>
+      </button>
+      <button id="navTab5" onclick="switchMainTab('tab5')" class="flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2 transition">
+        <i class="fa-solid fa-rocket text-purple-600"></i>
+        <span>5. Ads Launcher <span class="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full font-bold ml-1">Đang xây dựng</span></span>
       </button>
     </div>
   </div>
 
   <main class="max-w-7xl mx-auto px-4 py-6">
 
-    <!-- ==================== MODULE 1: AI ADS CREATIVE & VISUAL STUDIO ==================== -->
+    <!-- ==================== MODULE 1: SHOPEEFB DEEPLINKER (MỞ APP TỰ ĐỘNG) ==================== -->
     <div id="module1Content" class="space-y-6">
+      
+      <!-- Banner Giới thiệu DeepLinker -->
+      <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-rose-600 rounded-3xl p-6 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-2xl bg-white/20 border-2 border-white/30 flex items-center justify-center text-3xl font-black overflow-hidden shadow-md flex-shrink-0">
+            <i class="fa-solid fa-bolt text-amber-300"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-black/30 text-amber-200 border border-amber-300/30">
+                Shopee App Direct Bridge
+              </span>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white">
+                Tăng CTR 300%
+              </span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-black text-white">ShopeeFB DeepLinker - Mở Thẳng App Shopee</h2>
+            <p class="text-xs text-orange-100 mt-0.5">Khắc phục triệt để lỗi trình duyệt Facebook chặn đăng nhập: Tự động mở App Shopee, sao chép voucher, bắt Pixel và tính hoa hồng Affiliate chuẩn xác!</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button onclick="document.getElementById('deepTargetUrl').focus()" class="px-4 py-2.5 bg-white text-orange-700 hover:bg-orange-50 font-black rounded-xl text-xs transition shadow-lg flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Tạo Link Mới
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Form Tạo Link Shopee Mở App (5 cols) -->
+        <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="font-black text-slate-900 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-link text-orange-500 text-base"></i>
+              <span>Cấu Hình Link Mở App Shopee</span>
+            </div>
+            <span class="text-[10px] bg-orange-100 text-orange-800 font-bold px-2 py-0.5 rounded">1-Click Generate</span>
+          </div>
+
+          <form id="createDeepLinkForm" class="space-y-3.5">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Đường Dẫn Shopee (Link Gốc / Affiliate) <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <input type="url" id="deepTargetUrl" required placeholder="https://shopee.vn/... hoặc https://s.shopee.vn/..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-orange-500 pr-10">
+                <span class="absolute right-3 top-2.5 text-slate-400 text-xs"><i class="fa-solid fa-cart-shopping text-orange-400"></i></span>
+              </div>
+              <p class="text-[10px] text-slate-400 mt-1">Hỗ trợ mọi link Shopee: web máy tính, link app di động, vn.shp.ee, s.shopee.vn</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Tiêu Đề Hiển Thị Trên Facebook (Open Graph Title)</label>
+              <input type="text" id="deepTitle" placeholder="VD: 🔥 Siêu Sale Shopee - Giảm 50% + Freeship 0Đ" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-orange-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Mô Tả Bài Viết (Description)</label>
+              <textarea id="deepDesc" rows="2" placeholder="VD: Hàng chính hãng 100%, bảo hành 12 tháng, miễn phí vận chuyển toàn quốc hôm nay!" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-orange-500"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Ảnh Đại Diện Banner Hiển Thị (Image URL)</label>
+              <input type="url" id="deepImageUrl" placeholder="https://images.unsplash.com/... hoặc dán link ảnh" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-orange-500">
+              <div class="flex gap-1.5 mt-1.5">
+                <button type="button" onclick="setSampleDeepImage('sale')" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-medium">Ảnh Sale Sốc</button>
+                <button type="button" onclick="setSampleDeepImage('tech')" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-medium">Ảnh Công Nghệ</button>
+                <button type="button" onclick="setSampleDeepImage('fashion')" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-medium">Ảnh Thời Trang</button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Mã Voucher (Tự Copy khi vào)</label>
+                <input type="text" id="deepVoucher" placeholder="VD: SHOPEE50K" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono font-bold text-orange-600 focus:outline-none focus:border-orange-500 uppercase">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Sub-ID Tiếp Thị (Tracking)</label>
+                <input type="text" id="deepSubId" placeholder="VD: fb_page_sale" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:outline-none focus:border-orange-500">
+              </div>
+            </div>
+
+            <!-- Tùy Chọn Pixel & Kích Thích Click -->
+            <div class="p-3 bg-orange-50/70 border border-orange-200 rounded-xl space-y-2 text-xs">
+              <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+                <input type="checkbox" id="deepFomoToggle" checked class="w-4 h-4 text-orange-600 accent-orange-600 rounded">
+                <span>Bật Nút Play Ảo & Tem Flash Sale trên ảnh (Kích thích bấm link)</span>
+              </label>
+              
+              <div class="grid grid-cols-2 gap-2 pt-1">
+                <div>
+                  <span class="block text-[10px] text-slate-500 mb-0.5">Facebook Pixel ID:</span>
+                  <input type="text" id="deepFbPixel" placeholder="123456789..." class="w-full px-2.5 py-1.5 rounded-lg border border-orange-200 text-xs font-mono focus:outline-none bg-white">
+                </div>
+                <div>
+                  <span class="block text-[10px] text-slate-500 mb-0.5">TikTok Pixel ID:</span>
+                  <input type="text" id="deepTiktokPixel" placeholder="CXXXXXX..." class="w-full px-2.5 py-1.5 rounded-lg border border-orange-200 text-xs font-mono focus:outline-none bg-white">
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" id="createDeepLinkBtn" class="w-full py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black rounded-xl text-xs shadow-md shadow-orange-500/25 transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-bolt"></i> TẠO LINK RÚT GỌN MỞ APP SHOPEE (1-CLICK)
+            </button>
+          </form>
+        </div>
+
+        <!-- Cột Phải (7 cols): Link Vừa Tạo & Bảng Quản Lý Danh Sách Link -->
+        <div class="lg:col-span-7 space-y-6">
+          
+          <!-- Box Kết quả Link Mới Nhất -->
+          <div id="latestLinkBox" class="hidden bg-white p-6 rounded-2xl border-2 border-orange-400 shadow-md space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div class="font-black text-slate-900 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-circle-check text-emerald-500 text-base"></i>
+                <span>Link Rút Gọn Mở App Đã Sẵn Sàng!</span>
+              </div>
+              <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">Hoạt Động 100%</span>
+            </div>
+
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div class="w-full sm:w-auto flex-1 truncate">
+                <span class="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wider font-bold">Đường dẫn rút gọn (Dán lên Facebook):</span>
+                <a id="latestShortUrlLink" href="#" target="_blank" class="text-sm font-black text-orange-600 hover:underline font-mono truncate block">
+                  https://...
+                </a>
+              </div>
+              <div class="flex gap-2 w-full sm:w-auto flex-shrink-0">
+                <button id="copyLatestShortLinkBtn" onclick="copyLatestShortUrl()" class="px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm">
+                  <i class="fa-solid fa-copy"></i> Copy Link
+                </button>
+                <a id="testLatestShortLinkBtn" href="#" target="_blank" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i> Mở Thử
+                </a>
+              </div>
+            </div>
+
+            <div class="text-[11px] text-slate-500 bg-amber-50 p-3 rounded-xl border border-amber-200 flex items-start gap-2">
+              <i class="fa-solid fa-lightbulb text-amber-500 mt-0.5 flex-shrink-0"></i>
+              <span><b>Mẹo đăng Facebook:</b> Khi đăng link này lên Fanpage hoặc bài quảng cáo, Facebook sẽ hiển thị đầy đủ hình ảnh và tiêu đề to rõ. Khách bấm vào sẽ tự động mở thẳng App Shopee để thanh toán ngay, tránh bị mất đơn do kẹt trong trình duyệt web Facebook!</span>
+            </div>
+          </div>
+
+          <!-- Bảng Danh Sách Link Đã Tạo & Thống Kê Clicks -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div class="font-black text-slate-900 text-base flex items-center gap-2">
+                <i class="fa-solid fa-chart-line text-blue-600"></i>
+                <span>Quản Lý Danh Sách Link Shopee & Lượt Click</span>
+              </div>
+              <button onclick="loadShopeeLinks()" class="text-xs text-orange-600 font-bold hover:underline flex items-center gap-1">
+                <i class="fa-solid fa-rotate-right"></i> Làm mới
+              </button>
+            </div>
+
+            <div id="shopeeLinksContainer" class="space-y-3 max-h-[460px] overflow-y-auto pr-1">
+              <div class="text-center py-10 text-xs text-slate-400">Đang tải danh sách link...</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== MODULE 2: AI ADS CREATIVE & VISUAL STUDIO ==================== -->
+    <div id="module2Content" class="hidden space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         <!-- Form Tạo Bài Viết AI -->
@@ -139,14 +308,18 @@
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Ngành Hàng</label>
-              <select id="aiCategory" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-medium text-slate-700 focus:outline-none focus:border-blue-500">
-                <option value="cong_nghe">📱 Công nghệ & Phụ kiện điện thoại</option>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Lĩnh Vực / Ngành Hàng Sản Phẩm <span class="text-red-500">*</span></label>
+              <select id="aiCategory" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500">
                 <option value="thoi_trang">👗 Thời trang & Giày dép</option>
                 <option value="my_pham">💄 Mỹ phẩm & Chăm sóc sắc đẹp</option>
+                <option value="cong_nghe" selected>📱 Công nghệ & Phụ kiện điện tử</option>
                 <option value="gia_dung">🏠 Đồ gia dụng & Tiện ích thông minh</option>
                 <option value="me_be">🍼 Mẹ & Bé</option>
-                <option value="khac">🛒 Ngành hàng khác</option>
+                <option value="suc_khoe">🌿 Sức khỏe & Thực phẩm chức năng</option>
+                <option value="am_thuc">🍕 Ẩm thực & Đồ ăn vặt</option>
+                <option value="sach_giaoduc">📚 Sách & Giáo dục / Khóa học</option>
+                <option value="xe_co">🚗 Xe cộ & Phụ kiện ô tô xe máy</option>
+                <option value="khac">🛒 Ngành hàng khác / Tổng hợp</option>
               </select>
             </div>
 
@@ -298,94 +471,242 @@
       </div>
     </div>
 
-    <!-- ==================== MODULE 2: FACEBOOK ADS LAUNCHER & MANAGER ==================== -->
-    <div id="module2Content" class="hidden space-y-6">
+    <!-- ==================== MODULE 3: FANPAGE AUTO-PILOT (TỰ ĐỘNG ĐĂNG BÀI LÊN PAGE) ==================== -->
+    <div id="module3Content" class="hidden space-y-6">
+      
+      <!-- Thẻ trạng thái kết nối Fanpage (Live Status Card) -->
+      <div id="fbStatusCard" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+          <div id="fbPageAvatar" class="w-16 h-16 rounded-2xl bg-blue-600/30 border-2 border-blue-400/40 flex items-center justify-center text-2xl font-black overflow-hidden shadow-md flex-shrink-0">
+            <i class="fa-brands fa-facebook-f text-blue-400"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span id="fbConnectionBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-800 text-slate-300">
+                ○ Chưa Liên Kết Fanpage
+              </span>
+              <span id="fbAutoPilotBadge" class="hidden px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                ⚡ Auto-Pilot 24/7 Đang Bật
+              </span>
+            </div>
+            <h2 id="fbPageName" class="text-xl font-black text-white">Chưa Kết Nối Fanpage Facebook</h2>
+            <p id="fbPageSubtext" class="text-xs text-slate-400 mt-0.5">Nhập Page ID & Page Access Token bên dưới để kích hoạt chế độ tự động đăng bài hoàn toàn.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="triggerQuickTestPost()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl text-xs transition shadow-lg shadow-blue-600/30 flex items-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Đăng Thử 1 Bài Lên Page Ngay
+          </button>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- Form Lên Camp Ads -->
-        <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div class="flex items-center gap-2 text-slate-900 font-black text-base">
-              <i class="fa-solid fa-rocket text-purple-600"></i>
-              <span>Lên Chiến Dịch Quảng Cáo Facebook 1-Click</span>
+        <!-- Cột Trái (5 cols): Cài đặt Kết Nối Fanpage & Đặt Lịch Hàng Ngày -->
+        <div class="lg:col-span-5 space-y-6">
+          
+          <!-- Box 1: Cấu hình Kết Nối Fanpage -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div class="font-black text-slate-900 text-sm flex items-center gap-2">
+                <i class="fa-brands fa-facebook text-blue-600 text-base"></i>
+                <span>1. Kết Nối Fanpage Facebook (Meta API)</span>
+              </div>
+              <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">Tự Động 100%</span>
             </div>
-            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">Tự động kết nối</span>
+
+            <!-- Chọn Lĩnh vực chính của Fanpage -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">
+                Lĩnh Vực / Ngành Hàng Của Fanpage <span class="text-red-500">*</span>:
+              </label>
+              <select id="fbNicheSelect" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500">
+                <option value="thoi_trang">👗 Thời trang & Giày dép</option>
+                <option value="my_pham">💄 Mỹ phẩm & Chăm sóc sắc đẹp</option>
+                <option value="cong_nghe" selected>📱 Công nghệ & Phụ kiện điện tử</option>
+                <option value="gia_dung">🏠 Đồ gia dụng & Tiện ích thông minh</option>
+                <option value="me_be">🍼 Mẹ & Bé</option>
+                <option value="suc_khoe">🌿 Sức khỏe & Thực phẩm chức năng</option>
+                <option value="am_thuc">🍕 Ẩm thực & Đồ ăn vặt</option>
+                <option value="sach_giaoduc">📚 Sách & Giáo dục / Khóa học</option>
+                <option value="xe_co">🚗 Xe cộ & Phụ kiện ô tô xe máy</option>
+                <option value="khac">🛒 Ngành hàng khác / Đa năng</option>
+              </select>
+              <p class="text-[10px] text-slate-400 mt-1">Robot Auto-Pilot sẽ tự động sinh nội dung chuyên biệt theo đúng lĩnh vực này để thu hút đúng tệp khách hàng tiềm năng.</p>
+            </div>
+
+            <form id="fbConnectionForm" class="space-y-3.5">
+              <!-- Ô Nhập Link hoặc ID Fanpage -->
+              <div>
+                <label id="fbTargetLabel" class="block text-xs font-bold text-slate-700 mb-1">
+                  Đường dẫn (Link) Fanpage hoặc ID Trang <span class="text-red-500">*</span>:
+                </label>
+                <div class="relative">
+                  <input type="text" id="fbTargetInput" required placeholder="Dán link facebook.com/tenpage hoặc ID" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-blue-500 pr-10">
+                  <span class="absolute right-3 top-2.5 text-slate-400 text-xs"><i class="fa-solid fa-paste"></i></span>
+                </div>
+                <p id="fbTargetHint" class="text-[10px] text-slate-400 mt-1">
+                  Ví dụ: <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-600">https://facebook.com/tenfanpage</code> hoặc <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-600">104589234981</code>
+                </p>
+              </div>
+
+              <!-- Nút chuyển đổi chế độ Nâng cao (Có Token Graph API) -->
+              <div class="pt-1">
+                <button type="button" onclick="toggleAdvancedToken()" class="text-[11px] text-blue-600 hover:underline font-bold flex items-center gap-1">
+                  <i class="fa-solid fa-sliders"></i> <span id="advancedTokenToggleText">Thêm Page Access Token (Để đăng ngầm bằng máy chủ)</span>
+                </button>
+              </div>
+
+              <div id="advancedTokenSection" class="hidden space-y-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <label class="block text-[11px] font-bold text-slate-700">Page Access Token (Meta Graph API):</label>
+                    <button type="button" onclick="showTokenGuideModal()" class="text-[10px] text-blue-600 hover:underline">Cách lấy token trong 1 phút?</button>
+                  </div>
+                  <input type="password" id="fbPageTokenInput" placeholder="EAAxxxxxxx... (Dán token vào đây)" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono focus:outline-none focus:border-blue-500">
+                  <p class="text-[10px] text-emerald-700 mt-1">✓ Có token: Máy chủ sẽ tự động đăng bài 100% không cần mở tab trình duyệt.</p>
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-700 mb-1">Ad Account ID (Tùy chọn Ads):</label>
+                  <input type="text" id="fbAdAccountInput" placeholder="VD: act_1234567890" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-blue-500">
+                </div>
+              </div>
+
+              <button type="submit" id="fbVerifyBtn" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl text-xs transition shadow-md shadow-blue-500/25 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-link"></i> XÁC NHẬN & LIÊN KẾT FANPAGE NGAY
+              </button>
+            </form>
           </div>
 
-          <form id="createCampaignForm" class="space-y-3.5">
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Tên Chiến Dịch Quảng Cáo <span class="text-red-500">*</span></label>
-              <input type="text" id="campName" required placeholder="VD: Chiến dịch Sale 50% Tai Nghe P9 - Tháng 10" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-purple-500">
+          <!-- Box 2: Cài Đặt Đặt Lịch Hàng Ngày (Auto-Pilot) -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div class="font-black text-slate-900 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-clock text-amber-500 text-base"></i>
+                <span>2. Đặt Lịch Auto-Pilot Đăng Bài Mỗi Ngày</span>
+              </div>
+              <span class="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded">Tự Động Hóa 24/7</span>
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Mục Tiêu Quảng Cáo (Objective) <span class="text-red-500">*</span></label>
-              <select id="campObjective" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none focus:border-purple-500">
-                <option value="MESSAGES">💬 Tin Nhắn Messenger (Khuyên Dùng - Chốt Đơn Trực Tiếp)</option>
-                <option value="POST_ENGAGEMENT">👍 Tương Tác Bài Viết (Tăng Like, Comment, Share)</option>
-                <option value="TRAFFIC">🌐 Lưu Lượng Truy Cập (Chuyển Hướng Về Trang Đặt Hàng)</option>
-              </select>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Ngân Sách Hàng Ngày <span class="text-red-500">*</span></label>
-                <select id="campBudget" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold text-purple-700 focus:outline-none">
-                  <option value="50000">50.000đ / ngày</option>
-                  <option value="100000" selected>100.000đ / ngày</option>
-                  <option value="200000">200.000đ / ngày</option>
-                  <option value="500000">500.000đ / ngày</option>
-                </select>
+            <form id="fbAutoPilotForm" class="space-y-3.5">
+              <div class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl">
+                <label class="flex items-center gap-2.5 cursor-pointer font-extrabold text-xs text-amber-950">
+                  <input type="checkbox" id="fbAutoPilotToggle" class="w-4 h-4 text-amber-600 accent-amber-600 rounded">
+                  <span>Kích Hoạt Chế Độ Tự Động Đăng Bài Mỗi Ngày (Auto-Pilot 24/7)</span>
+                </label>
+                <p class="text-[11px] text-amber-800 mt-1 pl-6">Hệ thống máy chủ sẽ tự động sản xuất bài viết AI đúng theo lĩnh vực Fanpage và đăng bài đều đặn vào khung giờ vàng bạn chọn.</p>
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Độ Tuổi Mục Tiêu</label>
-                <select id="campAge" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium text-slate-700 focus:outline-none">
-                  <option value="18-35">18 - 35 tuổi (Trẻ trung)</option>
-                  <option value="25-45" selected>25 - 45 tuổi (Sức mua cao)</option>
-                  <option value="18-65">18 - 65 tuổi (Toàn bộ)</option>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Khung Giờ Vàng Đăng Bài Mỗi Ngày:</label>
+                <select id="fbDailyTimeSelect" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none">
+                  <option value="08:30">🌅 08:30 Sáng (Bắt đầu ngày mới - Dân văn phòng check tin)</option>
+                  <option value="11:30">🍱 11:30 Trưa (Giờ nghỉ trưa - Lượng lướt Facebook cao)</option>
+                  <option value="19:30">🍲 19:30 Tối (Sau bữa tối - Thư giãn lướt Newfeed)</option>
+                  <option value="20:30" selected>🔥 20:30 Tối (KHUNG GIỜ VÀNG - Tỷ lệ mua sắm cao nhất)</option>
+                  <option value="22:00">🌙 22:00 Đêm (Khách hàng thức khuya mua sắm online)</option>
                 </select>
               </div>
-            </div>
 
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Vị Trí Nhắm Mục Tiêu</label>
-              <input type="text" id="campLocation" value="Toàn quốc (Việt Nam)" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs text-slate-700 focus:outline-none">
-            </div>
+              <div class="space-y-2 pt-1 border-t border-slate-100">
+                <label class="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-800">
+                  <input type="checkbox" id="fbAutoRunAdsToggle" class="w-4 h-4 text-purple-600 accent-purple-600 rounded">
+                  <span>Kèm kích hoạt chiến dịch quảng cáo cho bài đăng</span>
+                </label>
+                
+                <div id="fbBudgetSelectBox" class="pl-6 space-y-1">
+                  <span class="block text-[11px] text-slate-500">Ngân sách dự kiến:</span>
+                  <select id="fbDailyBudgetSelect" class="w-full p-2 rounded-xl border border-slate-200 text-xs font-bold text-purple-700 focus:outline-none">
+                    <option value="50000">50.000đ / ngày</option>
+                    <option value="100000" selected>100.000đ / ngày (Khuyên dùng)</option>
+                    <option value="200000">200.000đ / ngày</option>
+                  </select>
+                </div>
+              </div>
 
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Nội Dung Bài Đăng Sẽ Chạy Ads</label>
-              <textarea id="campPostContent" rows="3" placeholder="Nhập nội dung bài quảng cáo (hoặc sao chép từ Module 1 sang)..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none"></textarea>
-            </div>
+              <button type="submit" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl text-xs transition shadow-md">
+                Lưu Cấu Hình Đặt Lịch Hàng Ngày
+              </button>
+            </form>
+          </div>
 
-            <button type="submit" id="createCampBtn" class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black rounded-xl text-xs shadow-md shadow-purple-500/25 transition flex items-center justify-center gap-2">
-              <i class="fa-solid fa-play"></i> Kích Hoạt Chiến Dịch Quảng Cáo Facebook
-            </button>
-          </form>
         </div>
 
-        <!-- Danh Sách Chiến Dịch Đang Chạy -->
-        <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div class="font-black text-slate-900 text-base flex items-center gap-2">
-              <i class="fa-solid fa-list-check text-slate-500"></i>
-              <span>Quản Lý Các Chiến Dịch Quảng Cáo Facebook</span>
+        <!-- Cột Phải (7 cols): Soạn Bài Hẹn Giờ & Danh Sách Hàng Đợi (Queue) -->
+        <div class="lg:col-span-7 space-y-6">
+          
+          <!-- Box Đăng Ngay Hoặc Đặt Giờ Cho Bài Viết Cụ Thể -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div class="font-black text-slate-900 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-calendar-plus text-indigo-600 text-base"></i>
+                <span>3. Đăng Bài Ngay Hoặc Hẹn Giờ Cho Bài Viết Này</span>
+              </div>
+              <button onclick="pullContentFromTabAI()" class="text-xs text-purple-600 hover:underline font-bold flex items-center gap-1">
+                <i class="fa-solid fa-arrows-rotate"></i> Lấy Bài Vừa Tạo Ở Tab 2
+              </button>
             </div>
-            <button onclick="loadUserCampaigns()" class="text-xs text-purple-600 font-bold hover:underline">
-              <i class="fa-solid fa-rotate-right"></i> Làm mới
-            </button>
+
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Tiêu Đề / Tên Sản Phẩm:</label>
+                <input type="text" id="fbPostTitleInput" placeholder="VD: Siêu Sale Tai Nghe P9 Pro Max Hôm Nay" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-indigo-500">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Nội Dung Bài Đăng Lên Fanpage:</label>
+                <textarea id="fbPostContentInput" rows="5" placeholder="Nhập nội dung hoặc bấm 'Lấy Bài Vừa Tạo Ở Tab 2'..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs leading-relaxed focus:outline-none focus:border-indigo-500 font-sans"></textarea>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Thời Gian Hẹn Giờ (Để trống nếu đăng ngay):</label>
+                  <input type="datetime-local" id="fbScheduleTimeInput" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none">
+                </div>
+                <div class="flex items-end">
+                  <label class="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-800 pb-2">
+                    <input type="checkbox" id="fbSinglePostAutoAds" class="w-4 h-4 text-purple-600 accent-purple-600 rounded">
+                    <span>Kèm chiến dịch Ads</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="flex flex-col sm:flex-row gap-2.5 pt-2">
+                <button type="button" onclick="submitPublishNow()" class="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl text-xs transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-paper-plane"></i> ĐĂNG NGAY LÊN FANPAGE
+                </button>
+                <button type="button" onclick="submitSchedulePost()" class="py-3 px-5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl text-xs transition shadow-md shadow-amber-500/20 flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-clock"></i> LÊN LỊCH HẸN GIỜ
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div id="campaignsListContainer" class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-            <div class="text-center py-10 text-xs text-slate-400">Đang tải danh sách chiến dịch...</div>
+          <!-- Bảng Hàng Đợi & Lịch Sử Bài Đăng (Queue & History) -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div class="font-black text-slate-900 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-emerald-600 text-base"></i>
+                <span>4. Hàng Đợi Đặt Lịch & Lịch Sử Bài Đăng Fanpage</span>
+              </div>
+              <button onclick="loadFbSettings()" class="text-xs text-slate-500 hover:text-slate-800 font-bold">
+                <i class="fa-solid fa-rotate"></i> Làm mới
+              </button>
+            </div>
+
+            <div id="fbQueueContainer" class="space-y-3 max-h-96 overflow-y-auto pr-1">
+              <div class="text-center py-8 text-xs text-slate-400">Đang tải danh sách bài hẹn giờ...</div>
+            </div>
           </div>
+
         </div>
 
       </div>
     </div>
 
-    <!-- ==================== MODULE 3: AUTO REPLY COMMENT & AUTO INBOX ==================== -->
-    <div id="module3Content" class="hidden space-y-6">
+    <!-- ==================== MODULE 4: AUTO REPLY COMMENT & AUTO INBOX ==================== -->
+    <div id="module4Content" class="hidden space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         <!-- Cấu Hình Kịch Bản Bot -->
@@ -463,224 +784,101 @@
       </div>
     </div>
 
-    <!-- ==================== MODULE 4: LIÊN KẾT FACEBOOK & ĐẶT LỊCH TỰ ĐỘNG (AUTO-PILOT) ==================== -->
-    <div id="module4Content" class="hidden space-y-6">
+    <!-- ==================== MODULE 5: FACEBOOK ADS LAUNCHER & MANAGER (ĐANG XÂY DỰNG) ==================== -->
+    <div id="module5Content" class="hidden space-y-6">
       
-      <!-- Thẻ trạng thái kết nối Fanpage (Live Status Card) -->
-      <div id="fbStatusCard" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-        <div class="flex items-center gap-4">
-          <div id="fbPageAvatar" class="w-16 h-16 rounded-2xl bg-blue-600/30 border-2 border-blue-400/40 flex items-center justify-center text-2xl font-black overflow-hidden shadow-md flex-shrink-0">
-            <i class="fa-brands fa-facebook-f text-blue-400"></i>
-          </div>
-          <div>
-            <div class="flex items-center gap-2 mb-1">
-              <span id="fbConnectionBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-800 text-slate-300">
-                ○ Chưa Liên Kết Fanpage
-              </span>
-              <span id="fbAutoPilotBadge" class="hidden px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                ⚡ Auto-Pilot 24/7 Đang Bật
-              </span>
-            </div>
-            <h2 id="fbPageName" class="text-xl font-black text-white">Chưa Kết Nối Fanpage Facebook</h2>
-            <p id="fbPageSubtext" class="text-xs text-slate-400 mt-0.5">Nhập Page ID & Page Access Token bên dưới để kích hoạt chế độ tự động hóa hoàn toàn.</p>
-          </div>
+      <!-- Thông Báo Đang Xây Dựng -->
+      <div class="p-4 bg-amber-50 border border-amber-300 rounded-2xl flex items-center gap-3.5 text-xs text-amber-900 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-md">
+          <i class="fa-solid fa-person-digging"></i>
         </div>
-        <div class="flex items-center gap-3">
-          <button onclick="triggerQuickTestPost()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl text-xs transition shadow-lg shadow-blue-600/30 flex items-center gap-2">
-            <i class="fa-solid fa-paper-plane"></i> Đăng Thử 1 Bài Lên Page Ngay
-          </button>
+        <div>
+          <div class="font-extrabold text-sm text-amber-950">TÍNH NĂNG ĐANG XÂY DỰNG / BẢN PREVIEW</div>
+          <p class="text-amber-800 mt-0.5 leading-relaxed">
+            Trình Lên Chiến Dịch Facebook Ads 1-Click hiện đang trong quá trình tích hợp mở rộng cùng Meta Marketing API Sandbox. Hiện tại bạn có thể lên kế hoạch ngân sách, thiết lập nhóm đối tượng và mô phỏng chạy chiến dịch quảng cáo.
+          </p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- Cột Trái (5 cols): Cài đặt Kết Nối & Đặt Lịch Hàng Ngày -->
-        <div class="lg:col-span-5 space-y-6">
-          
-          <!-- Box 1: Cấu hình Kết Nối Fanpage Hoặc Trang Cá Nhân -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div class="font-black text-slate-900 text-sm flex items-center gap-2">
-                <i class="fa-brands fa-facebook text-blue-600 text-base"></i>
-                <span>1. Liên Kết Fanpage Hoặc Trang Cá Nhân</span>
-              </div>
-              <span class="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">2 Cách Kết Nối</span>
+        <!-- Form Lên Camp Ads -->
+        <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2 text-slate-900 font-black text-base">
+              <i class="fa-solid fa-rocket text-purple-600"></i>
+              <span>Lên Chiến Dịch Quảng Cáo Facebook 1-Click</span>
             </div>
-
-            <!-- Chọn loại tài khoản: Fanpage hay Trang cá nhân -->
-            <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl text-xs font-bold">
-              <button type="button" id="btnTypePage" onclick="switchAccountType('page')" class="py-2 rounded-lg bg-white text-blue-700 shadow-sm flex items-center justify-center gap-1.5 transition">
-                <i class="fa-solid fa-store"></i> Fanpage Bán Hàng
-              </button>
-              <button type="button" id="btnTypeProfile" onclick="switchAccountType('profile')" class="py-2 rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition">
-                <i class="fa-solid fa-user"></i> Facebook Cá Nhân
-              </button>
-            </div>
-
-            <form id="fbConnectionForm" class="space-y-3.5">
-              <!-- Ô Nhập Link hoặc ID -->
-              <div>
-                <label id="fbTargetLabel" class="block text-xs font-bold text-slate-700 mb-1">
-                  Đường dẫn (Link) Fanpage hoặc ID Trang <span class="text-red-500">*</span>:
-                </label>
-                <div class="relative">
-                  <input type="text" id="fbTargetInput" required placeholder="Dán link facebook.com/... hoặc ID" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-blue-500 pr-10">
-                  <span class="absolute right-3 top-2.5 text-slate-400 text-xs"><i class="fa-solid fa-paste"></i></span>
-                </div>
-                <p id="fbTargetHint" class="text-[10px] text-slate-400 mt-1">
-                  Ví dụ: <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-600">https://facebook.com/tenfanpage</code> hoặc <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-600">104589234981</code>
-                </p>
-              </div>
-
-              <!-- Nút chuyển đổi chế độ Nâng cao (Có Token Graph API) -->
-              <div class="pt-1">
-                <button type="button" onclick="toggleAdvancedToken()" class="text-[11px] text-blue-600 hover:underline font-bold flex items-center gap-1">
-                  <i class="fa-solid fa-sliders"></i> <span id="advancedTokenToggleText">Thêm Page Access Token (Tùy chọn nâng cao)</span>
-                </button>
-              </div>
-
-              <div id="advancedTokenSection" class="hidden space-y-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                <div>
-                  <div class="flex items-center justify-between mb-1">
-                    <label class="block text-[11px] font-bold text-slate-700">Page Access Token (Meta API):</label>
-                    <button type="button" onclick="showTokenGuideModal()" class="text-[10px] text-blue-600 hover:underline">Cách lấy token?</button>
-                  </div>
-                  <input type="password" id="fbPageTokenInput" placeholder="EAAxxxxxxx... (Không bắt buộc)" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono focus:outline-none focus:border-blue-500">
-                </div>
-
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-700 mb-1">Ad Account ID (Chạy Ads qua API):</label>
-                  <input type="text" id="fbAdAccountInput" placeholder="VD: act_1234567890" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-blue-500">
-                </div>
-              </div>
-
-              <button type="submit" id="fbVerifyBtn" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl text-xs transition shadow-md shadow-blue-500/25 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-link"></i> XÁC NHẬN & LIÊN KẾT NGAY (1-CLICK)
-              </button>
-            </form>
+            <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">Bản Thử Nghiệm</span>
           </div>
 
-          <!-- Box 2: Cài Đặt Đặt Lịch Hàng Ngày (Auto-Pilot) -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div class="font-black text-slate-900 text-sm flex items-center gap-2">
-                <i class="fa-solid fa-clock text-amber-500 text-base"></i>
-                <span>2. Đặt Lịch Đưa Lên & Bật Ads Mỗi Ngày</span>
-              </div>
-              <span class="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded">Tự Động Hóa 24/7</span>
+          <form id="createCampaignForm" class="space-y-3.5">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Tên Chiến Dịch Quảng Cáo <span class="text-red-500">*</span></label>
+              <input type="text" id="campName" required placeholder="VD: Chiến dịch Sale 50% Tai Nghe P9 - Tháng 10" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-purple-500">
             </div>
 
-            <form id="fbAutoPilotForm" class="space-y-3.5">
-              <div class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl">
-                <label class="flex items-center gap-2.5 cursor-pointer font-extrabold text-xs text-amber-950">
-                  <input type="checkbox" id="fbAutoPilotToggle" class="w-4 h-4 text-amber-600 accent-amber-600 rounded">
-                  <span>Kích Hoạt Chế Độ Tự Động Đăng Bài Mỗi Ngày (Auto-Pilot)</span>
-                </label>
-                <p class="text-[11px] text-amber-800 mt-1 pl-6">Hệ thống sẽ tự động chọn bài viết AI hấp dẫn nhất để đăng lên Fanpage vào đúng khung giờ bạn chọn.</p>
-              </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Mục Tiêu Quảng Cáo (Objective) <span class="text-red-500">*</span></label>
+              <select id="campObjective" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none focus:border-purple-500">
+                <option value="MESSAGES">💬 Tin Nhắn Messenger (Khuyên Dùng - Chốt Đơn Trực Tiếp)</option>
+                <option value="POST_ENGAGEMENT">👍 Tương Tác Bài Viết (Tăng Like, Comment, Share)</option>
+                <option value="TRAFFIC">🌐 Lưu Lượng Truy Cập (Chuyển Hướng Về Trang Đặt Hàng)</option>
+              </select>
+            </div>
 
+            <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Khung Giờ Vàng Đăng Bài Mỗi Ngày:</label>
-                <select id="fbDailyTimeSelect" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none">
-                  <option value="08:30">🌅 08:30 Sáng (Bắt đầu ngày mới - Dân văn phòng check tin)</option>
-                  <option value="11:30">🍱 11:30 Trưa (Giờ nghỉ trưa - Lượng lướt Facebook cao)</option>
-                  <option value="19:30">🍲 19:30 Tối (Sau bữa tối - Thư giãn lướt Newfeed)</option>
-                  <option value="20:30" selected>🔥 20:30 Tối (KHUNG GIỜ VÀNG - Tỷ lệ mua sắm cao nhất)</option>
-                  <option value="22:00">🌙 22:00 Đêm (Khách hàng thức khuya mua sắm online)</option>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Ngân Sách Hàng Ngày <span class="text-red-500">*</span></label>
+                <select id="campBudget" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold text-purple-700 focus:outline-none">
+                  <option value="50000">50.000đ / ngày</option>
+                  <option value="100000" selected>100.000đ / ngày</option>
+                  <option value="200000">200.000đ / ngày</option>
+                  <option value="500000">500.000đ / ngày</option>
                 </select>
               </div>
 
-              <div class="space-y-2 pt-1 border-t border-slate-100">
-                <label class="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-800">
-                  <input type="checkbox" id="fbAutoRunAdsToggle" checked class="w-4 h-4 text-purple-600 accent-purple-600 rounded">
-                  <span>Tự Động Kích Hoạt Chiến Dịch Facebook Ads Đi Kèm</span>
-                </label>
-                
-                <div id="fbBudgetSelectBox" class="pl-6 space-y-1">
-                  <span class="block text-[11px] text-slate-500">Ngân sách chạy quảng cáo cho bài mỗi ngày:</span>
-                  <select id="fbDailyBudgetSelect" class="w-full p-2 rounded-xl border border-slate-200 text-xs font-bold text-purple-700 focus:outline-none">
-                    <option value="50000">50.000đ / ngày</option>
-                    <option value="100000" selected>100.000đ / ngày (Khuyên dùng)</option>
-                    <option value="200000">200.000đ / ngày</option>
-                  </select>
-                </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Độ Tuổi Mục Tiêu</label>
+                <select id="campAge" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium text-slate-700 focus:outline-none">
+                  <option value="18-35">18 - 35 tuổi (Trẻ trung)</option>
+                  <option value="25-45" selected>25 - 45 tuổi (Sức mua cao)</option>
+                  <option value="18-65">18 - 65 tuổi (Toàn bộ)</option>
+                </select>
               </div>
+            </div>
 
-              <button type="submit" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl text-xs transition shadow-md">
-                Lưu Cấu Hình Đặt Lịch Hàng Ngày
-              </button>
-            </form>
-          </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Vị Trí Nhắm Mục Tiêu</label>
+              <input type="text" id="campLocation" value="Toàn quốc (Việt Nam)" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs text-slate-700 focus:outline-none">
+            </div>
 
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nội Dung Bài Đăng Sẽ Chạy Ads</label>
+              <textarea id="campPostContent" rows="3" placeholder="Nhập nội dung bài quảng cáo (hoặc sao chép từ Module AI Content sang)..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none"></textarea>
+            </div>
+
+            <button type="submit" id="createCampBtn" class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black rounded-xl text-xs shadow-md shadow-purple-500/25 transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-play"></i> Kích Hoạt Chiến Dịch Quảng Cáo Facebook (Thử Nghiệm)
+            </button>
+          </form>
         </div>
 
-        <!-- Cột Phải (7 cols): Soạn Bài Hẹn Giờ & Danh Sách Hàng Đợi (Queue) -->
-        <div class="lg:col-span-7 space-y-6">
-          
-          <!-- Box Đăng Ngay Hoặc Đặt Giờ Cho Bài Viết Cụ Thể -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div class="font-black text-slate-900 text-sm flex items-center gap-2">
-                <i class="fa-solid fa-calendar-plus text-indigo-600 text-base"></i>
-                <span>3. Đăng Bài Ngay Hoặc Hẹn Giờ Cho Bài Viết Này</span>
-              </div>
-              <button onclick="pullContentFromTab1()" class="text-xs text-purple-600 hover:underline font-bold flex items-center gap-1">
-                <i class="fa-solid fa-arrows-rotate"></i> Lấy Bài Vừa Tạo Ở Tab 1
-              </button>
+        <!-- Danh Sách Chiến Dịch Đang Chạy -->
+        <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="font-black text-slate-900 text-base flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-slate-500"></i>
+              <span>Quản Lý Các Chiến Dịch Quảng Cáo Facebook</span>
             </div>
-
-            <div class="space-y-3">
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Tiêu Đề / Tên Sản Phẩm:</label>
-                <input type="text" id="fbPostTitleInput" placeholder="VD: Siêu Sale Tai Nghe P9 Pro Max Hôm Nay" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-indigo-500">
-              </div>
-
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Nội Dung Bài Đăng Lên Fanpage:</label>
-                <textarea id="fbPostContentInput" rows="5" placeholder="Nhập nội dung hoặc bấm 'Lấy Bài Vừa Tạo Ở Tab 1'..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs leading-relaxed focus:outline-none focus:border-indigo-500 font-sans"></textarea>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Thời Gian Hẹn Giờ (Để trống nếu đăng ngay):</label>
-                  <input type="datetime-local" id="fbScheduleTimeInput" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none">
-                </div>
-                <div class="flex items-end">
-                  <label class="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-800 pb-2">
-                    <input type="checkbox" id="fbSinglePostAutoAds" checked class="w-4 h-4 text-purple-600 accent-purple-600 rounded">
-                    <span>Tự động kích hoạt Ads đi kèm</span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="flex flex-col sm:flex-row gap-2.5 pt-2">
-                <button type="button" onclick="submitPublishNow()" class="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl text-xs transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
-                  <i class="fa-solid fa-paper-plane"></i> ĐĂNG NGAY LÊN FANPAGE
-                </button>
-                <button type="button" onclick="submitSchedulePost()" class="py-3 px-5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl text-xs transition shadow-md shadow-amber-500/20 flex items-center justify-center gap-2">
-                  <i class="fa-solid fa-clock"></i> LÊN LỊCH HẸN GIỜ
-                </button>
-              </div>
-            </div>
+            <button onclick="loadUserCampaigns()" class="text-xs text-purple-600 font-bold hover:underline">
+              <i class="fa-solid fa-rotate-right"></i> Làm mới
+            </button>
           </div>
 
-          <!-- Bảng Hàng Đợi & Lịch Sử Bài Đăng (Queue & History) -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div class="font-black text-slate-900 text-sm flex items-center gap-2">
-                <i class="fa-solid fa-list-check text-emerald-600 text-base"></i>
-                <span>4. Hàng Đợi Đặt Lịch & Lịch Sử Bài Đăng</span>
-              </div>
-              <button onclick="loadFbSettings()" class="text-xs text-slate-500 hover:text-slate-800 font-bold">
-                <i class="fa-solid fa-rotate"></i> Làm mới
-              </button>
-            </div>
-
-            <div id="fbQueueContainer" class="space-y-3 max-h-96 overflow-y-auto pr-1">
-              <div class="text-center py-8 text-xs text-slate-400">Đang tải danh sách bài hẹn giờ...</div>
-            </div>
+          <div id="campaignsListContainer" class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+            <div class="text-center py-10 text-xs text-slate-400">Đang tải danh sách chiến dịch...</div>
           </div>
-
         </div>
 
       </div>
@@ -1079,43 +1277,187 @@
     }
 
     // Switch Main Tabs (1, 2, 3, 4)
+    // Switch Main Tabs (1, 2, 3, 4, 5)
     function switchMainTab(tab) {
       currentMainTab = tab;
       const t1 = document.getElementById('navTab1');
       const t2 = document.getElementById('navTab2');
       const t3 = document.getElementById('navTab3');
       const t4 = document.getElementById('navTab4');
+      const t5 = document.getElementById('navTab5');
       const c1 = document.getElementById('module1Content');
       const c2 = document.getElementById('module2Content');
       const c3 = document.getElementById('module3Content');
       const c4 = document.getElementById('module4Content');
+      const c5 = document.getElementById('module5Content');
 
-      [t1, t2, t3, t4].forEach(t => {
+      [t1, t2, t3, t4, t5].forEach(t => {
         if (t) t.className = "flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-600 hover:bg-slate-50";
       });
-      [c1, c2, c3, c4].forEach(c => {
+      [c1, c2, c3, c4, c5].forEach(c => {
         if (c) c.classList.add('hidden');
       });
 
       if (tab === 'tab1') {
-        t1.className = "flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active";
-        c1.classList.remove('hidden');
+        if (t1) t1.className = "flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active";
+        if (c1) c1.classList.remove('hidden');
+        loadShopeeLinks();
       } else if (tab === 'tab2') {
-        t2.className = "flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active";
-        c2.classList.remove('hidden');
-        loadUserCampaigns();
+        if (t2) t2.className = "flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active";
+        if (c2) c2.classList.remove('hidden');
       } else if (tab === 'tab3') {
-        t3.className = "flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active";
-        c3.classList.remove('hidden');
-        loadAutoReplyConfig();
-      } else if (tab === 'tab4') {
-        t4.className = "flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active";
-        c4.classList.remove('hidden');
+        if (t3) t3.className = "flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active";
+        if (c3) c3.classList.remove('hidden');
         loadFbSettings();
+      } else if (tab === 'tab4') {
+        if (t4) t4.className = "flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active";
+        if (c4) c4.classList.remove('hidden');
+        loadAutoReplyConfig();
+      } else if (tab === 'tab5') {
+        if (t5) t5.className = "flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active";
+        if (c5) c5.classList.remove('hidden');
+        loadUserCampaigns();
       }
     }
 
-    // ----------------- MODULE 1: AI ADS CONTENT GENERATION -----------------
+    // ----------------- MODULE 1: SHOPEEFB DEEPLINKER CORE -----------------
+    let latestCreatedShortUrl = '';
+
+    function setSampleDeepImage(type) {
+      const urls = {
+        sale: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800',
+        tech: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
+        fashion: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800'
+      };
+      if (urls[type]) {
+        document.getElementById('deepImageUrl').value = urls[type];
+      }
+    }
+
+    document.getElementById('createDeepLinkForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) {
+        alert('Vui lòng Đăng nhập để sử dụng tính năng tạo link ShopeeFB DeepLinker!');
+        openAuthModal('login');
+        return;
+      }
+
+      const btn = document.getElementById('createDeepLinkBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang Tạo Link Mở App...';
+
+      const payload = {
+        targetUrl: document.getElementById('deepTargetUrl').value.trim(),
+        title: document.getElementById('deepTitle').value.trim(),
+        description: document.getElementById('deepDesc').value.trim(),
+        imageUrl: document.getElementById('deepImageUrl').value.trim(),
+        voucher: document.getElementById('deepVoucher').value.trim(),
+        subId: document.getElementById('deepSubId').value.trim(),
+        fomo: document.getElementById('deepFomoToggle').checked,
+        fbPixel: document.getElementById('deepFbPixel').value.trim(),
+        tiktokPixel: document.getElementById('deepTiktokPixel').value.trim()
+      };
+
+      try {
+        const token = localStorage.getItem('aff_token');
+        const res = await fetch('/api/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          latestCreatedShortUrl = data.shortUrl;
+          document.getElementById('latestShortUrlLink').innerText = data.shortUrl;
+          document.getElementById('latestShortUrlLink').href = data.shortUrl;
+          document.getElementById('testLatestShortLinkBtn').href = data.shortUrl;
+          document.getElementById('latestLinkBox').classList.remove('hidden');
+
+          if (data.quota) {
+            currentUser.linksUsed = data.quota.used;
+            renderAuthUI(currentUser);
+          }
+
+          loadShopeeLinks();
+          alert('🎉 Tạo link Shopee mở App thành công!\n\nLink rút gọn: ' + data.shortUrl);
+        } else {
+          alert('Lỗi: ' + data.error);
+          if (data.limitExceeded) openPricingModal();
+        }
+      } catch (err) {
+        alert('Lỗi kết nối: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-bolt"></i> TẠO LINK RÚT GỌN MỞ APP SHOPEE (1-CLICK)';
+      }
+    });
+
+    function copyLatestShortUrl() {
+      if (latestCreatedShortUrl) {
+        navigator.clipboard.writeText(latestCreatedShortUrl);
+        alert('✅ Đã sao chép link rút gọn: ' + latestCreatedShortUrl);
+      }
+    }
+
+    async function loadShopeeLinks() {
+      const container = document.getElementById('shopeeLinksContainer');
+      const token = localStorage.getItem('aff_token');
+      if (!token) {
+        container.innerHTML = '<div class="text-center py-10 text-xs text-slate-400">Vui lòng đăng nhập để xem danh sách link đã tạo.</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/links', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.success && data.list && data.list.length > 0) {
+          container.innerHTML = data.list.map(link => `
+            <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-900 line-clamp-1">${escapeHtml(link.title)}</span>
+                <span class="px-2.5 py-0.5 rounded-full font-black text-[10px] bg-orange-100 text-orange-800 flex items-center gap-1">
+                  <i class="fa-solid fa-arrow-pointer"></i> ${link.clicks || 0} clicks
+                </span>
+              </div>
+              <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-200">
+                <a href="${link.shortUrl}" target="_blank" class="text-orange-600 font-mono font-bold hover:underline truncate mr-2">${link.shortUrl}</a>
+                <button onclick="copyRawText('${link.shortUrl}')" class="px-2 py-0.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold rounded text-[10px] flex-shrink-0">Copy</button>
+              </div>
+              <div class="flex items-center justify-between pt-1 text-[11px] text-slate-400">
+                <span>Tạo lúc: ${new Date(link.createdAt).toLocaleDateString('vi-VN')}</span>
+                <div class="flex gap-2">
+                  <a href="${link.shortUrl}" target="_blank" class="text-blue-600 hover:underline font-bold">Mở App</a>
+                  <button onclick="deleteShopeeLink('${link.id}')" class="text-red-500 hover:underline font-bold">Xóa</button>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = '<div class="text-center py-10 text-xs text-slate-400">Bạn chưa tạo link nào. Hãy điền form bên trái để tạo link mở app đầu tiên!</div>';
+        }
+      } catch (err) {
+        container.innerHTML = '<div class="text-center py-6 text-xs text-red-500">Lỗi tải danh sách link</div>';
+      }
+    }
+
+    async function deleteShopeeLink(id) {
+      if (!confirm('Bạn có chắc chắn muốn xóa link này không?')) return;
+      const token = localStorage.getItem('aff_token');
+      try {
+        const res = await fetch('/api/links/' + id, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          loadShopeeLinks();
+        } else {
+          alert('Lỗi: ' + data.error);
+        }
+      } catch (e) { alert('Lỗi kết nối'); }
+    }
+
+    // ----------------- MODULE 2: AI ADS CONTENT GENERATION -----------------
     document.getElementById('aiContentForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!currentUser) {
@@ -1162,9 +1504,12 @@
               <div class="text-xs text-slate-700 whitespace-pre-line leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-100 font-sans">${escapeHtml(post.content)}</div>
               <div class="text-[11px] text-blue-600 font-semibold font-mono">${escapeHtml(post.hashtags)}</div>
 
-              <div class="pt-2 flex gap-2">
+              <div class="pt-2 flex flex-wrap gap-2">
+                <button onclick="sendToFanpage(\`${escapeJs(post.headline)}\`, \`${escapeJs(post.content + '\n\n' + post.hashtags)}\`)" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-robot"></i> Đăng Lên Fanpage (Auto-Pilot)
+                </button>
                 <button onclick="sendToCampaignForm(\`${escapeJs(post.headline)}\`, \`${escapeJs(post.content)}\`)" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 transition">
-                  <i class="fa-solid fa-rocket"></i> Dùng Bài Này Để Chạy Ads Ngay
+                  <i class="fa-solid fa-rocket"></i> Dùng Cho Ads
                 </button>
               </div>
             </div>
@@ -1189,10 +1534,17 @@
       }
     });
 
+    function sendToFanpage(title, content) {
+      document.getElementById('fbPostTitleInput').value = title;
+      document.getElementById('fbPostContentInput').value = content;
+      switchMainTab('tab3');
+      alert('Đã chuyển bài viết sang Tab Fanpage Auto-Pilot!');
+    }
+
     function sendToCampaignForm(title, content) {
       document.getElementById('campName').value = 'Chiến dịch: ' + title.slice(0, 40);
       document.getElementById('campPostContent').value = content;
-      switchMainTab('tab2');
+      switchMainTab('tab5');
       alert('Đã chuyển bài viết sang Trình Lên Chiến Dịch Ads!');
     }
 
@@ -1772,29 +2124,7 @@
       } catch (e) { alert('Lỗi mô phỏng'); }
     }
 
-    // ----------------- MODULE 4: FACEBOOK INTEGRATION & AUTO-PILOT SCHEDULER -----------------
-    let currentAccountType = 'page';
-
-    function switchAccountType(type) {
-      currentAccountType = type;
-      const btnPage = document.getElementById('btnTypePage');
-      const btnProfile = document.getElementById('btnTypeProfile');
-      const label = document.getElementById('fbTargetLabel');
-      const hint = document.getElementById('fbTargetHint');
-
-      if (type === 'profile') {
-        btnProfile.className = "py-2 rounded-lg bg-white text-blue-700 shadow-sm flex items-center justify-center gap-1.5 transition";
-        btnPage.className = "py-2 rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition";
-        if (label) label.innerHTML = 'Đường dẫn (Link) Facebook Cá Nhân hoặc ID <span class="text-red-500">*</span>:';
-        if (hint) hint.innerHTML = 'Ví dụ: <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-600">https://facebook.com/nguyenvana</code> hoặc <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-600">profile.php?id=1000...</code>';
-      } else {
-        btnPage.className = "py-2 rounded-lg bg-white text-blue-700 shadow-sm flex items-center justify-center gap-1.5 transition";
-        btnProfile.className = "py-2 rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition";
-        if (label) label.innerHTML = 'Đường dẫn (Link) Fanpage hoặc ID Trang <span class="text-red-500">*</span>:';
-        if (hint) hint.innerHTML = 'Ví dụ: <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-600">https://facebook.com/tenfanpage</code> hoặc <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-600">104589234981</code>';
-      }
-    }
-
+    // ----------------- MODULE 3: FANPAGE INTEGRATION & AUTO-PILOT SCHEDULER -----------------
     function toggleAdvancedToken() {
       const section = document.getElementById('advancedTokenSection');
       const text = document.getElementById('advancedTokenToggleText');
@@ -1803,7 +2133,7 @@
         text.innerText = 'Ẩn tùy chọn Token Meta API';
       } else {
         section.classList.add('hidden');
-        text.innerText = 'Thêm Page Access Token (Tùy chọn nâng cao)';
+        text.innerText = 'Thêm Page Access Token (Để đăng ngầm bằng máy chủ)';
       }
     }
 
@@ -1827,26 +2157,21 @@
           const autoBadgeEl = document.getElementById('fbAutoPilotBadge');
 
           if (it.connected) {
-            const isProfile = it.accountType === 'profile';
             const hasToken = it.pageAccessToken && it.pageAccessToken.trim().length > 20;
             badgeEl.className = "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
-            badgeEl.innerText = isProfile 
-              ? "● ĐÃ KẾT NỐI FACEBOOK CÁ NHÂN (1-CLICK DIRECT)" 
-              : (hasToken ? "● ĐÃ KẾT NỐI FANPAGE (META API 100%)" : "● ĐÃ KẾT NỐI FANPAGE (1-CLICK DIRECT)");
+            badgeEl.innerText = hasToken ? "● ĐÃ KẾT NỐI FANPAGE (META API 100%)" : "● ĐÃ KẾT NỐI FANPAGE (1-CLICK DIRECT)";
             nameEl.innerText = it.pageName || it.pageId;
-            subEl.innerText = isProfile
-              ? `Tài khoản: ${it.pageId} | Chế độ Đăng Nhanh 1-Click: Tự copy nội dung & mở FB cá nhân dán đăng an toàn`
-              : (hasToken 
-                  ? `Fanpage: ${it.pageId} | Chế độ Meta Graph API: Tự động đăng ngầm 100% bằng máy chủ` 
-                  : `Fanpage: ${it.pageId} | Chế độ Đăng Nhanh 1-Click: Tự copy bài & mở Fanpage dán đăng trong 1 giây`);
+            subEl.innerText = hasToken 
+              ? `Fanpage: ${it.pageId} | Lĩnh vực: ${it.niche || 'Bán hàng'} | Chế độ Meta Graph API: Tự động đăng ngầm 100% bằng máy chủ` 
+              : `Fanpage: ${it.pageId} | Chế độ Đăng Nhanh 1-Click: Tự copy bài & mở Fanpage dán đăng trong 1 giây`;
             if (it.pageAvatar) {
               avatarEl.innerHTML = `<img src="${it.pageAvatar}" class="w-full h-full object-cover rounded-xl">`;
             }
           } else {
             badgeEl.className = "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-800 text-slate-300";
-            badgeEl.innerText = "○ Chưa Liên Kết Facebook";
-            nameEl.innerText = "Chưa Kết Nối Fanpage / Facebook Cá Nhân";
-            subEl.innerText = "Chỉ cần dán link Facebook của bạn bên dưới để kích hoạt chế độ tự động hóa hoàn toàn.";
+            badgeEl.innerText = "○ Chưa Liên Kết Fanpage";
+            nameEl.innerText = "Chưa Kết Nối Fanpage Facebook";
+            subEl.innerText = "Dán link Fanpage và Token API bên dưới để kích hoạt chế độ tự động hóa hoàn toàn.";
             avatarEl.innerHTML = `<i class="fa-brands fa-facebook-f text-blue-400"></i>`;
           }
 
@@ -1857,7 +2182,9 @@
           }
 
           // Điền form
-          if (it.accountType) switchAccountType(it.accountType);
+          if (it.niche && document.getElementById('fbNicheSelect')) {
+            document.getElementById('fbNicheSelect').value = it.niche;
+          }
           if (it.pageId && document.getElementById('fbTargetInput')) document.getElementById('fbTargetInput').value = it.pageId;
           if (it.pageAccessToken && document.getElementById('fbPageTokenInput')) document.getElementById('fbPageTokenInput').value = it.pageAccessToken;
           if (it.adAccountId && document.getElementById('fbAdAccountInput')) document.getElementById('fbAdAccountInput').value = it.adAccountId;
@@ -1933,8 +2260,8 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang Xác Nhận Kết Nối...';
 
       const payload = {
-        accountType: currentAccountType,
         fbTarget: document.getElementById('fbTargetInput').value.trim(),
+        niche: document.getElementById('fbNicheSelect') ? document.getElementById('fbNicheSelect').value : 'cong_nghe',
         pageAccessToken: document.getElementById('fbPageTokenInput') ? document.getElementById('fbPageTokenInput').value.trim() : '',
         adAccountId: document.getElementById('fbAdAccountInput') ? document.getElementById('fbAdAccountInput').value.trim() : ''
       };
@@ -1957,7 +2284,7 @@
         alert('Lỗi kết nối: ' + err.message);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-link"></i> XÁC NHẬN & LIÊN KẾT NGAY (1-CLICK)';
+        btn.innerHTML = '<i class="fa-solid fa-link"></i> XÁC NHẬN & LIÊN KẾT FANPAGE NGAY';
       }
     });
 
@@ -1992,20 +2319,21 @@
       }
     });
 
-    // Lấy bài viết từ Tab 1
-    function pullContentFromTab1() {
+    // Lấy bài viết từ Tab AI
+    function pullContentFromTabAI() {
       const pName = document.getElementById('aiProductName').value.trim();
       const firstPost = document.querySelector('#aiPostsContainer .whitespace-pre-line');
       if (firstPost) {
         document.getElementById('fbPostTitleInput').value = pName ? `Siêu Sale: ${pName}` : 'Bài viết Flash Sale';
         document.getElementById('fbPostContentInput').value = firstPost.innerText;
-        alert('Đã lấy thành công bài viết AI từ Tab 1 sang!');
+        alert('Đã lấy thành công bài viết AI từ Tab 2 sang!');
       } else {
         document.getElementById('fbPostTitleInput').value = pName ? `Siêu Sale: ${pName}` : 'Bài viết quảng cáo bán hàng';
-        document.getElementById('fbPostContentInput').value = `🔥 [FLASH SALE HÔM NAY] ${pName || 'SẢN PHẨM CHÍNH HÃNG'}!\n\nƯu đãi cực sốc giảm giá đến 50% duy nhất hôm nay cho khách hàng để lại bình luận hoặc nhắn tin trực tiếp cho shop!\n🎁 Tặng mã Freeship toàn quốc.\n👉 Nhắn tin ngay để giữ suất ưu đãi!`;
+        document.getElementById('fbPostContentInput').value = `🔥 [FLASH SALE HÔM NAY] ${pName || 'SẢN PHẨM CHÍNH HÃNG'}!\n\nƯu đãi cực sốc duy nhất hôm nay cho khách hàng để lại bình luận hoặc nhắn tin trực tiếp cho shop!\n🎁 Tặng mã Freeship toàn quốc.\n👉 Nhắn tin ngay để giữ suất ưu đãi!`;
         alert('Đã điền bài viết mẫu sẵn sàng đăng lên Fanpage!');
       }
     }
+    const pullContentFromTab1 = pullContentFromTabAI;
 
     let lastPublishTargetUrl = 'https://facebook.com';
     let lastPublishPostContent = '';
@@ -2018,15 +2346,12 @@
       const sub = document.getElementById('directModalSubtext');
       const policy = document.getElementById('directModalPolicyText');
 
-      if (info.accountType === 'profile') {
-        sub.innerText = 'Trang Facebook Cá Nhân của bạn đã được mở trong tab mới!';
-        policy.innerText = 'Meta (Facebook) đã khóa hoàn toàn API đăng bài vào tài khoản cá nhân từ 2018 để bảo vệ tài khoản người dùng khỏi spam. Do đó, phương pháp nhanh và an toàn 100% là tự động copy bài và dán (Ctrl+V) đăng ngay.';
-      } else if (info.apiError) {
-        sub.innerText = 'Token API không khả dụng hoặc hết hạn. Chuyển sang chế độ Đăng Nhanh!';
-        policy.innerText = `Lỗi từ Meta: "${info.apiError}". Bạn có thể đăng trực tiếp ngay bằng cách dán (Ctrl+V) vào Fanpage đang mở!`;
+      if (info.apiError) {
+        sub.innerText = 'Token API chưa cấu hình hoặc hết hạn. Chuyển sang chế độ Đăng Nhanh!';
+        policy.innerText = `Thông báo từ hệ thống: "${info.apiError}". Nội dung bài viết đã được tự động sao chép vào khay nhớ tạm, bạn chỉ cần bấm Ctrl + V để đăng ngay vào Fanpage đang mở!`;
       } else {
         sub.innerText = 'Trang Fanpage của bạn đã được mở trong tab mới!';
-        policy.innerText = 'Bạn đang dùng chế độ Đăng Nhanh 1-Click (không cần cài đặt mã Token phức tạp). Nội dung đã được copy sẵn, chỉ cần bấm Ctrl+V để đăng!';
+        policy.innerText = 'Bạn đang dùng chế độ Đăng Nhanh 1-Click. Nội dung bài viết đã được tự động sao chép sẵn vào bộ nhớ tạm, chỉ cần nhấn phím Ctrl + V trên Facebook là hoàn tất!';
       }
 
       modal.classList.remove('hidden');
@@ -2328,6 +2653,7 @@
 
     checkAuth();
     applyProductPreset('headphone');
+    loadShopeeLinks();
   </script>
 </body>
 </html>

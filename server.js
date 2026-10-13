@@ -18,6 +18,11 @@ const {
   saveFbIntegration,
   getScheduledQueue,
   saveScheduledQueue,
+  getStoredLinks,
+  getStoredLink,
+  saveStoredLink,
+  deleteStoredLink,
+  incrementLinkClicks,
   hashPassword,
   generateToken,
   verifyToken
@@ -141,6 +146,915 @@ function sanitizeUser(user) {
   };
 }
 
+// ----------------- SHOPEEFB DEEPLINKER CORE ENGINE (CHUYỂN LINK SHOPEE MỞ APP) -----------------
+
+function attachTrackingParams(url, { subId, utmSource, utmMedium, utmCampaign }) {
+  try {
+    const u = new URL(url);
+    if (subId) u.searchParams.set('sub_id', subId);
+    if (utmSource) u.searchParams.set('utm_source', utmSource);
+    if (utmMedium) u.searchParams.set('utm_medium', utmMedium);
+    if (utmCampaign) u.searchParams.set('utm_campaign', utmCampaign);
+    return u.toString();
+  } catch (e) {
+    return url;
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function renderBridgePage(req, res, linkData, currentUrl) {
+  const userAgent = req.headers['user-agent'] || '';
+  const isBot = /facebookexternalhit|Facebot|Twitterbot|Pinterest|LinkedInBot|WhatsApp|TelegramBot|Slackbot|Googlebot|bingbot/i.test(userAgent);
+  const hasVoucher = Boolean(linkData.voucher);
+  const hasFbPixel = Boolean(linkData.fbPixel);
+  const hasTiktokPixel = Boolean(linkData.tiktokPixel);
+
+  const html = `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>${escapeHtml(linkData.title)}</title>
+  <meta name="description" content="${escapeHtml(linkData.description)}">
+  
+  <meta property="fb:app_id" content="966242223397117">
+  <meta property="og:site_name" content="Shopee">
+  <meta property="og:locale" content="vi_VN">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="${currentUrl}">
+  <meta property="og:title" content="${escapeHtml(linkData.title)}">
+  <meta property="og:description" content="${escapeHtml(linkData.description)}">
+  <meta property="og:image" content="${escapeHtml(linkData.imageUrl)}">
+  <meta property="og:image:secure_url" content="${escapeHtml(linkData.imageUrl)}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="${escapeHtml(linkData.title)}">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml(linkData.title)}">
+  <meta name="twitter:description" content="${escapeHtml(linkData.description)}">
+  <meta name="twitter:image" content="${escapeHtml(linkData.imageUrl)}">
+
+  ${hasFbPixel ? `
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '${escapeHtml(linkData.fbPixel)}');
+    fbq('track', 'PageView');
+    fbq('track', 'ViewContent', { content_name: '${escapeHtml(linkData.title)}' });
+    fbq('track', 'AddToCart');
+  </script>
+  ` : ''}
+
+  ${hasTiktokPixel ? `
+  <script>
+    !function (w, d, t) {
+      w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+      ttq.load('${escapeHtml(linkData.tiktokPixel)}');
+      ttq.page();
+      ttq.track('ViewContent');
+    }(window, document, 'ttq');
+  </script>
+  ` : ''}
+
+  ${isBot ? '<!-- Bot crawl meta -->' : `
+  <script>
+    (function() {
+      var targetUrl = ${JSON.stringify(linkData.targetUrl)};
+      var voucher = ${JSON.stringify(linkData.voucher || '')};
+      if (voucher && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(voucher).catch(function() {});
+      }
+      var ua = navigator.userAgent || '';
+      var isAndroid = /android/i.test(ua);
+      var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+
+      function doRedirect() {
+        if (isAndroid) {
+          var cleanUrl = targetUrl.replace(/^https?:\\/\\//, '');
+          var fallback = encodeURIComponent(targetUrl);
+          window.location.replace('intent://' + cleanUrl + '#Intent;scheme=https;package=com.shopee.vn;S.browser_fallback_url=' + fallback + ';end;');
+        } else if (isIOS) {
+          window.location.replace('shopee://open?url=' + encodeURIComponent(targetUrl));
+          setTimeout(function() {
+            window.location.replace(targetUrl);
+          }, 300);
+        } else {
+          window.location.replace(targetUrl);
+        }
+      }
+
+      var delay = ${(hasFbPixel || hasTiktokPixel) ? 250 : 0};
+      if (delay > 0) {
+        setTimeout(doRedirect, delay);
+      } else {
+        doRedirect();
+      }
+    })();
+  </script>
+  `}
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .card {
+      background: #ffffff;
+      max-width: 420px;
+      width: 100%;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      border: 1px solid #e2e8f0;
+    }
+    .thumb {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-bottom: 16px;
+    }
+    .title {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      line-height: 1.4;
+      color: #0f172a;
+    }
+    .voucher-box {
+      background: #fff7ed;
+      border: 1px dashed #ea580c;
+      padding: 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #c2410c;
+      margin: 12px 0;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #ee4d2d, #ff5722);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 15px;
+      border-radius: 14px;
+      margin-top: 14px;
+      box-shadow: 0 4px 12px rgba(238, 77, 45, 0.3);
+      box-sizing: border-box;
+    }
+    .tips {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="${escapeHtml(linkData.imageUrl)}" alt="Preview" class="thumb">
+    <div class="title">${escapeHtml(linkData.title)}</div>
+    ${hasVoucher ? `<div class="voucher-box">🎁 Đã tự động sao chép mã giảm giá: <b>${escapeHtml(linkData.voucher)}</b></div>` : ''}
+    <a href="${escapeHtml(linkData.targetUrl)}" class="btn">🛍️ MỞ ỨNG DỤNG SHOPEE NGAY</a>
+    <div class="tips">Đang kết nối ứng dụng Shopee... Nếu máy không tự mở, hãy bấm nút trên.</div>
+  </div>
+</body>
+</html>`;
+
+  res.send(html);
+}
+
+// API Tạo link ShopeeFB DeepLinker
+app.post('/api/create', async (req, res) => {
+  let {
+    targetUrl,
+    title,
+    description,
+    imageUrl,
+    voucher,
+    subId,
+    fomo,
+    isAdsMode,
+    fbPixel,
+    tiktokPixel,
+    zaloGroup,
+    utmSource,
+    utmMedium,
+    utmCampaign
+  } = req.body;
+
+  if (!targetUrl) {
+    return res.status(400).json({ error: 'Vui lòng cung cấp đường dẫn Shopee!' });
+  }
+
+  if (!req.user) {
+    return res.status(401).json({ error: 'Vui lòng Đăng nhập tài khoản để tạo link Shopee!' });
+  }
+
+  const user = req.user;
+  const planInfo = PLANS[user.plan] || PLANS.free;
+  const limit = user.linksLimit || planInfo.linkLimit;
+
+  if (user.linksUsed >= limit && user.role !== 'admin') {
+    return res.status(403).json({
+      error: `Bạn đã sử dụng hết hạn mức (${user.linksUsed}/${limit} link) của gói ${planInfo.name}. Vui lòng nâng cấp gói để tạo thêm link!`,
+      limitExceeded: true,
+      currentPlan: user.plan
+    });
+  }
+
+  if (!/^https?:\/\//i.test(targetUrl)) {
+    targetUrl = 'https://' + targetUrl;
+  }
+
+  targetUrl = attachTrackingParams(targetUrl, {
+    subId: subId || (isAdsMode ? 'fb_ads' : ''),
+    utmSource: utmSource || (isAdsMode ? 'facebook_ads' : ''),
+    utmMedium: utmMedium || (isAdsMode ? 'cpc' : ''),
+    utmCampaign: utmCampaign || ''
+  });
+
+  const id = generateId('s', 6);
+  const newLink = {
+    id,
+    userId: user.id,
+    targetUrl,
+    title: title || 'Siêu Sale Shopee - Mua Ngay Giá Tốt',
+    description: description || 'Ưu đãi giảm giá cực sốc hôm nay trên Shopee. Bấm để xem chi tiết và nhận quà tặng!',
+    imageUrl: imageUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&h=630&fit=crop',
+    voucher: voucher || '',
+    subId: subId || '',
+    fomo: fomo !== false,
+    isAdsMode: !!isAdsMode,
+    fbPixel: fbPixel || '',
+    tiktokPixel: tiktokPixel || '',
+    zaloGroup: zaloGroup || '',
+    clicks: 0,
+    createdAt: new Date().toISOString()
+  };
+
+  await saveStoredLink(newLink);
+
+  user.linksUsed = (user.linksUsed || 0) + 1;
+  await saveUser(user);
+
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.get('host');
+  const shortUrl = `${protocol}://${host}/r/${id}`;
+
+  res.json({
+    success: true,
+    shortUrl,
+    id,
+    link: newLink,
+    quota: {
+      used: user.linksUsed,
+      limit
+    }
+  });
+});
+
+// Lấy danh sách link cá nhân của user
+app.get('/api/links', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const links = await getStoredLinks(req.user.id);
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.get('host');
+
+  let list = Object.values(links);
+  list = list
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map(item => ({
+      ...item,
+      shortUrl: `${protocol}://${host}/r/${item.id}`
+    }));
+
+  res.json({ success: true, list });
+});
+
+// Xóa link
+app.delete('/api/links/:id', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const success = await deleteStoredLink(req.params.id, req.user.id);
+  if (!success) return res.status(404).json({ error: 'Không tìm thấy link hoặc không có quyền xóa' });
+  res.json({ success: true, message: 'Đã xóa link thành công' });
+});
+
+// Chuyển hướng link rút gọn Shopee
+app.get('/r/:id', async (req, res) => {
+  const { id } = req.params;
+  const linkData = await getStoredLink(id);
+
+  if (!linkData) {
+    return res.status(404).send('<h1>404 - Liên kết không tồn tại hoặc đã hết hạn</h1>');
+  }
+
+  await incrementLinkClicks(id);
+
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.get('host');
+  const currentUrl = `${protocol}://${host}/r/${id}`;
+
+  renderBridgePage(req, res, linkData, currentUrl);
+});
+
+// ----------------- MULTI-NICHE AI COPYWRITING ENGINE -----------------
+
+function generateNichePosts(productName, category, priceText, promoText, salePrice, originalPrice) {
+  const pNameUpper = productName.toUpperCase();
+  const slug = slugify(productName);
+  const sPrice = salePrice || 'GIÁ CỰC TỐT';
+  const oPrice = originalPrice || 'giá niêm yết';
+
+  if (category === 'thoi_trang') {
+    return [
+      {
+        formula: 'AIDA - Phong Cách & Tôn Dáng Thời Thượng',
+        headline: `👗 [OOTD TRENDING] ${pNameUpper} - TÔN DÁNG ĐỈNH CAO, MẶC LÀ ĐẸP!`,
+        content: `✨ NÂNG TẦM GU THỜI TRANG HÔM NAY VỚI ITEM KHÔNG THỂ THIẾU TRONG TỦ ĐỒ!
+Bạn đang tìm kiếm một set đồ vừa thanh lịch khi đi làm, vừa cuốn hút nổi bật khi dạo phố? ${productName} chính là câu trả lời hoàn hảo!
+
+💎 ƯU ĐIỂM NỔI BẬT:
+- Chất vải cao cấp mềm mịn, thoáng mát, co giãn nhẹ không lo bai dão hay xù lông.
+- Thiết kế form dáng chuẩn eo, che khuyết điểm cực khéo, tôn đường cong quyến rũ.
+- Bảng màu sang chảnh, dễ phối cùng phụ kiện, giày dép cho mọi dịp.
+
+🔥 ƯU ĐÃI BST MỚI DUY NHẤT HÔM NAY:
+👉 Mức giá Flash Sale: CHỈ CÒN ${sPrice} (Giá gốc: ${oPrice})
+🎁 ĐẶC QUYỀN: ${promoText}
+📦 Hỗ trợ đổi size trong 7 ngày nếu không vừa vặn.
+
+👇 ĐỂ LẠI BÌNH LUẬN "CHIỀU CAO + CÂN NẶNG" ĐỂ SHOP TƯ VẤN SIZE VÀ GIỮ DEAL NGAY!`,
+        hashtags: `#${slug} #ThoiTrang #OOTD #MixAndMatch #ThoiTrangNu #DoDepMoiNgay #SaleHot`
+      },
+      {
+        formula: 'PAS - Đánh Trúng Nỗi Đau Mặc Xấu / Vải Kém Chất Lượng',
+        headline: `⚠️ MỆT MỎI VÌ MUA QUẦN ÁO ONLINE FORM LỆCH, VẢI NÓNG BÍ?`,
+        content: `Đã bao nhiêu lần bạn háo hức đặt đồ trên mạng nhưng khi nhận về vải thô ráp, mặc vài lần đã mất form?
+
+Đừng để mất tiền oan nữa! ${productName} được may đo tỉ mỉ từng đường kim mũi chỉ:
+✨ Chất liệu tuyển chọn loại 1, thoáng khí suốt ngày dài.
+✨ Đứng form chuẩn như ảnh chụp mẫu thật 100%.
+✨ Đã có hơn 5.000+ khách hàng feedback ưng ý tuyệt đối.
+
+💥 CHỈ CÒN 20 SUẤT TRỢ GIÁ HÔM NAY:
+- Giá ưu đãi: ${priceText}
+- Tặng kèm: ${promoText}
+- Được kiểm tra chất vải kỹ càng trước khi thanh toán!
+
+👉 NHẤN "GỬI TIN NHẮN" NGAY ĐỂ NHẬN ẢNH THẬT VÀ MÃ FREESHIP 0Đ!`,
+        hashtags: `#${slug} #ReviewThoiTrang #VaiDep #FormChuan #ShopUyTin #GiaTot`
+      },
+      {
+        formula: 'FOMO & LIMITED - Sắp Cháy Size Hot Nhất',
+        headline: `🚨 CẢNH BÁO: SIZE ĐẸP CỦA ${pNameUpper} SẮP HẾT SẠCH KHO!`,
+        content: `Vừa về lô mới sáng nay mà các nàng đã nổ inbox đặt gần hết rồi ạ! Mẫu ${productName} này lên dáng thực sự đỉnh chóp, không sắm đợt này là tiếc hùi hụi luôn.
+
+⏰ Duy nhất trong hôm nay:
+- Giảm giá sốc: ${priceText}
+- Miễn phí giao hàng: ${promoText}
+- Hết đợt này xưởng nghỉ may mẫu này ít nhất 2 tháng nữa đấy ạ!
+
+💃 Chần chừ là hết size ưng ý. Bình luận hoặc nhắn tin ngay giữ suất ưu đãi nhé các nàng 👇`,
+        hashtags: `#${slug} #SanSaleThoiTrang #HotTrend #ChayHang #DealHotHomNay`
+      }
+    ];
+  }
+
+  if (category === 'my_pham') {
+    return [
+      {
+        formula: 'AIDA - Dưỡng Da Căng Bóng Chuẩn Chuyên Gia',
+        headline: `✨ [BÍ QUYẾT LÀN DA KHÔNG TUỔI] ${pNameUpper} - CĂNG BÓNG RẠNG RỠ!`,
+        content: `💖 BÍ QUYẾT CHO LÀN DA MỊN MÀNG TỰ NHIÊN MÀ KHÔNG CẦN MAKEUP DÀY CỘP!
+Nếu bạn đang đau đầu vì làn da thâm sạm, thiếu ẩm, xỉn màu và xuất hiện nếp nhăn sớm, hãy bổ sung ngay ${productName} vào chu trình skincare hàng ngày!
+
+🌸 CÔNG NGHỆ & THÀNH PHẦN VÀNG:
+- Cấp ẩm đa tầng, phục hồi hàng rào sinh học bảo vệ da suốt 24h.
+- Hỗ trợ làm sáng đều màu da, mờ thâm nám và se khít lỗ chân lông rõ rệt sau 14 ngày.
+- Kết cấu mỏng nhẹ, thấm nhanh trong 10 giây, không nhờn rít, không bít tắc.
+- 100% không cồn, không paraben, an toàn tuyệt đối cho mọi loại da kể cả da nhạy cảm.
+
+🔥 ƯU ĐÃI CHĂM SÓC DA ĐẶC BIỆT:
+👉 Giá trải nghiệm hôm nay: ${sPrice} (Giá niêm yết: ${oPrice})
+🎁 Quà tặng kèm: ${promoText}
+🛡️ Cam kết 100% hàng chính hãng, bồi thường 200% nếu phát hiện hàng giả!
+
+👇 NHẮN TIN TÌNH TRẠNG DA ĐỂ ĐƯỢC CHUYÊN VIÊN TƯ VẤN MIỄN PHÍ!`,
+        hashtags: `#${slug} #Skincare #DuongDa #MyPhamChinhHang #DaDep #PhucHoiDa #CangBong`
+      },
+      {
+        formula: 'PAS - Cứu Tinh Làn Da Tổn Thương & Nhạy Cảm',
+        headline: `⚠️ DA ĐỔ DẦU NHIỀU, LÊN MỤN VÀ DỄ KÍCH ỨNG? DỪNG NGAY TRƯỚC KHI QUÁ MUỘN!`,
+        content: `Càng dùng nhiều loại mỹ phẩm linh tinh, da càng mỏng yếu và dễ breakout? Đó là do màng ẩm tự nhiên của da bạn đang bị tổn thương nghiêm trọng!
+
+${productName} sinh ra để tái sinh làn da của bạn:
+🌿 Chiết xuất thiên nhiên lành tính, làm dịu tức thì các vết ửng đỏ, mụn viêm.
+🌿 Cân bằng độ pH và độ ẩm chuẩn, kiềm dầu thừa hiệu quả suốt ngày dài.
+🌿 Được kiểm nghiệm lâm sàng bởi các chuyên gia da liễu hàng đầu.
+
+🔥 DEAL ĐỘC QUYỀN HÔM NAY:
+- Giá trợ giá: ${priceText}
+- Khuyến mãi: ${promoText}
+- Đổi trả miễn phí nếu có bất kỳ hiện tượng kích ứng nào.
+
+👉 BÌNH LUẬN ĐỂ NHẬN PHÁC ĐỒ CHĂM SÓC DA RIÊNG CHO BẠN!`,
+        hashtags: `#${slug} #ChamSocDaNhayCam #TriMun #KiemDau #SkincareRoutine #DepTuNhien`
+      },
+      {
+        formula: 'FOMO & REVIEW - Cơn Sốt Mỹ Phẩm Đang Viral',
+        headline: `🌟 HƠN 20.000 CHỊ EM ĐÃ TRẢI NGHIỆM VÀ ĐÁNH GIÁ 5 SAO CHO ${pNameUpper}!`,
+        content: `Lướt TikTok hay Facebook mấy hôm nay thấy chị em khen em ${productName} này rần rần! Dùng thử 1 tuần thôi mà nền da thay đổi rõ rệt, mịn màng và căng bóng mướt mát.
+
+Hiện tại kho chỉ còn đúng 30 suất ưu đãi giá sỉ:
+💰 Giá chỉ: ${priceText}
+🚚 Giao hàng tận nơi: ${promoText}
+📦 Đóng gói chống sốc chuyên dụng, bảo quản nhiệt độ chuẩn.
+
+Chăm sóc da là đầu tư cho chính bản thân mình. Đừng để lỡ cơ hội sở hữu em nó với mức giá hời nhất năm nhé!
+💬 Nhắn tin ngay để giữ suất quà tặng giới hạn 👇`,
+        hashtags: `#${slug} #MyPhamViral #ReviewMyPham #DaDepKhongTyVet #DealMyPham`
+      }
+    ];
+  }
+
+  if (category === 'cong_nghe') {
+    return [
+      {
+        formula: 'AIDA - Đỉnh Cao Hi-Tech & Thông Số Vượt Trội',
+        headline: `⚡ [SIÊU PHẨM CÔNG NGHỆ] ${pNameUpper} - HIỆU NĂNG ĐỈNH, TRẢI NGHIỆM CHẤT!`,
+        content: `🔥 BỨT PHÁ GIỚI HẠN CÔNG NGHỆ VỚI THIẾT BỊ ĐƯỢC MONG CHỜ NHẤT NĂM!
+Nếu bạn là tín đồ công nghệ đòi hỏi tốc độ xử lý mượt mà, độ trễ cực thấp và thiết kế tinh tế đẳng cấp, thì ${productName} chính là lựa chọn số 1!
+
+🚀 THÔNG SỐ VÀ CÔNG NGHỆ ĐỘT PHÁ:
+- Chipset thế hệ mới tối ưu hiệu suất, tiết kiệm năng lượng 40%.
+- Pin dung lượng cao cho thời gian sử dụng liên tục cả ngày dài, tích hợp sạc nhanh.
+- Thiết kế công thái học hiện đại, chất liệu nhôm/kính nguyên khối sang trọng, chống va đập.
+- Tương thích hoàn hảo với mọi hệ điều hành iOS, Android, Windows, Mac.
+
+💥 DEAL CÔNG NGHỆ SIÊU SỐC DUY NHẤT HÔM NAY:
+👉 Mức giá Flash Sale: CHỈ CÒN ${sPrice} (Giá niêm yết: ${oPrice})
+🎁 BỘ QUÀ TẶNG: ${promoText}
+🛡️ Bảo hành chính hãng 12 tháng 1-đổi-1 nếu phát sinh lỗi từ nhà sản xuất!
+
+👇 ĐỂ LẠI BÌNH LUẬN HOẶC INBOX ĐỂ NHẬN MÃ GIẢM GIÁ VÀ HƯỚNG DẪN TEST MÁY!`,
+        hashtags: `#${slug} #DoChoiCongNghe #HiTech #SmartDevice #CongNgheMoi #SaleCongNghe`
+      },
+      {
+        formula: 'PAS - Tạm Biệt Phụ Kiện Kém Chất Lượng, Giật Lag',
+        headline: `⚠️ BỰC MÌNH VÌ PHỤ KIỆN RẺ TIỀN PIN YẾU, DÙNG VÀI TUẦN ĐÃ HỎNG?`,
+        content: `Mua đồ công nghệ giá rẻ không rõ nguồn gốc vừa nhanh hỏng, vừa tiềm ẩn nguy cơ chập cháy và làm hỏng cả thiết bị chính của bạn!
+
+Đầu tư một lần cho sự yên tâm dài lâu với ${productName}:
+✅ Đạt chứng nhận an toàn quốc tế CE, FCC, RoHS.
+✅ Bo mạch thông minh tự ngắt khi quá nhiệt, bảo vệ thiết bị tối đa.
+✅ Trải nghiệm âm thanh / kết nối mượt mà không độ trễ khi xem phim, chơi game.
+
+🔥 GIÁ TRỢ GIÁ HÔM NAY:
+- Giá cực tốt: ${priceText}
+- Khuyến mãi: ${promoText}
+- Kiểm tra thiết bị, test tính năng thoải mái trước khi nhận hàng.
+
+👉 NHẤN "GỬI TIN NHẮN" ĐỂ ĐƯỢC HỖ TRỢ KỸ THUẬT VÀ NHẬN VOUCHER!`,
+        hashtags: `#${slug} #CongNgheChinhHang #BaoHanhUyTin #PhuKienXin #DoBenCao`
+      },
+      {
+        formula: 'FOMO & UNBOXING - Săn Deal Đồ Chơi Công Nghệ',
+        headline: `📦 UNBOXING ${pNameUpper} - CHẤT LƯỢNG VƯỢT XA TẦM GIÁ!`,
+        content: `Cầm trên tay em ${productName} mới thấy độ hoàn thiện tinh xảo đến từng chi tiết. Từ cảm giác bấm, độ nhạy cho đến tốc độ phản hồi đều ở mức điểm 10/10.
+
+Kho công nghệ vừa mở thêm đúng 25 suất trợ giá đặc biệt:
+💰 Giá sốc hôm nay: ${priceText}
+🚚 Giao nhanh hỏa tốc: ${promoText}
+🎁 Tặng kèm cáp sạc nhanh / phụ kiện bảo vệ độc quyền.
+
+Nhanh tay trước khi chương trình kết thúc và giá quay lại ban đầu nhé anh em!
+💬 Nhắn tin ngay để nhận link đặt hàng chính hãng 👇`,
+        hashtags: `#${slug} #Unboxing #DealCongNghe #ReviewCongNghe #SieuPhamHiTech`
+      }
+    ];
+  }
+
+  if (category === 'gia_dung') {
+    return [
+      {
+        formula: 'AIDA - Tiện Ích Thông Minh Giải Phóng Sức Lao Động',
+        headline: `🏠 [BẢO BỐI GIA ĐÌNH] ${pNameUpper} - NHÀ CỬA GỌN GÀNG, NẤU DỌN NHÀN TÊNH!`,
+        content: `✨ TIẾT KIỆM 70% THỜI GIAN LÀM VIỆC NHÀ ĐỂ TẬN HƯỞNG CUỘC SỐNG!
+Sau một ngày làm việc mệt mỏi, ai cũng muốn về nhà thư giãn thay vì phải vật lộn với hàng tá việc nhà. Hãy để ${productName} lo liệu mọi việc giúp bạn!
+
+🌟 CÔNG NĂNG VƯỢT TRỘI:
+- Thiết kế thông minh, đa năng, thay thế cho 3-4 thiết bị cồng kềnh truyền thống.
+- Tiết kiệm điện năng, vận hành êm ái, bền bỉ theo năm tháng.
+- Chất liệu cao cấp chuẩn an toàn thực phẩm/chống cháy nổ, dễ dàng vệ sinh sau khi dùng.
+- Tô điểm cho không gian sống thêm phần hiện đại và sang trọng.
+
+🔥 DEAL GIA ĐỤNG HOT NHẤT TUẦN:
+👉 Giá Flash Sale: CHỈ CÒN ${sPrice} (Giá gốc: ${oPrice})
+🎁 ĐẶC QUYỀN ĐI KÈM: ${promoText}
+🛡️ Bảo hành tận nhà 12 tháng, lỗi 1 đổi 1 trong 30 ngày đầu!
+
+👇 ĐỂ LẠI BÌNH LUẬN "ĐẶT HÀNG" ĐỂ NHẬN ƯU ĐÃI VÀ FREESHIP TẬN CỬA!`,
+        hashtags: `#${slug} #GiaDungThongMinh #NhaCuaDoiSong #TienIchGiaDinh #MeoVatGiaDinh`
+      },
+      {
+        formula: 'PAS - Giải Quyết Nỗi Mệt Mỏi Việc Nhà',
+        headline: `⚠️ QUÁ MỆT MỎI VÌ DỌN DẸP BẾP NÚC LỈNH KỈNH MỖI NGÀY?`,
+        content: `Phụ nữ hiện đại vừa phải đi làm vừa phải cáng đáng việc nhà, nếu không có công cụ hỗ trợ thì thực sự kiệt sức!
+
+Hãy để ${productName} trở thành trợ thủ đắc lực trong ngôi nhà bạn:
+✅ Vận hành tự động chỉ với 1 nút bấm, người già hay trẻ nhỏ đều dùng được.
+✅ Nhanh chóng, sạch sẽ, giải phóng hoàn toàn đôi tay của bạn.
+✅ Được hàng ngàn gia đình hiện đại tin dùng và chia sẻ rầm rộ.
+
+🔥 ƯU ĐÃI HÔM NAY:
+- Giá cực tốt: ${priceText}
+- Quà tặng: ${promoText}
+- Kiểm tra hàng và thử máy trực tiếp trước khi nhận.
+
+👉 NHẮN TIN CHO SHOP ĐỂ NHẬN VIDEO HƯỚNG DẪN VÀ MÃ KHUYẾN MÃI!`,
+        hashtags: `#${slug} #GiaiPhongSucLaoDong #NoiTroThongMinh #ChamSocToAm #DoGiaDung`
+      },
+      {
+        formula: 'FOMO & REVIEW - Cơn Sốt Đồ Gia Dụng Tiện Ích',
+        headline: `🔥 ĐỒ GIA DỤNG ĐÁNG MUA NHẤT NĂM NAY - ${pNameUpper}!`,
+        content: `Đúng là biết em ${productName} này sớm hơn thì cuộc sống đã nhàn hơn biết bao nhiêu rồi cả nhà ạ! Ai vào nhà chơi cũng hỏi mua ở đâu mà tiện thế.
+
+Hôm nay shop xả lô hàng xuất khẩu với mức giá siêu hời:
+💰 Giá ưu đãi: ${priceText}
+🚚 Giao hàng toàn quốc: ${promoText}
+📦 Đầy đủ phiếu bảo hành và hướng dẫn tiếng Việt.
+
+Chỉ còn 15 chiếc cuối cùng trong kho. Đặt sớm để không bỏ lỡ deal hời cho tổ ấm nhé!
+💬 Nhắn tin ngay để giữ suất giao hàng hôm nay 👇`,
+        hashtags: `#${slug} #ReviewGiaDung #GiaDungTienIch #MuaSamGiaDinh #DealGiaDung`
+      }
+    ];
+  }
+
+  if (category === 'me_be') {
+    return [
+      {
+        formula: 'AIDA - Dành Trọn Tình Yêu An Toàn Cho Con',
+        headline: `🍼 [DÀNH RIÊNG CHO BÉ YÊU] ${pNameUpper} - AN TOÀN TUYỆT ĐỐI, MẸ AN TÂM!`,
+        content: `💖 MANG ĐẾN CHO CON SỰ CHĂM SÓC DỊU NHẸ VÀ TOÀN DIỆN NHẤT!
+Là cha mẹ, điều quan trọng nhất luôn là sức khỏe và sự an toàn của con. ${productName} được nghiên cứu chuyên biệt để đồng hành cùng từng cột mốc phát triển của bé!
+
+🌱 ĐẶC ĐIỂM NỔI BẬT:
+- 100% chất liệu Organic cao cấp, không chứa BPA hay hóa chất độc hại, thân thiện với làn da nhạy cảm của bé.
+- Thiết kế thông thái, hỗ trợ bé phát triển tự nhiên, ăn ngon ngủ ngoan hơn mỗi ngày.
+- Dễ dàng vệ sinh, tiệt trùng, tiện lợi cho mẹ khi mang theo ra ngoài.
+
+🎁 ƯU ĐÃI ĐẶC QUYỀN MẸ VÀ BÉ:
+👉 Mức giá trợ giá: CHỈ CÒN ${sPrice} (Giá niêm yết: ${oPrice})
+🎁 QUÀ TẶNG KÈM: ${promoText}
+🛡️ Cam kết đạt chuẩn chứng nhận an toàn cho trẻ sơ sinh và trẻ nhỏ.
+
+👇 BÌNH LUẬN TUỔI CỦA BÉ ĐỂ SHOP TƯ VẤN SẢN PHẨM PHÙ HỢP NHẤT NHÉ MẸ!`,
+        hashtags: `#${slug} #MeVaBe #ChamSocBe #MeBimSua #DoDungChoBe #AnToanChoTre`
+      },
+      {
+        formula: 'PAS - Thấu Hiểu Nỗi Lòng Mẹ Bỉm Chăm Con Vất Vả',
+        headline: `⚠️ MẸ MẤT NGỦ, KIỆT SỨC VÌ CHĂM CON QUÁ VẤT VẢ MỖI NGÀY?`,
+        content: `Chăm con nhỏ chưa bao giờ là điều dễ dàng, nhất là những lúc bé quấy khóc, lười ăn hay khó ngủ...
+
+${productName} sẽ san sẻ bớt gánh nặng chăm con cùng mẹ:
+🧸 Giúp mẹ chăm bé nhàn tênh, khoa học và đúng cách hơn.
+🧸 Bé hợp tác ngoan ngoãn, mẹ có thêm thời gian nghỉ ngơi phục hồi sức khỏe.
+🧸 Được cộng đồng hơn 30.000+ mẹ bỉm sữa thông thái tin cậy lựa chọn.
+
+🔥 DEAL YÊU THƯƠNG HÔM NAY:
+- Giá cực tốt: ${priceText}
+- Tặng kèm: ${promoText}
+- Đổi mới nếu có bất kỳ lỗi nào từ nhà sản xuất.
+
+👉 NHẮN TIN NGAY CHO SHOP ĐỂ NHẬN CẨM NANG CHĂM BÉ MIỄN PHÍ!`,
+        hashtags: `#${slug} #KinhNghiemNuoiCon #MeBimThongThai #SanSeCungMe #YeuConDungCach`
+      },
+      {
+        formula: 'FOMO & MẸ BỈM REVIEW - Lan Tỏa Mẹo Chăm Con',
+        headline: `🎉 BẢO BỐI CHĂM BÉ ĐƯỢC CÁC MẸ BỈM TRUYỀN TAI NHAU NHIỀU NHẤT!`,
+        content: `Mẹ nào đang trong giai đoạn chăm bé thì nhất định phải tậu ngay em ${productName} này nhé, thật sự là "cứu tinh" của mẹ luôn đấy ạ!
+
+Đợt khuyến mãi tri ân tháng này chỉ còn lại vài combo cuối cùng:
+💰 Giá ưu đãi: ${priceText}
+🚚 Giao nhanh tận nhà: ${promoText}
+📦 Đóng gói cẩn thận, bọc chống bụi bẩn tuyệt đối.
+
+Nhanh tay giữ suất để dành những điều tốt đẹp nhất cho thiên thần nhỏ của bạn nhé mẹ ơi!
+💬 Nhắn tin cho shop ngay bên dưới 👇`,
+        hashtags: `#${slug} #NuoiConNhan #BaoBoiCuaMe #DealMeBe #MeBimSanSale`
+      }
+    ];
+  }
+
+  if (category === 'suc_khoe') {
+    return [
+      {
+        formula: 'AIDA - Dinh Dưỡng Vàng & Sức Khỏe Toàn Diện',
+        headline: `🌿 [BẢO VỆ SỨC KHỎE CHỦ ĐỘNG] ${pNameUpper} - NĂNG LƯỢNG TRÀN ĐẦY MỖI NGÀY!`,
+        content: `💪 SỨC KHỎE LÀ TÀI SẢN VÔ GIÁ - ĐỪNG ĐỂ ĐẾN KHI CƠ THỂ LÊN TIẾNG MỚI BẮT ĐẦU CHĂM SÓC!
+Nếu bạn thường xuyên cảm thấy mệt mỏi, uể oải, suy giảm đề kháng sau những ngày làm việc căng thẳng, ${productName} chính là người bạn đồng hành không thể thiếu!
+
+🌱 THÀNH PHẦN & CÔNG DỤNG VƯỢT TRỘI:
+- Chiết xuất tự nhiên 100%, bổ sung dưỡng chất và vi khoáng thiết yếu cho cơ thể.
+- Hỗ trợ thanh lọc, tăng cường miễn dịch, giúp ăn ngon miệng và ngủ sâu giấc.
+- Quy trình sản xuất đạt chuẩn GMP quốc tế và chứng nhận an toàn thực phẩm của Bộ Y Tế.
+- Dạng dùng tiện lợi, dễ hấp thu tối đa vào cơ thể.
+
+🔥 ƯU ĐÃI CHĂM SÓC SỨC KHỎE DUY NHẤT HÔM NAY:
+👉 Mức giá trải nghiệm: CHỈ CÒN ${sPrice} (Giá niêm yết: ${oPrice})
+🎁 ĐẶC QUYỀN ĐI KÈM: ${promoText}
+🛡️ Cam kết hàng chính hãng 100%, bồi thường 500% nếu phát hiện hàng nhái!
+
+👇 ĐỂ LẠI BÌNH LUẬN ĐỂ ĐƯỢC DƯỢC SĨ TƯ VẤN LIỆU TRÌNH PHÙ HỢP NHẤT CHO BẠN!`,
+        hashtags: `#${slug} #SucKhoe #ThucPhamChucNang #DinhDuongVang #TangDeKhang #SongKhoeMoiNgay`
+      },
+      {
+        formula: 'PAS - Đánh Thức Nỗi Đau Cơ Thể Suy Nhược & Stress',
+        headline: `⚠️ THƯỜNG XUYÊN MẤT NGỦ, ĐAU MỎI VÀ ĐỀ KHÁNG KÉM? CƠ THỂ BẠN ĐANG CẢNH BÁO!`,
+        content: `Cuộc sống bận rộn với áp lực công việc khiến chúng ta ăn uống thất thường, thiếu chất và lão hóa nhanh hơn mỗi ngày!
+
+Đừng chủ quan với sức khỏe của chính mình và người thân. Hãy bổ sung ${productName} ngay hôm nay:
+✅ Phục hồi thể lực và đào thải độc tố tích tụ lâu ngày.
+✅ Tăng cường tuần hoàn máu, tinh thần sảng khoái, tập trung làm việc hiệu quả.
+✅ Được hàng chục ngàn khách hàng tin dùng và phản hồi sức khỏe cải thiện rõ rệt sau 2 tuần.
+
+🔥 DEAL ĐỘC QUYỀN TRÊN BÀI VIẾT NÀY:
+- Mức giá trợ giá: ${priceText}
+- Quà tặng sức khỏe: ${promoText}
+- Đóng gói cẩn thận, miễn phí giao tận nhà.
+
+👉 NHẤN "GỬI TIN NHẮN" HOẶC ĐỂ LẠI SỐ ĐIỆN THOẠI ĐỂ ĐƯỢC CHUYÊN VIÊN TƯ VẤN MIỄN PHÍ!`,
+        hashtags: `#${slug} #PhucHoiSucKhoe #ThanhLocCoThe #TangCuongMienDich #KhoeDepMoiNgay`
+      },
+      {
+        formula: 'FOMO & CHĂM SÓC GIA ĐÌNH - Món Quà Ý Nghĩa Nhất',
+        headline: `🎁 MÓN QUÀ SỨC KHỎE Ý NGHĨA NHẤT DÀNH TẶNG BẢN THÂN VÀ CHA MẸ - ${pNameUpper}!`,
+        content: `Không có món quà nào quý giá hơn sự khỏe mạnh của những người thân yêu. ${productName} chính là sự lựa chọn chu đáo và tinh tế nhất!
+
+Shop đang có chương trình trợ giá tri ân sức khỏe cộng đồng:
+💰 Giá ưu đãi hôm nay: ${priceText}
+🚚 Giao hàng hỏa tốc: ${promoText}
+📦 Đầy đủ tem chống giả và mã QR kiểm tra nguồn gốc xuất xứ.
+
+Chỉ còn đúng 20 hộp cuối cùng cho mức giá ưu đãi này. Hãy nhanh tay đặt ngay trước khi hết hàng nhé cả nhà!
+💬 Nhắn tin cho shop ngay bên dưới 👇`,
+        hashtags: `#${slug} #MonQuaSucKhoe #BaoHieuChaMe #DealSucKhoe #YeuThuongGiaDinh`
+      }
+    ];
+  }
+
+  if (category === 'am_thuc') {
+    return [
+      {
+        formula: 'AIDA - Hương Vị Đậm Đà & Kích Thích Vị Giác',
+        headline: `🤤 [MÓN NGON KHÓ CƯỠNG] ${pNameUpper} - THƠM NGON CHUẨN VỊ, CÀNG ĂN CÀNG MÊ!`,
+        content: `✨ TÍN ĐỒ ẨM THỰC NHẤT ĐỊNH KHÔNG THỂ BỎ QUA SIÊU PHẨM NÀY!
+Chỉ cần mở nắp thôi là hương thơm nức mũi đã lan tỏa, cắn một miếng cảm nhận ngay vị ngon đậm đà tan chảy trên đầu lưỡi! ${productName} sẽ làm bùng nổ mọi giác quan của bạn!
+
+🌟 ĐIỂM CỘNG ĐỘC QUYỀN:
+- Nguyên liệu tươi ngon thượng hạng tuyển chọn kỹ lưỡng, quy trình chế biến khép kín an toàn vệ sinh 100%.
+- Công thức nêm nếm gia truyền chuẩn vị, cay cay ngọt ngọt đậm đà khó quên.
+- Đóng hộp/túi zip tiện lợi, giữ trọn độ giòn thơm và dễ dàng mang theo khi đi làm, đi chơi.
+
+🔥 DEAL ĂN VẶT CỰC ĐÃ DUY NHẤT HÔM NAY:
+👉 Mức giá siêu hời: CHỈ CÒN ${sPrice} (Giá niêm yết: ${oPrice})
+🎁 ĐẶC QUYỀN ĐI KÈM: ${promoText}
+🚚 Giao hàng siêu nhanh toàn quốc, bảo quản tươi ngon tận tay!
+
+👇 BÌNH LUẬN "ĐẶT NGAY" HOẶC NHẮN TIN ĐỂ SHOP SHIP HỎA TỐC ĂN LIỀN NÀO!`,
+        hashtags: `#${slug} #AnVatNgon #MonNgonMoiNgay #AmThucViet #DoAnVat #GiaoHangNhanh`
+      },
+      {
+        formula: 'PAS - Cứu Tinh Cơn Đói Nửa Đêm & Giờ Nghỉ Trưa',
+        headline: `⚠️ ĐANG ĐÓI CỒN CÀO MÀ KHÔNG BIẾT ĂN GÌ VỪA NGON VỪA AN TOÀN?`,
+        content: `Những lúc xem phim đêm khuya hay giờ xế chiều ở văn phòng, cơn thèm ăn ập đến mà ăn đồ ngoài lại sợ dầu mỡ, mất vệ sinh!
+
+Giải pháp cứu cánh tức thì chuẩn ngon - sạch - đã miệng chính là ${productName}:
+🍢 Thỏa mãn cơn thèm ngay tắp lự, ăn hoài không ngán.
+🍢 Chuẩn chứng nhận ATVSTP, nói KHÔNG với chất bảo quản độc hại.
+🍢 Đồ ăn luôn là mẻ mới trong ngày, cam kết thơm giòn rụm!
+
+🔥 ƯU ĐÃI HÔM NAY:
+- Giá cực tốt: ${priceText}
+- Khuyến mãi: ${promoText}
+- Không ngon xin hoàn tiền 100%!
+
+👉 BẤM "GỬI TIN NHẮN" NGAY ĐỂ LÊN ĐƠN SHIP TẬN BÀN LÀM VIỆC NHÉ!`,
+        hashtags: `#${slug} #AnVatVanPhong #AnDem #CuuDoi #NgonBaChay #FoodLover`
+      },
+      {
+        formula: 'FOMO & MẺ MỚI RA LÒ - Săn Kẻo Hết',
+        headline: `🔥 MẺ ${pNameUpper} MỚI RA LÒ NÓNG HỔI - SỐ LƯỢNG CÓ HẠN!`,
+        content: `Bếp vừa làm xong mẻ mới tinh, thơm nức một góc phố luôn cả nhà ơi! Khách quen đã gom gần nửa lò rồi, chỉ còn lại ít phần cho khách nhanh tay nhất hôm nay!
+
+💰 Giá ưu đãi: ${priceText}
+🚚 Khuyến mãi: ${promoText}
+📦 Hút chân không sạch sẽ, hạn sử dụng rõ ràng.
+
+Đừng để đến tối hết hàng lại tiếc hùi hụi nhé. Bình luận số lượng để bếp giữ phần cho bạn ngay bây giờ!
+💬 Nhắn tin cho shop ngay 👇`,
+        hashtags: `#${slug} #MeMoiRaLo #AnVatHot #Foodie #GiaTotHomNay`
+      }
+    ];
+  }
+
+  if (category === 'sach_giaoduc') {
+    return [
+      {
+        formula: 'AIDA - Nâng Tầm Tư Duy & Bứt Phá Thành Công',
+        headline: `📚 [TRI THỨC THAY ĐỔI CUỘC ĐỜI] ${pNameUpper} - BƯỚC NGOẶT CHO SỰ NGHIỆP CỦA BẠN!`,
+        content: `💡 KHOẢN ĐẦU TƯ SINH LỜI NHẤT CHÍNH LÀ ĐẦU TƯ VÀO BẢN THÂN!
+Bạn có đang cảm thấy mình giậm chân tại chỗ, thiếu động lực hoặc bế tắc trong công việc và tài chính? ${productName} chính là chiếc chìa khóa khai mở tiềm năng vô hạn bên trong bạn!
+
+📖 NỘI DUNG ĐẶC BIỆT CỦA TÁC PHẨM:
+- Chắt lọc tinh hoa từ các chuyên gia hàng đầu, bài học thực chiến ứng dụng được ngay vào thực tế.
+- Hệ thống hóa tư duy giải quyết vấn đề, nâng cao hiệu suất làm việc và làm chủ tài chính.
+- Lối hành văn mạch lạc, hấp dẫn, dễ hiểu và truyền cảm hứng mạnh mẽ.
+- Bìa in ấn cao cấp, giấy chống lóa mỏi mắt, phù hợp đọc và làm quà tặng ý nghĩa.
+
+🔥 ƯU ĐÃI TRI THỨC ĐẶC BIỆT HÔM NAY:
+👉 Mức giá trợ giá: CHỈ CÒN ${sPrice} (Giá bìa: ${oPrice})
+🎁 ĐẶC QUYỀN ĐI KÈM: ${promoText}
+📦 Tặng kèm bookmark độc quyền + Ebook tài liệu bổ trợ giá trị!
+
+👇 ĐỂ LẠI BÌNH LUẬN "ĐỌC SÁCH" HOẶC INBOX ĐỂ NHẬN SÁCH CÙNG QUÀ TẶNG NGAY HÔM NAY!`,
+        hashtags: `#${slug} #SachHay #PhatTrienBanThan #DocSachMoiNgay #TuDuyThanhCong #GiaoDuc`
+      },
+      {
+        formula: 'PAS - Thoát Khỏi Vòng Lặp Bế Tắc & Mông Lung',
+        headline: `⚠️ MỆT MỎI VÌ MÔNG LUNG, THIẾU ĐỊNH HƯỚNG VÀ BỎ LỠ NHIỀU CƠ HỘI?`,
+        content: `Nếu bạn cứ tiếp tục làm theo cách cũ, bạn sẽ chỉ nhận lại kết quả cũ. Đã đến lúc nâng cấp tư duy và hành động khác đi!
+
+${productName} đã thay đổi tư duy và cuộc đời của hơn 50.000+ độc giả:
+🎯 Rõ ràng lộ trình từng bước để đạt được mục tiêu ngắn hạn và dài hạn.
+🎯 Khắc phục sự trì hoãn, rèn luyện kỷ luật thép và sự tự tin vững vàng.
+🎯 Nhìn thấu các quy luật kinh doanh và tâm lý con người trong thế giới hiện đại.
+
+🔥 DEAL TRI THỨC HÔM NAY:
+- Giá cực tốt: ${priceText}
+- Khuyến mãi: ${promoText}
+- Sách thật 100% từ nhà xuất bản, đền tiền gấp 10 lần nếu sách lậu!
+
+👉 NHẤN "GỬI TIN NHẮN" ĐỂ ĐƯỢC GIAO TẬN TAY CUỐN SÁCH GỐI ĐẦU GIƯỜNG NÀY!`,
+        hashtags: `#${slug} #SachGoiDauGiuong #ThauHieuBanThan #DinhHuongTuongLai #TriThucLaSucManh`
+      },
+      {
+        formula: 'FOMO & BEST-SELLER - Tác Phẩm Đang Được Săn Lùng',
+        headline: `🌟 CUỐN SÁCH BÁN CHẠY NHẤT THÁNG - TÁI BẢN LẦN THỨ 10: ${pNameUpper}!`,
+        content: `Cộng đồng người đọc và các doanh nhân trẻ đang chia sẻ rầm rộ về những bài học đắt giá trong cuốn ${productName} này! Đọc xong mới hiểu tại sao cuốn sách lại được săn đón đến vậy.
+
+Kho phát hành chỉ còn đúng 30 bản có chữ ký tác giả/quà tặng:
+💰 Giá ưu đãi: ${priceText}
+🚚 Giao hàng toàn quốc: ${promoText}
+📦 Đóng bọc chống sốc kỹ càng bảo vệ góc sách nguyên vẹn.
+
+Đừng bỏ lỡ cơ hội nâng cấp tư duy với mức giá tốt nhất trong năm!
+💬 Nhắn tin cho shop ngay bên dưới 👇`,
+        hashtags: `#${slug} #BestSeller #SachKinhDoanh #TuDuyDotPha #SachMoiMoiNgay`
+      }
+    ];
+  }
+
+  if (category === 'xe_co') {
+    return [
+      {
+        formula: 'AIDA - Xế Cưng Đẳng Cấp & Vận Hành An Toàn',
+        headline: `🚗 [NÂNG CẤP XẾ CƯNG] ${pNameUpper} - ĐẲNG CẤP, TIỆN ÍCH, AN TOÀN TRÊN MỌI CUNG ĐƯỜNG!`,
+        content: `✨ TRẢI NGHIỆM LÁI XE HOÀN TOÀN MỚI CHO BÁC TÀI HIỆN ĐẠI!
+Chiếc xe không chỉ là phương tiện di chuyển, mà còn là người bạn đồng hành che mưa che nắng. Hãy trang bị ngay ${productName} để nâng tầm tiện nghi và an toàn tuyệt đối!
+
+🔧 TÍNH NĂNG VƯỢT TRỘI:
+- Thiết kế hiện đại, gia công chính xác, lắp đặt chuẩn zin không cần độ chế hay cắt dây điện.
+- Chất liệu cao cấp chịu nhiệt, chống nước và bền bỉ trong điều kiện thời tiết khắc nghiệt.
+- Giúp xế yêu luôn sạch sẽ, sang trọng và tiện lợi hơn trong mọi hành trình dài.
+- Tương thích với hầu hết các dòng xe phổ biến trên thị trường.
+
+🔥 DEAL PHỤ KIỆN XE CỰC KHỦNG HÔM NAY:
+👉 Mức giá Flash Sale: CHỈ CÒN ${sPrice} (Giá niêm yết: ${oPrice})
+🎁 BỘ QUÀ TẶNG KÈM: ${promoText}
+🛡️ Bảo hành đổi mới 12 tháng, kiểm tra hàng và thử vừa vặn trên xe mới thanh toán!
+
+👇 BÌNH LUẬN "TÊN DÒNG XE + ĐỜI XE" ĐỂ SHOP TƯ VẤN BẢN CHUẨN NHẤT CHO BÁC TÀI!`,
+        hashtags: `#${slug} #DoXe #PhuKienOTo #PhuKienXeMay #ChamSocXe #XeYeu #LaiXeAnToan`
+      },
+      {
+        formula: 'PAS - Giải Quyết Phiền Toái Khi Lái Xe & Bảo Vệ Xe',
+        headline: `⚠️ KHÓ CHỊU VÌ XE BẨN, TRẦY XƯỚC HOẶC THIẾU TIỆN NGHI KHI ĐI XA?`,
+        content: `Lái xe đường dài mà gặp phải những bất tiện vụn vặt vừa gây bực mình vừa dễ mất tập trung khi lái xe!
+
+${productName} sẽ giải quyết triệt để mọi nỗi lo của bạn:
+🛡️ Bảo vệ nội ngoại thất xe luôn như mới, chống trầy xước và hao mòn.
+🛡️ Mang lại sự thoải mái, tiện nghi tối đa cho cả gia đình trên mỗi chuyến đi.
+🛡️ Đã được hơn 15.000+ anh em tài xế trên toàn quốc tin tưởng lựa chọn.
+
+🔥 ƯU ĐÃI TRỢ GIÁ HÔM NAY:
+- Giá cực tốt: ${priceText}
+- Khuyến mãi: ${promoText}
+- Lỗi 1 đổi 1 tận nơi nếu không vừa ý!
+
+👉 NHẤN "GỬI TIN NHẮN" NGAY ĐỂ NHẬN HƯỚNG DẪN LẮP ĐẶT VÀ MÃ FREESHIP!`,
+        hashtags: `#${slug} #BaoVeXe #DoChoiXe #NoiThatOTo #KinhNghiemLaiXe #XeDep`
+      },
+      {
+        formula: 'FOMO & BÁC TÀI REVIEW - Xả Kho Phụ Kiện',
+        headline: `🔥 ĐỒ CHƠI XE ĐƯỢC ANH EM HỘI XE KHEN NỨC NỞ - ${pNameUpper}!`,
+        content: `Lắp em ${productName} này lên xe là thấy khác hẳn luôn các bác ạ! Nhìn xe vừa sang vừa tiện, bạn bè lên xe ai cũng trầm trồ hỏi địa chỉ mua.
+
+Kho phụ kiện đang xả lô cuối cùng với mức giá đại lý:
+💰 Giá ưu đãi hôm nay: ${priceText}
+🚚 Giao nhanh hỏa tốc: ${promoText}
+📦 Đầy đủ phụ kiện kèm video hướng dẫn tự lắp tại nhà trong 5 phút.
+
+Chỉ còn 18 bộ cuối cùng. Đặt ngay để nâng cấp xế cưng chuẩn đẹp nhé các bác!
+💬 Nhắn tin cho shop ngay bên dưới 👇`,
+        hashtags: `#${slug} #HoiLaiXe #ReviewXe #DealPhuKienXe #XeDepXeSang`
+      }
+    ];
+  }
+
+  // Fallback tổng quát cho các ngành khác (khac)
+  return [
+    {
+      formula: 'AIDA (Gây Chú Ý - Tò Mò - Khao Khát - Mua Ngay)',
+      headline: `🔥 [SIÊU ƯU ĐÃI] ${pNameUpper} CHÍNH HÃNG - DUY NHẤT HÔM NAY!`,
+      content: `💥 CHỚP CƠ HỘI SĂN DEAL TỐT NHẤT THÁNG!
+Bạn đang tìm kiếm ${productName} chuẩn xịn, bảo hành uy tín với mức giá hời nhất? Đừng lướt qua bài viết này!
+
+👉 Giá Flash Sale hôm nay: CHỈ CÒN ${sPrice} (Giá niêm yết: ${oPrice})
+🎁 ĐẶC QUYỀN ĐI KÈM HÔM NAY:
+- ${promoText}
+- Cam kết 100% hàng chính hãng, bảo hành dài hạn.
+- Kiểm tra hàng thoải mái trước khi nhận, ưng ý mới thanh toán!
+
+⏳ Số lượng ưu đãi chỉ còn 25 suất cuối cùng cho những ai để lại bình luận hoặc nhắn tin sớm nhất.
+👇 BÌNH LUẬN "MUA NGAY" HOẶC NHẮN TIN TRỰC TIẾP ĐỂ GIỮ SUẤT GIẢM GIÁ!`,
+      hashtags: `#${slug} #ChinhHang #SaleSoc #Freeship #DealHotHomNay`
+    },
+    {
+      formula: 'PAS (Đánh Trúng Nỗi Đau - Đưa Giải Pháp Hoàn Hảo)',
+      headline: `⚠️ ĐỪNG MUA ${pNameUpper} NẾU BẠN CHƯA BIẾT ĐIỀU NÀY!`,
+      content: `Có phải bạn đã từng mất tiền mua phải những sản phẩm kém chất lượng, dùng vài hôm đã hỏng mà không được hỗ trợ bảo hành? 
+
+Đừng để tiền mất tật mang nữa! ${productName} chính là giải pháp nâng cấp trải nghiệm hoàn hảo mà bạn đang tìm kiếm:
+✨ Đạt tiêu chuẩn chất lượng cao cấp, độ bền vượt trội.
+✨ Thiết kế thông minh, tối ưu công năng sử dụng hàng ngày.
+✨ Được hơn 10.000+ khách hàng tin dùng và đánh giá 5 sao.
+
+🔥 DEAL ĐỘC QUYỀN TRÊN BÀI VIẾT NÀY:
+- Mức giá trợ giá: ${priceText}
+- Ưu đãi: ${promoText}
+- Đổi mới 1-1 trong 30 ngày nếu có bất kỳ lỗi nào từ nhà sản xuất.
+
+👉 ĐỂ LẠI BÌNH LUẬN HOẶC NHẤN "GỬI TIN NHẮN" NGAY ĐỂ NHẬN TƯ VẤN & MÃ GIẢM GIÁ ĐỘC QUYỀN!`,
+      hashtags: `#${slug} #ReviewChatLuong #GiaiPhap #UyTin #MuaSamThongMinh`
+    },
+    {
+      formula: 'FOMO & STORYTELLING (Kích Thích Hành Động Nhanh)',
+      headline: `🚨 CẢNH BÁO: CHỈ CÒN VÀI GIỜ NỮA LÀ KẾT THÚC ĐỢT GIẢM GIÁ KHỦNG!`,
+      content: `Vừa trải nghiệm em ${productName} mà mê thực sự cả nhà ơi! Đúng là "tiền nào của nấy", chất lượng vượt xa mong đợi.
+
+Kho vừa báo chỉ còn duy nhất 20 chiếc cuối cùng để kết thúc đợt khuyến mãi này:
+💰 Giá ưu đãi: ${priceText}
+🚚 Giao hàng hỏa tốc - ${promoText}
+📦 Đóng gói cẩn thận 3 lớp, bảo hành chính hãng dài hạn.
+
+Bỏ lỡ hôm nay là ngày mai giá sẽ quay về mức cũ đấy ạ. Nhanh tay kẻo hết suất ưu đãi!
+💬 Nhắn tin ngay cho shop hoặc để lại bình luận bên dưới để nhận mã Freeship 0đ nhé cả nhà 👇`,
+      hashtags: `#${slug} #DealHot #GiaTotMoiNgay #SanSale #SieuPham`
+    }
+  ];
+}
+
 // ----------------- 2. MODULE 1: AI ADS CONTENT & CREATIVE STUDIO -----------------
 
 app.post('/api/ads/generate-content', async (req, res) => {
@@ -172,57 +1086,8 @@ app.post('/api/ads/generate-content', async (req, res) => {
   const priceText = salePrice ? `${salePrice} (Giá gốc: ${originalPrice || 'cao hơn'})` : (originalPrice || 'Ưu đãi cực sốc');
   const promoText = promo || 'Freeship toàn quốc + Tặng quà độc quyền';
 
-  // Thuật toán AI Copywriting sinh 3 góc nhìn bài viết quảng cáo chuyên sâu
-  const posts = [
-    {
-      formula: 'AIDA (Gây Chú Ý - Tò Mò - Khao Khát - Mua Ngay)',
-      headline: `🔥 [XẢ KHO CỰC SỐC] ${productName.toUpperCase()} CHÍNH HÃNG - DUY NHẤT HÔM NAY!`,
-      content: `💥 CHỚP CƠ HỘI SĂN SALE LỚN NHẤT THÁNG!
-Bạn đang tìm kiếm ${productName} chuẩn xịn, bảo hành uy tín với mức giá hời nhất? Đừng lướt qua bài viết này!
-
-👉 Giá Flash Sale hôm nay: CHỈ CÒN ${salePrice || 'GIÁ CỰC TỐT'} (Giá niêm yết: ${originalPrice || 'giá cũ'})
-🎁 ĐẶC QUYỀN ĐI KÈM HÔM NAY:
-- ${promoText}
-- Cam kết 100% hàng chính hãng, phát hiện hàng giả đền tiền gấp đôi.
-- Kiểm tra hàng thoải mái trước khi nhận, ưng ý mới thanh toán!
-
-⏳ Số lượng ưu đãi chỉ còn 25 suất cuối cùng cho những ai để lại bình luận hoặc nhắn tin sớm nhất.
-👇 BÌNH LUẬN "MUA NGAY" HOẶC NHẮN TIN TRỰC TIẾP ĐỂ GIỮ SUẤT GIẢM GIÁ!`,
-      hashtags: `#${slugify(productName)} #GiamGia #FlashSale #ChinhHang #SaleSoc #Freeship`
-    },
-    {
-      formula: 'PAS (Đánh Trúng Nỗi Đau - Đưa Giải Pháp Hoàn Hảo)',
-      headline: `⚠️ ĐỪNG MUA ${productName.toUpperCase()} NẾU BẠN CHƯA BIẾT ĐIỀU NÀY!`,
-      content: `Có phải bạn đã từng mất tiền mua phải những sản phẩm kém chất lượng, dùng vài hôm đã hỏng mà không được hỗ trợ bảo hành? 
-
-Đừng để tiền mất tật mang nữa! ${productName} chính là giải pháp nâng cấp trải nghiệm hoàn hảo mà bạn đang tìm kiếm:
-✨ Đạt tiêu chuẩn chất lượng cao cấp, độ bền vượt trội.
-✨ Thiết kế thông minh, tối ưu công năng sử dụng hàng ngày.
-✨ Được hơn 10.000+ khách hàng tin dùng và đánh giá 5 sao.
-
-🔥 DEAL ĐỘC QUYỀN TRÊN BÀI VIẾT NÀY:
-- Mức giá trợ giá: ${priceText}
-- Ưu đãi: ${promoText}
-- Đổi mới 1-1 trong 30 ngày nếu có bất kỳ lỗi nào từ nhà sản xuất.
-
-👉 ĐỂ LẠI BÌNH LUẬN HOẶC NHẤN "GỬI TIN NHẮN" NGAY ĐỂ NHẬN TƯ VẤN & MÃ GIẢM GIÁ ĐỘC QUYỀN!`,
-      hashtags: `#${slugify(productName)} #ReviewChatLuong #GiaiPhap #UyTin #MuaSamThongMinh`
-    },
-    {
-      formula: 'FOMO & STORYTELLING (Kích Thích Hành Động Nhanh)',
-      headline: `🚨 CẢNH BÁO: CHỈ CÒN VÀI GIỜ NỮA LÀ KẾT THÚC ĐỢT GIẢM GIÁ KHỦNG!`,
-      content: `Vừa bóc seal em ${productName} mà mê thực sự cả nhà ơi! Đúng là "tiền nào của nấy", chất lượng vượt xa mong đợi.
-
-Kho vừa báo chỉ còn duy nhất 20 chiếc cuối cùng để kết thúc đợt khuyến mãi này:
-💰 Giá ưu đãi: ${priceText}
-🚚 Giao hàng hỏa tốc - ${promoText}
-📦 Đóng gói cẩn thận 3 lớp, bảo hành chính hãng dài hạn.
-
-Bỏ lỡ hôm nay là ngày mai giá sẽ quay về mức cũ đấy ạ. Nhanh tay kẻo hết size/hết màu ưng ý!
-💬 Nhắn tin ngay cho shop hoặc để lại bình luận bên dưới để nhận mã Freeship 0đ nhé cả nhà 👇`,
-      hashtags: `#${slugify(productName)} #DealHot #GiaTotMoiNgay #SanSale #SieuPham`
-    }
-  ];
+  // Thuật toán AI Copywriting sinh 3 góc nhìn bài viết quảng cáo chuyên sâu theo từng lĩnh vực riêng biệt
+  const posts = generateNichePosts(productName, category, priceText, promoText, salePrice, originalPrice);
 
   res.json({
     success: true,
@@ -407,7 +1272,7 @@ app.get('/api/fb/settings', async (req, res) => {
 });
 
 // Xác thực kết nối Fanpage & Lưu thông tin
-function parseFacebookTarget(input, type = 'page') {
+function parseFacebookTarget(input) {
   const str = (input || '').trim();
   let cleanId = str;
   let cleanName = '';
@@ -419,41 +1284,40 @@ function parseFacebookTarget(input, type = 'page') {
         cleanId = url.searchParams.get('id');
       } else {
         const parts = url.pathname.split('/').filter(p => p && p !== 'profile.php' && p !== 'pages' && p !== 'groups');
-        cleanId = parts[parts.length - 1] || 'fb_user';
+        cleanId = parts[parts.length - 1] || 'page_shop';
       }
     } catch (e) {
-      cleanId = str.replace(/https?:\/\/(www\.)?(facebook|fb)\.com\//i, '').replace(/\/.*$/, '') || 'fb_user';
+      cleanId = str.replace(/https?:\/\/(www\.)?(facebook|fb)\.com\//i, '').replace(/\/.*$/, '') || 'page_shop';
     }
   }
 
   cleanName = cleanId.replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   if (/^\d+$/.test(cleanId)) {
-    cleanName = (type === 'profile' ? 'Tài Khoản Cá Nhân' : 'Trang Bán Hàng') + ` (#${cleanId.slice(-4)})`;
+    cleanName = `Fanpage Bán Hàng (#${cleanId.slice(-4)})`;
   }
 
   return { cleanId, cleanName };
 }
 
-// Xác thực kết nối Fanpage / Trang Cá Nhân
+// Xác thực kết nối Fanpage Facebook
 app.post('/api/fb/verify-connection', async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Vui lòng đăng nhập' });
   }
 
-  const { accountType, fbTarget, pageId, pageAccessToken, adAccountId } = req.body;
+  const { fbTarget, pageId, pageAccessToken, adAccountId, niche } = req.body;
   const target = (fbTarget || pageId || '').trim();
 
   if (!target && !pageAccessToken) {
-    return res.status(400).json({ error: 'Vui lòng nhập Link Facebook, ID hoặc Tên tài khoản!' });
+    return res.status(400).json({ error: 'Vui lòng nhập Link Fanpage, Page ID hoặc Tên trang!' });
   }
 
-  const type = accountType === 'profile' ? 'profile' : 'page';
-  const { cleanId, cleanName } = parseFacebookTarget(target || 'fb_user', type);
+  const { cleanId, cleanName } = parseFacebookTarget(target || 'page_shop');
   const cleanToken = (pageAccessToken || '').trim();
 
   let verifiedAccount = null;
 
-  // Nếu người dùng cung cấp Token thật, thử gọi Facebook Graph API
+  // Nếu người dùng cung cấp Token thật, gọi Meta Graph API kiểm tra quyền
   if (cleanToken && cleanToken.length > 20) {
     try {
       const fbRes = await fetch(`https://graph.facebook.com/v19.0/${cleanId}?fields=id,name,category,link,picture&access_token=${cleanToken}`);
@@ -462,7 +1326,7 @@ app.post('/api/fb/verify-connection', async (req, res) => {
         verifiedAccount = {
           id: fbData.id,
           name: fbData.name,
-          category: fbData.category || (type === 'profile' ? 'Tài Khoản Cá Nhân' : 'Trang Doanh Nghiệp'),
+          category: fbData.category || 'Trang Fanpage Doanh Nghiệp',
           avatar: fbData.picture?.data?.url || `https://graph.facebook.com/${fbData.id}/picture?type=normal`
         };
       }
@@ -471,16 +1335,12 @@ app.post('/api/fb/verify-connection', async (req, res) => {
     }
   }
 
-  // Kết nối thông minh tức thì nếu không dùng token hoặc token demo
   if (!verifiedAccount) {
-    const isProfile = type === 'profile';
     verifiedAccount = {
       id: cleanId,
-      name: cleanName || (isProfile ? 'Facebook Cá Nhân' : 'Fanpage Bán Hàng'),
-      category: isProfile ? 'Tài Khoản Cá Nhân (Profile)' : 'Trang Fanpage Bán Hàng',
-      avatar: isProfile
-        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
-        : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150',
+      name: cleanName || 'Fanpage Bán Hàng Trực Tuyến',
+      category: 'Trang Fanpage Doanh Nghiệp',
+      avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150',
       isSandbox: !cleanToken
     };
   }
@@ -489,12 +1349,13 @@ app.post('/api/fb/verify-connection', async (req, res) => {
 
   const saved = await saveFbIntegration(req.user.id, {
     connected: true,
-    accountType: type,
+    accountType: 'page',
     pageId: verifiedAccount.id,
     pageName: verifiedAccount.name,
     pageCategory: verifiedAccount.category,
     pageAvatar: verifiedAccount.avatar,
     pageAccessToken: cleanToken,
+    niche: niche || 'cong_nghe',
     adAccountId: (adAccountId || '').trim(),
     fbTarget: target,
     targetUrl: targetUrl,
@@ -503,7 +1364,7 @@ app.post('/api/fb/verify-connection', async (req, res) => {
 
   res.json({
     success: true,
-    message: `🎉 Đã liên kết thành công ${type === 'profile' ? 'Tài khoản cá nhân' : 'Fanpage'}: ${verifiedAccount.name}!`,
+    message: `🎉 Đã liên kết thành công Fanpage: ${verifiedAccount.name}!`,
     integration: saved
   });
 });
@@ -541,15 +1402,16 @@ app.post('/api/fb/publish-now', async (req, res) => {
   if (!integration || !integration.connected) {
     integration = await saveFbIntegration(req.user.id, {
       connected: true,
+      accountType: 'page',
       pageId: 'page_demo_' + req.user.id.slice(-6),
-      pageName: 'Fanpage Bán Hàng Trực Tuyến (Sandbox)',
-      pageCategory: 'Cửa hàng Bán lẻ & Quảng cáo',
+      pageName: 'Fanpage Bán Hàng Trực Tuyến',
+      pageCategory: 'Trang Doanh Nghiệp',
       pageAvatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100',
       isSandbox: true
     });
   }
 
-  const { postTitle, postContent, autoRunAds, dailyBudget } = req.body;
+  const { postTitle, postContent, autoRunAds, dailyBudget, imageUrl } = req.body;
   if (!postContent) {
     return res.status(400).json({ error: 'Vui lòng nhập nội dung bài viết' });
   }
@@ -561,17 +1423,30 @@ app.post('/api/fb/publish-now', async (req, res) => {
   // Nếu người dùng cung cấp Page Access Token thật, gọi Graph API đăng trực tiếp
   if (integration.pageAccessToken && integration.pageAccessToken.trim().length > 20) {
     try {
-      const fbPublishRes = await fetch(`https://graph.facebook.com/v19.0/${integration.pageId}/feed`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: postContent,
-          access_token: integration.pageAccessToken.trim()
-        })
-      });
+      let fbPublishRes;
+      if (imageUrl && imageUrl.startsWith('http')) {
+        fbPublishRes = await fetch(`https://graph.facebook.com/v19.0/${integration.pageId}/photos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            caption: postContent,
+            url: imageUrl,
+            access_token: integration.pageAccessToken.trim()
+          })
+        });
+      } else {
+        fbPublishRes = await fetch(`https://graph.facebook.com/v19.0/${integration.pageId}/feed`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: postContent,
+            access_token: integration.pageAccessToken.trim()
+          })
+        });
+      }
       const fbPublishData = await fbPublishRes.json();
-      if (fbPublishData && fbPublishData.id) {
-        realPostId = fbPublishData.id;
+      if (fbPublishData && (fbPublishData.id || fbPublishData.post_id)) {
+        realPostId = fbPublishData.post_id || fbPublishData.id;
         isLiveApi = true;
       } else if (fbPublishData && fbPublishData.error) {
         apiError = fbPublishData.error.message || 'Lỗi xác thực Meta API';
@@ -582,8 +1457,7 @@ app.post('/api/fb/publish-now', async (req, res) => {
     }
   }
 
-  const isProfile = integration.accountType === 'profile';
-  const targetUrl = integration.targetUrl || (isProfile ? `https://facebook.com/${integration.pageId}` : `https://facebook.com/${integration.pageId}`);
+  const targetUrl = integration.targetUrl || `https://facebook.com/${integration.pageId}`;
   const postId = isLiveApi ? realPostId : `${integration.pageId}_${Date.now()}`;
   const postUrl = isLiveApi ? `https://facebook.com/${realPostId}` : targetUrl;
 
@@ -595,7 +1469,7 @@ app.post('/api/fb/publish-now', async (req, res) => {
     const newCamp = {
       id: generateId('camp', 10),
       userId: req.user.id,
-      name: `Ads Tự Động: ${(postTitle || 'Bài viết mới').slice(0, 35)}`,
+      name: `Ads Fanpage: ${(postTitle || 'Bài viết mới').slice(0, 35)}`,
       objective: 'MESSAGES',
       dailyBudget: budget,
       targetAge: '18-45',
@@ -634,8 +1508,6 @@ app.post('/api/fb/publish-now', async (req, res) => {
     responseMessage = adsResult
       ? '🎉 Đã đăng bài trực tiếp thành công lên Fanpage qua Meta API & Kích hoạt chiến dịch Ads!'
       : '🎉 Đã đăng bài trực tiếp thành công lên Fanpage qua Meta API!';
-  } else if (isProfile) {
-    responseMessage = '📋 Đã tự động sao chép toàn bộ bài viết và mở Facebook cá nhân của bạn! Nhấn Ctrl + V để đăng ngay.';
   } else if (apiError) {
     responseMessage = `⚠️ Meta API: "${apiError}". Hệ thống đã tự động sao chép bài viết và mở Fanpage để bạn dán (Ctrl + V) đăng trực tiếp!`;
   } else {
@@ -646,7 +1518,7 @@ app.post('/api/fb/publish-now', async (req, res) => {
     success: true,
     isLiveApi,
     apiError,
-    accountType: integration.accountType,
+    accountType: 'page',
     targetUrl,
     message: responseMessage,
     postId,
@@ -773,6 +1645,128 @@ app.delete('/api/admin/users/:id', async (req, res) => {
   res.json({ success: true, message: 'Đã xóa người dùng thành công' });
 });
 
+// ----------------- AUTO-PILOT SCHEDULER (QUÉT MỖI PHÚT TỰ ĐỘNG ĐĂNG BÀI LÊN FANPAGE) -----------------
+setInterval(async () => {
+  try {
+    const usersMap = await getAllUsers();
+    const now = new Date();
+    const currentHours = String(now.getHours()).padStart(2, '0');
+    const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+    const currentTimeStr = `${currentHours}:${currentMinutes}`;
+    const todayStr = now.toISOString().slice(0, 10);
+
+    for (const user of Object.values(usersMap)) {
+      const integration = await getFbIntegration(user.id);
+      const queue = await getScheduledQueue(user.id);
+
+      // 1. Kiểm tra Auto-Pilot đăng bài định kỳ mỗi ngày theo giờ vàng đã cài đặt
+      if (integration && integration.connected && integration.autoScheduleEnabled && integration.dailyPostTime) {
+        if (currentTimeStr === integration.dailyPostTime && integration.lastAutoPilotDate !== todayStr) {
+          integration.lastAutoPilotDate = todayStr;
+          await saveFbIntegration(user.id, integration);
+
+          const niche = integration.niche || 'cong_nghe';
+          const sampleProducts = {
+            thoi_trang: 'Bộ sưu tập thời trang công sở & dạo phố cao cấp',
+            my_pham: 'Serum dưỡng trắng căng bóng da mờ thâm nám',
+            cong_nghe: 'Tai nghe Bluetooth không dây chống ồn cao cấp P9',
+            gia_dung: 'Nồi chiên không dầu điện tử thông minh đa năng',
+            me_be: 'Combo chăm sóc sức khỏe mẹ và bé hữu cơ an toàn',
+            suc_khoe: 'Viên uống bổ sung khoáng chất tăng cường đề kháng',
+            am_thuc: 'Đặc sản ăn vặt thơm ngon giòn rụm chuẩn vị',
+            sach_giaoduc: 'Cuốn sách tư duy bứt phá thành công & tài chính',
+            xe_co: 'Bộ phụ kiện nâng cấp nội thất xế yêu sang trọng',
+            khac: 'Sản phẩm Best-Seller siêu ưu đãi trợ giá hôm nay'
+          };
+          const pName = sampleProducts[niche] || sampleProducts.khac;
+          const posts = generateNichePosts(pName, niche, '199.000đ', 'Freeship toàn quốc + Quà tặng độc quyền', '199.000đ', '399.000đ');
+          const chosenPost = posts[Math.floor(Math.random() * posts.length)];
+          const fullContent = `${chosenPost.headline}\n\n${chosenPost.content}\n\n${chosenPost.hashtags}`;
+
+          let postId = null;
+          let postUrl = null;
+          let isLive = false;
+
+          if (integration.pageAccessToken && integration.pageAccessToken.trim().length > 20) {
+            try {
+              const fbRes = await fetch(`https://graph.facebook.com/v19.0/${integration.pageId}/feed`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  message: fullContent,
+                  access_token: integration.pageAccessToken.trim()
+                })
+              });
+              const fbData = await fbRes.json();
+              if (fbData && (fbData.id || fbData.post_id)) {
+                postId = fbData.post_id || fbData.id;
+                postUrl = `https://facebook.com/${postId}`;
+                isLive = true;
+              }
+            } catch (err) {
+              console.error('Lỗi Auto-Pilot đăng bài hàng ngày:', err.message);
+            }
+          }
+
+          queue.unshift({
+            id: generateId('auto', 8),
+            title: `[Auto-Pilot Hàng Ngày] ${pName}`,
+            content: fullContent,
+            status: isLive ? 'PUBLISHED' : 'PUBLISHED_DIRECT',
+            mode: isLive ? 'META_GRAPH_API_AUTOPILOT' : 'DIRECT_PASTE',
+            postId: postId || `${integration.pageId}_${Date.now()}`,
+            postUrl: postUrl || integration.targetUrl || `https://facebook.com/${integration.pageId}`,
+            publishedAt: new Date().toISOString(),
+            adsLaunched: !!integration.autoRunAds
+          });
+          await saveScheduledQueue(user.id, queue.slice(0, 30));
+        }
+      }
+
+      // 2. Quét các bài viết hẹn giờ cụ thể trong hàng đợi
+      if (queue && queue.length > 0) {
+        let modified = false;
+        for (const item of queue) {
+          if (item.status === 'PENDING' && item.scheduleTime) {
+            const schedTime = new Date(item.scheduleTime);
+            if (schedTime <= now) {
+              if (integration && integration.pageAccessToken && integration.pageAccessToken.trim().length > 20) {
+                try {
+                  const fbRes = await fetch(`https://graph.facebook.com/v19.0/${integration.pageId}/feed`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      message: item.content,
+                      access_token: integration.pageAccessToken.trim()
+                    })
+                  });
+                  const fbData = await fbRes.json();
+                  if (fbData && (fbData.id || fbData.post_id)) {
+                    item.status = 'PUBLISHED';
+                    item.postId = fbData.post_id || fbData.id;
+                    item.postUrl = `https://facebook.com/${item.postId}`;
+                    item.publishedAt = new Date().toISOString();
+                    item.mode = 'META_GRAPH_API_AUTOPILOT';
+                    modified = true;
+                  }
+                } catch (err) {
+                  console.error('Lỗi Auto-Pilot đăng bài queue:', err.message);
+                }
+              } else {
+                item.status = 'READY_TO_POST';
+                modified = true;
+              }
+            }
+          }
+        }
+        if (modified) {
+          await saveScheduledQueue(user.id, queue);
+        }
+      }
+    }
+  } catch (e) {}
+}, 60000);
+
 app.listen(PORT, () => {
-  console.log(`Server Facebook Ads Suite đang chạy tại: http://localhost:${PORT}`);
+  console.log(`Server Facebook Ads Suite & ShopeeFB DeepLinker đang chạy tại: http://localhost:${PORT}`);
 });
