@@ -2689,12 +2689,22 @@ app.post('/api/fb/farm/:id/check-token', async (req, res) => {
     const debugData = await debugRes.json();
 
     if (debugData && debugData.data) {
-      const scopes = debugData.data.scopes || [];
+      const d = debugData.data;
+      const scopes = d.scopes || [];
+      const expiresAt = d.expires_at || 0;
+      const isPermanent = expiresAt === 0;
+      const expiresDateStr = expiresAt === 0 
+        ? 'Vĩnh viễn (Never Expires)' 
+        : new Date(expiresAt * 1000).toLocaleString('vi-VN');
+
       return res.json({
         success: true,
         isUserTokenConverted,
         resolvedToken: finalToken,
-        isValid: debugData.data.is_valid,
+        isValid: d.is_valid,
+        expiresAt,
+        isPermanent,
+        expiresDateStr,
         scopes,
         hasManagePosts: scopes.includes('pages_manage_posts'),
         hasManageEngagement: scopes.includes('pages_manage_engagement'),
@@ -2714,6 +2724,98 @@ app.post('/api/fb/farm/:id/check-token', async (req, res) => {
     return res.status(400).json({ error: 'Token không hợp lệ hoặc đã hết hạn.' });
   } catch (err) {
     return res.status(500).json({ error: `Lỗi kiểm tra token: ${err.message}` });
+  }
+});
+
+// Chuyển đổi Short-Lived User Token sang Page Token VĨNH VIỄN (Permanent Never-Expiring Token)
+app.post('/api/fb/exchange-permanent-token', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const { pageId, token, appId, appSecret } = req.body;
+  if (!token || token.trim().length < 20) {
+    return res.status(400).json({ error: 'Vui lòng nhập Access Token cần chuyển đổi' });
+  }
+
+  const cleanToken = token.trim();
+  const cleanAppId = (appId || '').trim();
+  const cleanAppSecret = (appSecret || '').trim();
+
+  try {
+    let longLivedUserToken = cleanToken;
+
+    // Nếu người dùng cung cấp App ID và App Secret, trao đổi token ngắn hạn (1h) thành Long-Lived Token (60 ngày)
+    if (cleanAppId && cleanAppSecret) {
+      const exchangeUrl = `https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${cleanAppId}&client_secret=${cleanAppSecret}&fb_exchange_token=${cleanToken}`;
+      const exRes = await fetch(exchangeUrl);
+      const exData = await exRes.json();
+      if (exData && exData.access_token) {
+        longLivedUserToken = exData.access_token;
+      } else if (exData && exData.error) {
+        return res.status(400).json({ error: `Lỗi đổi Long-Lived Token từ App Meta: ${exData.error.message}` });
+      }
+    }
+
+    // Từ User Token dài hạn (hoặc token hiện tại), gọi /me/accounts để lấy Page Access Token VĨNH VIỄN
+    const accountsRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token,category,picture&access_token=${longLivedUserToken}`);
+    const accountsData = await accountsRes.json();
+
+    if (!accountsData || !Array.isArray(accountsData.data) || accountsData.data.length === 0) {
+      if (accountsData && accountsData.error) {
+        return res.status(400).json({ error: `Lỗi Meta: ${accountsData.error.message}` });
+      }
+      return res.status(400).json({ error: 'Không tìm thấy Fanpage nào từ Token này. Hãy đảm bảo tài khoản cấp đủ quyền pages_show_list.' });
+    }
+
+    // Tìm đúng Page mục tiêu hoặc lấy Page đầu tiên
+    let targetAccount = null;
+    if (pageId) {
+      targetAccount = accountsData.data.find(a => a.id === pageId);
+    }
+    if (!targetAccount) {
+      targetAccount = accountsData.data[0];
+    }
+
+    const permanentPageToken = targetAccount.access_token;
+
+    // Kiểm tra thời hạn của token vừa trích xuất
+    let isPermanent = false;
+    let expiresDateStr = 'Vĩnh viễn (Never Expires)';
+    let scopes = [];
+
+    try {
+      const debugRes = await fetch(`https://graph.facebook.com/v19.0/debug_token?input_token=${permanentPageToken}&access_token=${permanentPageToken}`);
+      const debugData = await debugRes.json();
+      if (debugData && debugData.data) {
+        const d = debugData.data;
+        scopes = d.scopes || [];
+        isPermanent = d.expires_at === 0;
+        expiresDateStr = d.expires_at === 0 ? 'Vĩnh viễn (Never Expires - 24/7)' : new Date(d.expires_at * 1000).toLocaleString('vi-VN');
+      }
+    } catch (e) {}
+
+    // Tự động lưu Token này vào Dàn Nuôi Fanpage nếu pageId đã tồn tại
+    if (pageId) {
+      try {
+        await updateFanpageInFarm(req.user.id, pageId, {
+          accessToken: permanentPageToken,
+          isSandbox: false
+        });
+      } catch (e) {}
+    }
+
+    return res.json({
+      success: true,
+      message: isPermanent 
+        ? `🎉 Đã tạo thành công Token VĨNH VIỄN (Never Expires) cho Fanpage "${targetAccount.name}"!` 
+        : `✅ Đã tạo thành công Page Token cho Fanpage "${targetAccount.name}" (Hạn: ${expiresDateStr})`,
+      pageId: targetAccount.id,
+      pageName: targetAccount.name,
+      permanentToken: permanentPageToken,
+      isPermanent,
+      expiresDateStr,
+      scopes
+    });
+  } catch (err) {
+    return res.status(500).json({ error: `Lỗi máy chủ chuyển đổi Token: ${err.message}` });
   }
 });
 

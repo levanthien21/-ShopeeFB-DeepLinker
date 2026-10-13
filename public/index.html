@@ -1314,14 +1314,37 @@
 
           <div class="flex items-center justify-between pt-1">
             <button type="button" onclick="checkCurrentPageToken()" id="checkTokenBtn" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-[11px] transition flex items-center gap-1 shadow-sm">
-              <i class="fa-solid fa-shield-check"></i> Kiểm Tra Quyền Token
+              <i class="fa-solid fa-shield-check"></i> Kiểm Tra Quyền & Hạn Dùng
             </button>
-            <span id="tokenCheckStatusText" class="text-[11px] text-slate-500 font-medium"></span>
+            <button type="button" onclick="togglePermanentToolBox()" class="px-2.5 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-lg text-[11px] transition flex items-center gap-1">
+              <i class="fa-solid fa-infinity text-emerald-600"></i> Đổi Token Vĩnh Viễn 24/7
+            </button>
+          </div>
+          <div id="tokenCheckStatusText" class="text-[11px] text-slate-600 font-medium pt-0.5"></div>
+
+          <!-- Khu vực công cụ đổi Token Vĩnh Viễn 24/7 -->
+          <div id="permanentToolBox" class="hidden p-3 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-300 rounded-xl space-y-2 text-[11px]">
+            <div class="font-extrabold text-emerald-950 flex items-center gap-1.5">
+              <i class="fa-solid fa-bolt text-emerald-600"></i> Chuyển Đổi Sang Page Token VĨNH VIỄN (Chạy 24/7 Không Hết Hạn)
+            </div>
+            <p class="text-emerald-800 text-[10px] leading-relaxed">
+              Dán Token vừa lấy từ Graph API Explorer, nếu có <b>App ID</b> và <b>App Secret</b> (trong Cài đặt ứng dụng FB), nhập vào để hệ thống đổi thành token không bao giờ hết hạn. Nếu không có, chỉ cần dán token rồi bấm đổi, hệ thống sẽ trích xuất Page Token chuẩn!
+            </p>
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <input type="text" id="permAppIdInput" placeholder="Meta App ID (Tùy chọn)" class="px-2.5 py-1.5 rounded-lg border border-emerald-300 text-[11px] bg-white focus:outline-none">
+              <input type="password" id="permAppSecretInput" placeholder="Meta App Secret (Tùy chọn)" class="px-2.5 py-1.5 rounded-lg border border-emerald-300 text-[11px] bg-white focus:outline-none">
+            </div>
+            <button type="button" onclick="exchangePermanentTokenAction()" id="exchangePermanentBtn" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-lg text-xs transition shadow-sm flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-infinity"></i> Kích Hoạt Tạo Token Vĩnh Viễn Ngay
+            </button>
           </div>
 
           <!-- Khu vực hiển thị kết quả kiểm tra quyền Token -->
           <div id="tokenScopesResultBox" class="hidden p-2.5 bg-white border border-slate-200 rounded-xl space-y-1.5 text-[11px]">
-            <div class="font-bold text-slate-700 text-[10px] uppercase">Trạng Thái Quyền Meta Token:</div>
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-700 text-[10px] uppercase">Trạng Thái Quyền & Hạn Dùng:</span>
+              <span id="tokenExpiryBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+            </div>
             <div class="grid grid-cols-2 gap-1.5" id="tokenScopesBadges"></div>
             <p id="tokenScopeNotice" class="text-[10px] text-slate-500 pt-0.5 leading-snug"></p>
           </div>
@@ -1433,79 +1456,89 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL HƯỚNG DẪN FB DEVELOPERS & LẤY TOKEN VĨNH VIỄN ==================== -->
+  <!-- ==================== MODAL HƯỚNG DẪN FB DEVELOPERS & LẤY TOKEN VĨNH VIỄN 24/7 ==================== -->
   <div id="fbDevGuideModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden overflow-y-auto">
-    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative my-auto max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative my-auto max-h-[92vh] overflow-y-auto">
       <button onclick="closeFbDevGuideModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
         <i class="fa-solid fa-xmark"></i>
       </button>
 
       <div class="text-center mb-5">
-        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-xl mx-auto mb-2 shadow-sm">
-          <i class="fa-brands fa-facebook"></i>
+        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-xl mx-auto mb-2 shadow-sm">
+          <i class="fa-solid fa-infinity"></i>
         </div>
-        <h3 class="text-lg font-black text-slate-900">Hướng Dẫn Lấy Page Access Token Meta (FB Developers)</h3>
-        <p class="text-xs text-slate-500 mt-0.5">Cách lấy Token Fanpage vĩnh viễn không bao giờ hết hạn chỉ với 4 bước đơn giản</p>
+        <h3 class="text-lg font-black text-slate-900">Giải Pháp Triệt Để: Token Vĩnh Viễn Chạy 24/7 Không Hết Hạn</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Không cần cập nhật liên tục! Áp dụng 1 lần duy nhất để hệ thống nuôi page và auto-reply trọn đời</p>
       </div>
 
       <div class="space-y-4 text-xs text-slate-700">
-        <div class="p-3.5 bg-blue-50/70 border border-blue-200 rounded-2xl space-y-1">
-          <b class="text-blue-900 flex items-center gap-1.5"><i class="fa-solid fa-circle-question text-blue-600"></i> Tại sao cần Page Access Token?</b>
-          <p class="text-blue-800 leading-relaxed text-[11px]">Meta (Facebook) yêu cầu Page Access Token để xác nhận bạn là Quản trị viên của Fanpage. Khi có Token, hệ thống máy chủ có thể đăng bài hoàn toàn tự động 24/7 mà bạn không cần phải mở tab trình duyệt hay ấn nút đăng thủ công.</p>
+        
+        <!-- GIẢI THÍCH NGUYÊN NHÂN HẾT HẠN -->
+        <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl space-y-1">
+          <b class="text-amber-900 flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation text-amber-600"></i> Tại sao Token thông thường lại hết hạn sau 1 - 2 tiếng?</b>
+          <p class="text-amber-800 leading-relaxed text-[11px]">
+            Khi bạn lấy Token trên Graph API Explorer mặc định, Meta chỉ cấp <b>Short-Lived User Token (hạn 1 tiếng)</b>. Do đó cứ 1-2 tiếng hệ thống sẽ báo lỗi <code class="font-bold text-red-700">OAuthException #190: Session has expired</code>.
+          </p>
+          <p class="text-emerald-800 font-bold text-[11px] pt-1">
+            👉 <b>Quy tắc chính thức của Meta:</b> Nếu bạn đổi Short-Lived Token sang <b>Long-Lived Token (60 ngày)</b> rồi trích xuất Page Access Token từ <code class="bg-white px-1 py-0.5 rounded border border-emerald-300">/me/accounts</code>, Token của Fanpage sẽ có thời hạn là <span class="bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black">NEVER EXPIRE (VĨNH VIỄN - KHÔNG BAO GIỜ HẾT HẠN)</span>!
+          </p>
         </div>
 
+        <!-- 3 CÁCH LẤY TOKEN VĨNH VIỄN -->
         <div class="space-y-3">
-          <div class="flex gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-xs">1</span>
-            <div class="space-y-1">
-              <b class="text-slate-900">Truy Cập Meta for Developers & Tạo App:</b>
-              <p class="text-slate-600">Vào <a href="https://developers.facebook.com" target="_blank" class="text-blue-600 font-bold underline">developers.facebook.com</a> -> Đăng nhập Facebook -> Chọn <b>Ứng dụng của tôi (My Apps)</b> -> Bấm <b>Tạo ứng dụng</b> (Loại: <i>Khác / Doanh nghiệp</i>).</p>
+          
+          <!-- CÁCH 1: 1-CLICK META ACCESS TOKEN TOOL (DỄ NHẤT) -->
+          <div class="p-4 bg-emerald-50/70 rounded-2xl border-2 border-emerald-400 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-black rounded-md uppercase">Cách 1 (Khuyên Dùng - 1 Phút)</span>
+              <span class="text-emerald-700 font-bold text-[11px]">Dùng Access Token Tool của Meta</span>
+            </div>
+            <div class="space-y-1.5 text-slate-700 leading-relaxed text-[11px]">
+              <div><b>Bước 1:</b> Truy cập <a href="https://developers.facebook.com/tools/accesstoken/" target="_blank" class="text-blue-600 font-bold underline">Meta Access Token Tool</a>.</div>
+              <div><b>Bước 2:</b> Tìm App của bạn, ở dòng <b>User Token</b> bấm nút <b class="text-blue-700">Debug</b>.</div>
+              <div><b>Bước 3:</b> Ở cuối trang, bấm nút <b class="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">Extend Access Token</b> (Kéo dài token thành 60 ngày).</div>
+              <div><b>Bước 4:</b> Mở <a href="https://developers.facebook.com/tools/explorer/" target="_blank" class="text-blue-600 font-bold underline">Graph API Explorer</a>, chọn Fanpage của bạn rồi copy Token. Lúc này Page Token sẽ là <b>VĨNH VIỄN (Never Expire)</b>!</div>
             </div>
           </div>
 
-          <div class="flex gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-xs">2</span>
-            <div class="space-y-1">
-              <b class="text-slate-900">Mở Graph API Explorer:</b>
-              <p class="text-slate-600">Vào mục <a href="https://developers.facebook.com/tools/explorer/" target="_blank" class="text-blue-600 font-bold underline">Graph API Explorer</a> -> Tại mục <b>Meta App</b>, chọn tên ứng dụng bạn vừa tạo.</p>
+          <!-- CÁCH 2: DÙNG BỘ CHUYỂN ĐỔI NGAY TRONG WEB NÀY -->
+          <div class="p-4 bg-blue-50/70 rounded-2xl border border-blue-300 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-black rounded-md uppercase">Cách 2: Tự Động Hóa Trong App</span>
+              <span class="text-blue-700 font-bold text-[11px]">Dùng Nút "Đổi Token Vĩnh Viễn"</span>
+            </div>
+            <p class="text-slate-600 text-[11px]">
+              Trong cửa sổ Cài Đặt Fanpage của hệ thống, bấm nút <b>"Đổi Token Vĩnh Viễn 24/7"</b>, nhập <b>App ID</b> và <b>App Secret</b> (lấy tại <i>Cài đặt ứng dụng -> Cơ bản</i> trên Meta Developers). Hệ thống máy chủ sẽ tự động gọi Meta Graph API để hoán đổi vĩnh viễn cho bạn!
+            </p>
+          </div>
+
+          <!-- CÁCH 3: SYSTEM USER TOKEN TRONG BUSINESS MANAGER (DOANH NGHIỆP) -->
+          <div class="p-4 bg-purple-50/70 rounded-2xl border border-purple-300 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 bg-purple-600 text-white text-[10px] font-black rounded-md uppercase">Cách 3: System User Token (Doanh nghiệp)</span>
+              <span class="text-purple-700 font-bold text-[11px]">Meta Business Manager</span>
+            </div>
+            <p class="text-slate-600 text-[11px] leading-relaxed">
+              Nếu bạn có Trình quản lý kinh doanh (Meta Business Suite): Vào <i>Cài đặt cho doanh nghiệp -> Người dùng hệ thống (System Users)</i> -> Bấm <i>Tạo người dùng mới</i> -> Bấm <i>Tạo mã token</i> -> Chọn thời hạn <b class="text-purple-800">Không bao giờ hết hạn (Never)</b>. Token này bảo đảm 100% chạy vĩnh viễn không bao giờ phải thay thế.
+            </p>
+          </div>
+
+          <!-- DANH SÁCH QUYỀN CẦN THIẾT -->
+          <div class="p-3 bg-slate-100 rounded-xl space-y-1.5">
+            <b class="text-slate-900 block font-bold">📋 Bảng Quyền Bắt Buộc Cần Tích Khi Lấy Token:</b>
+            <div class="flex flex-wrap gap-1.5">
+              <code class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-mono font-bold text-[10px]">pages_manage_engagement ⭐ (Trả lời cmt)</code>
+              <code class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-mono font-bold text-[10px]">pages_messaging ⭐ (Inbox Messenger)</code>
+              <code class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-mono font-bold text-[10px]">pages_manage_posts (Tự đăng bài nuôi)</code>
+              <code class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-mono font-bold text-[10px]">pages_read_user_content (Đọc bình luận)</code>
+              <code class="bg-slate-200 text-slate-800 px-2 py-0.5 rounded font-mono font-bold text-[10px]">pages_show_list</code>
             </div>
           </div>
 
-          <div class="flex gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-xs">3</span>
-            <div class="space-y-1">
-              <b class="text-slate-900">Cấp Quyền Đăng Bài & Auto Reply Cho Fanpage:</b>
-              <p class="text-slate-600">Tại mục <b>Permissions (Quyền)</b>, thêm đủ các quyền quan trọng sau:</p>
-              <div class="flex flex-wrap gap-1.5 pt-1">
-                <code class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-mono font-bold border border-amber-300">pages_manage_engagement ⭐ (Trả lời cmt & Like)</code>
-                <code class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-mono font-bold">pages_messaging ⭐ (Inbox Messenger)</code>
-                <code class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-mono font-bold">pages_manage_posts (Đăng bài nuôi page)</code>
-                <code class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-mono font-bold">pages_read_user_content (Đọc cmt khách)</code>
-                <code class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-mono font-bold">pages_read_engagement</code>
-                <code class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-mono font-bold">pages_show_list</code>
-              </div>
-              <p class="text-[11px] text-amber-900 font-medium pt-1 bg-amber-50 p-2 rounded-lg border border-amber-200">
-                ⚠️ <b>LƯU Ý ĐẶC BIỆT CỦA META:</b> Quyền <b class="font-mono text-rose-700 font-black">pages_manage_engagement</b> là BẮT BUỘC để bot có quyền đăng bình luận công khai trả lời khách dưới bài viết. Nếu thiếu quyền này, bot sẽ chỉ gửi được tin nhắn riêng Messenger!
-              </p>
-            </div>
-          </div>
-
-          <div class="flex gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-xs">4</span>
-            <div class="space-y-1">
-              <b class="text-slate-900">Lấy Token & Dán Vào Công Cụ:</b>
-              <p class="text-slate-600">
-                Tại ô <b>User or Page</b> (Góc phải Explorer), bấm chọn <b>Tên Fanpage của bạn</b> (nằm dưới mục <i>Page Access Tokens</i>) -> Bấm <b>Generate Access Token</b>.
-              </p>
-              <div class="p-2 bg-blue-50 text-blue-900 rounded-lg text-[11px] mt-1 border border-blue-200">
-                ✨ <b>Công Nghệ Tự Động Hóa 2026:</b> Nếu bạn lỡ tạo <b>User Token</b>, đừng lo! Chỉ cần dán vào ô Token rồi bấm nút <b>"Quét Page"</b>, hệ thống sẽ tự động nhận diện tất cả Fanpage của bạn và lấy đúng Page Access Token để đăng bài trực tiếp!
-              </div>
-            </div>
-          </div>
         </div>
 
         <button onclick="closeFbDevGuideModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition text-center block">
-          Đã Hiểu, Đóng Hướng Dẫn
+          Đã Nắm Rõ, Đóng Hướng Dẫn
         </button>
       </div>
     </div>
@@ -2770,6 +2803,53 @@
       currentEditingFarmPage = null;
     }
 
+    function togglePermanentToolBox() {
+      const box = document.getElementById('permanentToolBox');
+      if (box) box.classList.toggle('hidden');
+    }
+
+    async function exchangePermanentTokenAction() {
+      if (!currentEditingFarmPage) return;
+      const pageId = currentEditingFarmPage.id;
+      const tokenInput = document.getElementById('editPageTokenInput').value.trim();
+      const appId = document.getElementById('permAppIdInput')?.value.trim() || '';
+      const appSecret = document.getElementById('permAppSecretInput')?.value.trim() || '';
+
+      if (!tokenInput || tokenInput.length < 20) {
+        alert('Vui lòng dán Access Token vào ô trước khi kích hoạt chuyển đổi!');
+        return;
+      }
+
+      const btn = document.getElementById('exchangePermanentBtn');
+      const oldHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang đổi Token vĩnh viễn qua Meta Graph API...';
+
+      const token = localStorage.getItem('aff_token');
+      try {
+        const res = await fetch('/api/fb/exchange-permanent-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ pageId, token: tokenInput, appId, appSecret })
+        });
+        const data = await res.json();
+        if (data.success && data.permanentToken) {
+          document.getElementById('editPageTokenInput').value = data.permanentToken;
+          alert(data.message);
+          renderTokenScopesBadges(data);
+          loadFanpageFarm();
+          loadAutoReplyConfig();
+        } else {
+          alert('Lỗi chuyển đổi: ' + (data.error || 'Không thể tạo Token'));
+        }
+      } catch (e) {
+        alert('Lỗi kết nối máy chủ: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = oldHtml;
+      }
+    }
+
     async function checkCurrentPageToken() {
       if (!currentEditingFarmPage) return;
       const pageId = currentEditingFarmPage.id;
@@ -2799,7 +2879,7 @@
             document.getElementById('editPageTokenInput').value = data.resolvedToken;
             statusText.innerHTML = '<span class="text-blue-600 font-bold">⚡ Đã nhận diện User Token và lấy Page Token chuẩn!</span>';
           } else {
-            statusText.innerHTML = '<span class="text-emerald-600 font-bold">✓ Token hợp lệ</span>';
+            statusText.innerHTML = `<span class="text-emerald-600 font-bold">✓ Token hợp lệ &bull; Hạn: ${data.expiresDateStr || 'Vĩnh viễn'}</span>`;
           }
           renderTokenScopesBadges(data);
         } else {
@@ -2819,9 +2899,21 @@
       const resultBox = document.getElementById('tokenScopesResultBox');
       const badgesContainer = document.getElementById('tokenScopesBadges');
       const noticeEl = document.getElementById('tokenScopeNotice');
+      const expiryBadge = document.getElementById('tokenExpiryBadge');
       if (!resultBox || !badgesContainer) return;
 
       resultBox.classList.remove('hidden');
+
+      if (expiryBadge) {
+        if (info.isPermanent || info.expiresAt === 0) {
+          expiryBadge.className = 'text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
+          expiryBadge.innerHTML = '🟢 VĨNH VIỄN (24/7)';
+        } else {
+          expiryBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300';
+          expiryBadge.innerHTML = `🟡 Hạn: ${info.expiresDateStr || 'Sắp hết hạn'}`;
+        }
+      }
+
       const perms = [
         { name: 'Đăng bài nuôi page', scope: 'pages_manage_posts', ok: info.hasManagePosts },
         { name: 'Trả lời cmt & Like', scope: 'pages_manage_engagement', ok: info.hasManageEngagement },
@@ -2841,7 +2933,11 @@
       if (!info.hasManageEngagement) {
         noticeEl.innerHTML = '⚠️ <b class="text-amber-800">Lưu ý:</b> Đang thiếu quyền <code class="bg-amber-100 text-amber-900 px-1 rounded font-bold font-mono">pages_manage_engagement</code> để bot trả lời bình luận công khai. Bổ sung quyền này trong Graph API Explorer để bot đăng được cmt!';
       } else if (info.allRequiredGranted) {
-        noticeEl.innerHTML = '🎉 <b class="text-emerald-700">Đầy đủ quyền:</b> Token đã có đủ quyền Đăng bài nuôi, Trả lời bình luận và Nhắn tin riêng Messenger!';
+        if (info.isPermanent || info.expiresAt === 0) {
+          noticeEl.innerHTML = '🎉 <b class="text-emerald-700">HOÀN HẢO 24/7:</b> Token Vĩnh Viễn và đầy đủ tất cả các quyền! Hệ thống sẽ nuôi page và tự động rep/inbox liên tục không bao giờ bị dừng.';
+        } else {
+          noticeEl.innerHTML = '🎉 <b class="text-emerald-700">Đầy đủ quyền:</b> Token đã có đủ quyền Đăng bài nuôi, Trả lời cmt và Nhắn tin riêng Messenger! <i>(Khuyên dùng: Bấm nút "Đổi Token Vĩnh Viễn" để không phải cập nhật lại sau này)</i>.';
+        }
       } else {
         noticeEl.innerHTML = '';
       }
