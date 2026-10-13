@@ -181,6 +181,104 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+/**
+ * Thuật toán nhận diện số điện thoại tiếng Việt thông minh
+ * Nhận diện cả số viết liền, ngắt quãng bằng dấu cách, chấm, gạch ngang, hoặc viết bằng chữ/kèm tiền tố
+ */
+function containsPhoneNumber(rawText) {
+  if (!rawText || typeof rawText !== 'string') return false;
+  const str = rawText.trim();
+  
+  // 1. Chuẩn hóa: Thay các từ ngữ chỉ số nếu có (không, một, hai, ...)
+  const wordMap = {
+    'không': '0', 'khong': '0', 'o': '0',
+    'một': '1', 'mot': '1', 'mốt': '1',
+    'hai': '2', 'ba': '3', 'bốn': '4', 'bon': '4', 'tư': '4',
+    'năm': '5', 'nam': '5', 'sáu': '6', 'sau': '6',
+    'bảy': '7', 'bay': '7', 'tám': '8', 'tam': '8',
+    'chín': '9', 'chin': '9'
+  };
+
+  let normalized = str.toLowerCase();
+  for (const [w, digit] of Object.entries(wordMap)) {
+    normalized = normalized.replace(new RegExp(`\\b${w}\\b`, 'gi'), digit);
+  }
+
+  // 2. Kiểm tra trực tiếp mẫu regex số điện thoại Việt Nam phổ thông
+  // Bắt các dạng: 0912345678, 0912 345 678, 0912.345.678, 0912-345-678, +84912345678, 84912345678
+  const vnPhoneRegex = /(?:\+?84|0)(?:3[2-9]|5[25689]|7[06-9]|8[1-9]|9[0-9])(?:[\s.-]*\d){7}\b/;
+  if (vnPhoneRegex.test(str) || vnPhoneRegex.test(normalized)) return true;
+
+  // 3. Trích xuất tất cả các cụm chữ số liên tiếp sau khi bỏ dấu cách/ký tự đặc biệt
+  // Bắt các trường hợp người dùng cố tình lách: 0.9.1.2.3.4.5.6.7.8 hoặc "sdt: 098 765 4321"
+  const digitsOnly = str.replace(/[^\d]/g, '');
+  if (digitsOnly.length >= 10 && digitsOnly.length <= 11) {
+    if (/^(0|84)(3|5|7|8|9)/.test(digitsOnly)) return true;
+  }
+
+  // 4. Mẫu chuỗi có chứa từ khoá "sđt", "phone", "zalo", "lh", "call" kèm dãy số từ 8 số trở lên
+  const contextRegex = /(?:sđt|sdt|đt|dt|tel|phone|zalo|call|lh|liên hệ|inbox qua)[\s:.-]*([0-9\s.-]{8,13})/i;
+  const match = str.match(contextRegex);
+  if (match && match[1]) {
+    const cleanDigits = match[1].replace(/[^\d]/g, '');
+    if (cleanDigits.length >= 9 && cleanDigits.length <= 11) return true;
+  }
+
+  return false;
+}
+
+/**
+ * Hàm ẩn comment trên Facebook Fanpage bằng Meta Graph API
+ * Thử cả 3 phương thức: POST query param, POST body, và method=POST override
+ */
+async function hideFacebookComment(commentId, token) {
+  if (!commentId || !token) return false;
+  const cleanToken = token.trim();
+
+  // Thử Cách 1: POST query param ?is_hidden=true&access_token=...
+  try {
+    const res1 = await fetch(`https://graph.facebook.com/v19.0/${commentId}?is_hidden=true&access_token=${encodeURIComponent(cleanToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data1 = await res1.json();
+    if (data1 && data1.success) return true;
+    if (data1 && data1.error) {
+      console.warn(`Hide comment attempt 1 failed (${commentId}):`, data1.error.message);
+    }
+  } catch (e) {}
+
+  // Thử Cách 2: POST JSON body { is_hidden: true, access_token: ... }
+  try {
+    const res2 = await fetch(`https://graph.facebook.com/v19.0/${commentId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_hidden: true, access_token: cleanToken })
+    });
+    const data2 = await res2.json();
+    if (data2 && data2.success) return true;
+    if (data2 && data2.error) {
+      console.warn(`Hide comment attempt 2 failed (${commentId}):`, data2.error.message);
+    }
+  } catch (e) {}
+
+  // Thử Cách 3: POST urlencoded form-data
+  try {
+    const params = new URLSearchParams();
+    params.append('is_hidden', 'true');
+    params.append('access_token', cleanToken);
+    const res3 = await fetch(`https://graph.facebook.com/v19.0/${commentId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    });
+    const data3 = await res3.json();
+    if (data3 && data3.success) return true;
+  } catch (e) {}
+
+  return false;
+}
+
 function renderBridgePage(req, res, linkData, currentUrl) {
   const userAgent = req.headers['user-agent'] || '';
   const isBot = /facebookexternalhit|Facebot|Twitterbot|Pinterest|LinkedInBot|WhatsApp|TelegramBot|Slackbot|Googlebot|bingbot/i.test(userAgent);
@@ -1288,7 +1386,7 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
 
         const customerName = comment.from?.name || 'bạn';
         const commentMsg = (comment.message || '').trim();
-        const hasPhone = /(03|05|07|08|09)\d{8}/.test(commentMsg) || /\d{10,11}/.test(commentMsg);
+        const hasPhone = containsPhoneNumber(commentMsg);
 
         let didLike = false;
         let didHide = false;
@@ -1313,20 +1411,13 @@ async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
           } catch (e) {}
         }
 
-        // B. Tự động ẨN bình luận nếu có số điện thoại
+        // B. Tự động ẨN bình luận nếu có số điện thoại (Chống đối thủ cướp khách)
         if (config.hidePhone !== false && hasPhone) {
-          try {
-            const hideRes = await fetch(`https://graph.facebook.com/v19.0/${comment.id}?access_token=${encodeURIComponent(token)}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ is_hidden: true })
-            });
-            const hideData = await hideRes.json();
-            if (hideData && hideData.success) {
-              didHide = true;
-              summary.hiddenCount++;
-            }
-          } catch (e) {}
+          const hideSuccess = await hideFacebookComment(comment.id, token);
+          if (hideSuccess) {
+            didHide = true;
+            summary.hiddenCount++;
+          }
         }
 
         // C. Tự động TRẢ LỜI bình luận công khai
@@ -1664,7 +1755,7 @@ async function handleRealtimeCommentWebhook(pageId, val) {
   const existingLogs = await getAutoReplyLogs(ownerUser.id);
   const alreadyInboxed = existingLogs.some(l => l.commentId === commentId && l.didInbox);
 
-  const hasPhone = /(03|05|07|08|09)\d{8}/.test(commentMsg) || /\d{10,11}/.test(commentMsg);
+  const hasPhone = containsPhoneNumber(commentMsg);
   let didLike = false;
   let didHide = false;
   let didReplyComment = false;
@@ -1685,17 +1776,9 @@ async function handleRealtimeCommentWebhook(pageId, val) {
     } catch (e) {}
   }
 
-  // B. Hide phone
+  // B. Hide phone (Ẩn bình luận chứa số điện thoại)
   if (config.hidePhone !== false && hasPhone) {
-    try {
-      const hideRes = await fetch(`https://graph.facebook.com/v19.0/${commentId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_hidden: true, access_token: token })
-      });
-      const hideData = await hideRes.json();
-      if (hideData && hideData.success) didHide = true;
-    } catch (e) {}
+    didHide = await hideFacebookComment(commentId, token);
   }
 
   // C. Reply Comment
@@ -1936,7 +2019,7 @@ app.post('/api/ads/auto-reply/simulate', async (req, res) => {
 
   const name = customerName || 'Khách hàng';
   const comment = (customerComment || '').trim();
-  const hasPhone = /(03|05|07|08|09)\d{8}/.test(comment);
+  const hasPhone = containsPhoneNumber(comment);
 
   const templates = [
     `Dạ em chào ${name} ạ! Em vừa gửi thông tin chi tiết kèm mã giảm giá độc quyền vào tin nhắn cho mình rồi đó ạ, ${name} kiểm tra hộp thư giúp em nhé! ❤️`,
@@ -1952,7 +2035,7 @@ app.post('/api/ads/auto-reply/simulate', async (req, res) => {
     result: {
       actionLiked: true,
       actionHidden: hasPhone,
-      hideReason: hasPhone ? 'Phát hiện số điện thoại: Tự động ẩn comment để chống đối thủ cướp khách' : null,
+      hideReason: hasPhone ? 'Phát hiện số điện thoại (Việt Nam): Tự động ẩn comment để chống đối thủ cướp khách' : null,
       replyComment: pickedReply,
       sentInbox: inboxMessage,
       timestamp: new Date().toLocaleTimeString('vi-VN')
@@ -2165,7 +2248,8 @@ app.post('/api/fb/publish-now', async (req, res) => {
     return res.status(401).json({ error: 'Vui lòng đăng nhập' });
   }
 
-  const { postTitle, postContent, autoRunAds, dailyBudget, imageUrl, pageId } = req.body;
+  const { postTitle, postContent, autoRunAds, dailyBudget, imageUrl, videoUrl, mediaUrl: rawMediaUrl, pageId } = req.body;
+  const mediaUrl = (videoUrl || rawMediaUrl || imageUrl || '').trim();
   if (!postContent) {
     return res.status(400).json({ error: 'Vui lòng nhập nội dung bài viết' });
   }
@@ -2216,17 +2300,33 @@ app.post('/api/fb/publish-now', async (req, res) => {
       const activePageId = resolved.pageId || integration.pageId;
 
       let fbPublishRes;
-      if (imageUrl && imageUrl.startsWith('http')) {
+      const isVideo = mediaUrl && /\.(mp4|mov|avi|wmv|m4v|webm)(\?.*)?$/i.test(mediaUrl);
+
+      if (isVideo) {
+        // Đăng Video lên Fanpage qua Graph API /videos
+        fbPublishRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/videos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            description: postContent,
+            title: postTitle || 'Video Review Sản Phẩm',
+            file_url: mediaUrl,
+            access_token: activeToken
+          })
+        });
+      } else if (mediaUrl && mediaUrl.startsWith('http')) {
+        // Đăng Ảnh lên Fanpage qua Graph API /photos
         fbPublishRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/photos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             caption: postContent,
-            url: imageUrl,
+            url: mediaUrl,
             access_token: activeToken
           })
         });
       } else {
+        // Đăng bài viết thường dạng status qua /feed
         fbPublishRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/feed`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2238,8 +2338,8 @@ app.post('/api/fb/publish-now', async (req, res) => {
       }
       let fbPublishData = await fbPublishRes.json();
 
-      // Nếu đăng ảnh lỗi, tự động fallback sang đăng feed
-      if (fbPublishData && fbPublishData.error && imageUrl && imageUrl.startsWith('http')) {
+      // Nếu đăng video/ảnh lỗi, tự động fallback sang đăng feed để đảm bảo bài viết vẫn lên được trang
+      if (fbPublishData && fbPublishData.error && mediaUrl && mediaUrl.startsWith('http')) {
         const feedRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/feed`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2857,19 +2957,45 @@ app.post('/api/fb/farm/trigger-now', async (req, res) => {
         activePageId = resolved.pageId;
       }
 
-      // 1. Thử đăng ảnh qua /photos
-      let fbRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/photos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          caption: genPost.fullText,
-          url: genPost.imageUrl,
-          access_token: activeToken
-        })
-      });
+      // 1. Kiểm tra định dạng media: Nếu là Video thì đăng qua /videos, nếu là Ảnh thì đăng qua /photos
+      const mediaUrl = genPost.videoUrl || genPost.imageUrl;
+      const isVideo = mediaUrl && /\.(mp4|mov|avi|wmv|m4v|webm)(\?.*)?$/i.test(mediaUrl);
+      let fbRes;
+
+      if (isVideo) {
+        fbRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/videos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            description: genPost.fullText,
+            title: genPost.title || 'Video Fanpage',
+            file_url: mediaUrl,
+            access_token: activeToken
+          })
+        });
+      } else if (mediaUrl && mediaUrl.startsWith('http')) {
+        fbRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/photos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            caption: genPost.fullText,
+            url: mediaUrl,
+            access_token: activeToken
+          })
+        });
+      } else {
+        fbRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/feed`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: genPost.fullText,
+            access_token: activeToken
+          })
+        });
+      }
       let fbData = await fbRes.json();
 
-      // 2. Fallback sang /feed nếu /photos gặp lỗi
+      // 2. Fallback sang /feed nếu media gặp lỗi
       if (fbData && fbData.error) {
         const firstErr = fbData.error.message;
         const feedRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/feed`, {
@@ -3164,19 +3290,45 @@ setInterval(async () => {
                   activePageId = resolved.pageId;
                 }
 
-                // 1. Thử đăng ảnh qua /photos
-                let fbRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/photos`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    caption: genPost.fullText,
-                    url: genPost.imageUrl,
-                    access_token: activeToken
-                  })
-                });
+                // 1. Kiểm tra nếu có video thì đăng qua /videos, nếu là ảnh thì đăng qua /photos
+                const mediaUrl = genPost.videoUrl || genPost.imageUrl;
+                const isVideo = mediaUrl && /\.(mp4|mov|avi|wmv|m4v|webm)(\?.*)?$/i.test(mediaUrl);
+                let fbRes;
+
+                if (isVideo) {
+                  fbRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/videos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      description: genPost.fullText,
+                      title: genPost.title || 'Video Fanpage',
+                      file_url: mediaUrl,
+                      access_token: activeToken
+                    })
+                  });
+                } else if (mediaUrl && mediaUrl.startsWith('http')) {
+                  fbRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/photos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      caption: genPost.fullText,
+                      url: mediaUrl,
+                      access_token: activeToken
+                    })
+                  });
+                } else {
+                  fbRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/feed`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      message: genPost.fullText,
+                      access_token: activeToken
+                    })
+                  });
+                }
                 let fbData = await fbRes.json();
 
-                // 2. Fallback sang /feed nếu /photos gặp lỗi
+                // 2. Fallback sang /feed nếu /photos hoặc /videos gặp lỗi
                 if (fbData && fbData.error) {
                   const firstErr = fbData.error.message;
                   const feedRes = await fetch(`https://graph.facebook.com/v19.0/${activePageId}/feed`, {
