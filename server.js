@@ -14,6 +14,9 @@ const {
   toggleCampaignStatus,
   getAutoReplyConfig,
   saveAutoReplyConfig,
+  getRepliedCommentIds,
+  getAutoReplyLogs,
+  addRepliedCommentLog,
   getFbIntegration,
   saveFbIntegration,
   getScheduledQueue,
@@ -1199,19 +1202,251 @@ app.post('/api/ads/campaigns/toggle', async (req, res) => {
   });
 });
 
-// ----------------- 4. MODULE 3: HỆ THỐNG AUTO REPLY COMMENT & AUTO INBOX -----------------
+// ----------------- 4. MODULE 3: HỆ THỐNG AUTO REPLY COMMENT & AUTO INBOX THỰC TẾ -----------------
 
-// Lấy cấu hình kịch bản
+// Động cơ Quét & Phản hồi bình luận tự động trên Facebook Fanpage
+async function scanAndReplyPageComments(userId, page, forcedConfig = null) {
+  if (!page || !page.accessToken || page.accessToken.trim().length < 20) {
+    return { success: false, error: 'Fanpage chưa có Access Token hợp lệ' };
+  }
+
+  const token = page.accessToken.trim();
+  const pageId = page.id;
+  const config = forcedConfig || (await getAutoReplyConfig(userId));
+
+  if (config.enabled === false) {
+    return { success: false, message: 'Tính năng Auto Reply đang tạm tắt trong cấu hình' };
+  }
+
+  const summary = {
+    checkedPosts: 0,
+    newCommentsFound: 0,
+    likedCount: 0,
+    hiddenCount: 0,
+    repliedCount: 0,
+    inboxedCount: 0,
+    processedItems: [],
+    permissionError: null
+  };
+
+  try {
+    // 1. Lấy danh sách 5 bài viết mới nhất trên Fanpage
+    const postsRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/posts?fields=id,message,created_time&limit=5&access_token=${token}`);
+    const postsData = await postsRes.json();
+
+    if (postsData.error) {
+      if (postsData.error.code === 200) {
+        summary.permissionError = 'Meta API: Cần thêm quyền pages_read_user_content để đọc nội dung bình luận của khách.';
+      }
+      return { success: false, error: postsData.error.message, code: postsData.error.code, summary };
+    }
+
+    const posts = Array.isArray(postsData.data) ? postsData.data : [];
+    summary.checkedPosts = posts.length;
+
+    const repliedHistory = await getRepliedCommentIds(userId);
+    const repliedIds = new Set(repliedHistory);
+
+    for (const post of posts) {
+      // 2. Lấy danh sách bình luận trên bài viết
+      const commentsRes = await fetch(`https://graph.facebook.com/v19.0/${post.id}/comments?fields=id,from,message,created_time,can_reply_privately,comments{id,from}&limit=25&order=reverse_chronological&access_token=${token}`);
+      const commentsData = await commentsRes.json();
+
+      if (commentsData.error) {
+        if (commentsData.error.code === 200) {
+          summary.permissionError = 'Token Meta đang thiếu quyền "pages_read_user_content" để đọc bình luận của khách hàng.';
+        }
+        continue;
+      }
+
+      const comments = Array.isArray(commentsData.data) ? commentsData.data : [];
+
+      for (const comment of comments) {
+        // Bỏ qua nếu là bình luận của chính Fanpage
+        if (comment.from && (comment.from.id === pageId || comment.from.name === page.name)) {
+          continue;
+        }
+
+        // Bỏ qua nếu đã từng xử lý comment này
+        if (repliedIds.has(comment.id)) {
+          continue;
+        }
+
+        // Kiểm tra xem trong các câu trả lời con đã có Fanpage trả lời chưa
+        const subComments = comment.comments?.data || [];
+        const alreadyAnswered = subComments.some(sub => sub.from && (sub.from.id === pageId || sub.from.name === page.name));
+        if (alreadyAnswered) {
+          repliedIds.add(comment.id);
+          continue;
+        }
+
+        summary.newCommentsFound++;
+
+        const customerName = comment.from?.name || 'bạn';
+        const commentMsg = (comment.message || '').trim();
+        const hasPhone = /(03|05|07|08|09)\d{8}/.test(commentMsg) || /\d{10,11}/.test(commentMsg);
+
+        let didLike = false;
+        let didHide = false;
+        let replyText = null;
+        let didInbox = false;
+
+        // A. Tự động LIKE bình luận
+        if (config.autoLike !== false) {
+          try {
+            const likeRes = await fetch(`https://graph.facebook.com/v19.0/${comment.id}/likes`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ access_token: token })
+            });
+            const likeData = await likeRes.json();
+            if (likeData && likeData.success) {
+              didLike = true;
+              summary.likedCount++;
+            }
+          } catch (e) {}
+        }
+
+        // B. Tự động ẨN bình luận nếu có số điện thoại
+        if (config.hidePhone !== false && hasPhone) {
+          try {
+            const hideRes = await fetch(`https://graph.facebook.com/v19.0/${comment.id}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ is_hidden: true, access_token: token })
+            });
+            const hideData = await hideRes.json();
+            if (hideData && hideData.success) {
+              didHide = true;
+              summary.hiddenCount++;
+            }
+          } catch (e) {}
+        }
+
+        // C. Tự động TRẢ LỜI bình luận công khai
+        const templates = Array.isArray(config.replyTemplates) && config.replyTemplates.length > 0
+          ? config.replyTemplates
+          : [
+              `Dạ em chào ${customerName} ạ! Em đã gửi thông tin ưu đãi và quà tặng qua tin nhắn riêng cho mình rồi đó ạ, ${customerName} kiểm tra hộp thư giúp em nhé! ❤️`,
+              `Chào ${customerName} ơi, shop đang có Flash Sale giá sốc hôm nay ạ. Shop đã nhắn tin tư vấn trực tiếp cho ${customerName} rồi nhé 🥰`
+            ];
+        
+        let template = templates[Math.floor(Math.random() * templates.length)];
+        replyText = template
+          .replace(/\{name\}|\{\{name\}\}|\[NAME\]/gi, customerName)
+          .replace(/\{page\}|\{\{page\}\}/gi, page.name);
+
+        try {
+          const replyRes = await fetch(`https://graph.facebook.com/v19.0/${comment.id}/comments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: replyText,
+              access_token: token
+            })
+          });
+          const replyData = await replyRes.json();
+          if (replyData && (replyData.id || replyData.post_id)) {
+            summary.repliedCount++;
+          }
+        } catch (e) {
+          console.error('Lỗi gửi comment reply:', e.message);
+        }
+
+        // D. Tự động gửi tin nhắn riêng Messenger (Private Reply to Comment)
+        if (config.inboxMessage && comment.can_reply_privately !== false) {
+          let inboxBody = config.inboxMessage
+            .replace(/\{name\}|\{\{name\}\}|\[NAME\]/gi, customerName)
+            .replace(/\{page\}|\{\{page\}\}/gi, page.name);
+
+          try {
+            const msgRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/messages`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                recipient: { comment_id: comment.id },
+                message: { text: inboxBody },
+                access_token: token
+              })
+            });
+            const msgData = await msgRes.json();
+            if (msgData && msgData.message_id) {
+              didInbox = true;
+              summary.inboxedCount++;
+            }
+          } catch (e) {}
+        }
+
+        const logEntry = {
+          id: generateId('crlog', 8),
+          commentId: comment.id,
+          postId: post.id,
+          pageId: pageId,
+          pageName: page.name,
+          customerName: customerName,
+          commentMessage: commentMsg,
+          didLike,
+          didHide,
+          replyText,
+          didInbox,
+          timestamp: new Date().toISOString()
+        };
+
+        await addRepliedCommentLog(userId, logEntry);
+        repliedIds.add(comment.id);
+        summary.processedItems.push(logEntry);
+      }
+    }
+
+    return {
+      success: true,
+      summary,
+      message: summary.permissionError
+        ? `⚠️ ${summary.permissionError}`
+        : (summary.newCommentsFound > 0
+            ? `🎉 Đã quét ${summary.checkedPosts} bài viết, phát hiện ${summary.newCommentsFound} bình luận mới: Đã Like (${summary.likedCount}), Ẩn SĐT (${summary.hiddenCount}), Phản hồi (${summary.repliedCount})!`
+            : `Đã quét ${summary.checkedPosts} bài viết gần nhất. Tất cả bình luận đều đã được phản hồi đầy đủ!`)
+    };
+  } catch (err) {
+    return { success: false, error: err.message, summary };
+  }
+}
+
+// Lấy cấu hình kịch bản Auto-Reply & Trạng thái quyền Token
 app.get('/api/ads/auto-reply', async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Vui lòng đăng nhập' });
   }
 
   const config = await getAutoReplyConfig(req.user.id);
-  res.json({ success: true, config });
+  const logs = await getAutoReplyLogs(req.user.id);
+  const farm = await getFanpageFarm(req.user.id);
+  const activePage = farm.find(p => p.status === 'ACTIVE' && p.accessToken && p.accessToken.length > 20) || farm.find(p => p.accessToken && p.accessToken.length > 20) || farm[0] || null;
+
+  let permissionInfo = null;
+  if (activePage && activePage.accessToken && activePage.accessToken.length > 20) {
+    try {
+      const debugRes = await fetch(`https://graph.facebook.com/v19.0/debug_token?input_token=${activePage.accessToken}&access_token=${activePage.accessToken}`);
+      const debugData = await debugRes.json();
+      if (debugData && debugData.data) {
+        const scopes = debugData.data.scopes || [];
+        permissionInfo = {
+          isValid: debugData.data.is_valid,
+          scopes,
+          hasManagePosts: scopes.includes('pages_manage_posts'),
+          hasReadEngagement: scopes.includes('pages_read_engagement'),
+          hasReadUserContent: scopes.includes('pages_read_user_content'),
+          hasMessaging: scopes.includes('pages_messaging'),
+          allRequiredGranted: scopes.includes('pages_manage_posts') && scopes.includes('pages_read_user_content')
+        };
+      }
+    } catch (e) {}
+  }
+
+  res.json({ success: true, config, logs, activePage, permissionInfo });
 });
 
-// Lưu cấu hình kịch bản
+// Lưu cấu hình kịch bản Auto-Reply
 app.post('/api/ads/auto-reply', async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Vui lòng đăng nhập' });
@@ -1233,6 +1468,82 @@ app.post('/api/ads/auto-reply', async (req, res) => {
     message: 'Đã lưu kịch bản tự động phản hồi thành công!',
     config: updated
   });
+});
+
+// Kích hoạt Quét & Trả lời bình luận ngay lập tức (Live Scan Now)
+app.post('/api/fb/auto-reply/scan-now', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const { pageId } = req.body;
+  const farm = await getFanpageFarm(req.user.id);
+  const targetPages = pageId ? farm.filter(p => p.id === pageId) : farm.filter(p => p.status === 'ACTIVE' && p.accessToken);
+
+  if (targetPages.length === 0) {
+    return res.status(400).json({ error: 'Chưa có Fanpage nào được kích hoạt hoặc có Access Token trong Dàn Nuôi của bạn' });
+  }
+
+  let totalScanned = 0;
+  let totalNew = 0;
+  let totalLiked = 0;
+  let totalHidden = 0;
+  let totalReplied = 0;
+  let lastMessage = '';
+  let permissionWarning = null;
+
+  for (const page of targetPages) {
+    const resScan = await scanAndReplyPageComments(req.user.id, page);
+    if (resScan.summary) {
+      totalScanned += resScan.summary.checkedPosts;
+      totalNew += resScan.summary.newCommentsFound;
+      totalLiked += resScan.summary.likedCount;
+      totalHidden += resScan.summary.hiddenCount;
+      totalReplied += resScan.summary.repliedCount;
+      if (resScan.summary.permissionError) {
+        permissionWarning = resScan.summary.permissionError;
+      }
+    }
+    lastMessage = resScan.message || resScan.error || '';
+  }
+
+  const logs = await getAutoReplyLogs(req.user.id);
+
+  res.json({
+    success: true,
+    message: permissionWarning || lastMessage,
+    permissionWarning,
+    stats: { totalScanned, totalNew, totalLiked, totalHidden, totalReplied },
+    logs
+  });
+});
+
+// Lấy nhật ký bình luận đã phản hồi
+app.get('/api/fb/auto-reply/logs', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const logs = await getAutoReplyLogs(req.user.id);
+  res.json({ success: true, logs });
+});
+
+// Facebook Webhook Verification & Listener
+app.get('/api/fb/webhook', (req, res) => {
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+  if (mode && token) {
+    if (mode === 'subscribe' && (token === 'shopeefb_webhook_verify_2026' || token === process.env.FB_WEBHOOK_VERIFY_TOKEN)) {
+      return res.status(200).send(challenge);
+    }
+    return res.sendStatus(403);
+  }
+  res.sendStatus(400);
+});
+
+app.post('/api/fb/webhook', async (req, res) => {
+  res.status(200).send('EVENT_RECEIVED');
+  try {
+    const body = req.body;
+    if (body.object === 'page') {
+      console.log('FB Webhook Page Event received');
+    }
+  } catch (e) {}
 });
 
 // Mô phỏng kịch bản (Live Simulator)
@@ -2282,6 +2593,17 @@ setInterval(async () => {
 
             await addPostToFarmHistory(user.id, page.id, logEntry);
             await updateFanpageInFarm(user.id, page.id, { lastPostedSlotKey: slotKey, lastPostedDate: todayStr });
+          }
+        }
+      }
+
+      // 4. Tự động Quét & Phản hồi bình luận mới trên các Fanpage (Auto-Reply Worker)
+      for (const page of farm) {
+        if (page.status === 'ACTIVE' && page.accessToken && page.accessToken.trim().length > 20) {
+          try {
+            await scanAndReplyPageComments(user.id, page);
+          } catch (errScan) {
+            console.error('Lỗi scanAndReplyPageComments loop:', errScan.message);
           }
         }
       }
