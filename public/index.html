@@ -3,30 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShopeeFB DeepLinker Pro - Chuyển Link Shopee Đăng Facebook & Chiến Dịch ADS</title>
+  <title>FB Ads Master Pro - Công Cụ Chạy Quảng Cáo Bài Viết & Thu Hút Khách Hàng</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
     body { font-family: 'Inter', sans-serif; }
-    .tab-active { border-color: #ea580c; color: #ea580c; background-color: #fff7ed; }
+    .nav-tab-active { background: #1e293b; color: #ffffff; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen pb-16">
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-20">
 
   <!-- Header -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20">
-          <i class="fa-solid fa-link text-lg"></i>
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <i class="fa-solid fa-bullhorn text-lg"></i>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="text-base sm:text-lg font-black text-slate-900 leading-tight">ShopeeFB DeepLinker</h1>
-            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-orange-100 text-orange-700">ADS Pro</span>
+            <h1 class="text-base sm:text-lg font-black text-slate-900 leading-tight">FB Ads Master Pro</h1>
+            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-700">All-in-One Ads Suite</span>
           </div>
-          <p class="text-[11px] text-slate-500 hidden sm:block">Chuyển link Shopee mở App ngay – Đo lường Facebook & TikTok Ads</p>
+          <p class="text-[11px] text-slate-500 hidden sm:block">Bộ công cụ chạy quảng cáo bài viết, tạo nội dung thu hút khách & phễu chốt đơn tự động</p>
         </div>
       </div>
 
@@ -42,575 +42,461 @@
     </div>
   </header>
 
-  <!-- User Status Bar (khi đã đăng nhập) -->
-  <div id="userStatusBar" class="hidden bg-gradient-to-r from-slate-900 via-orange-950 to-slate-900 text-white py-2.5 px-4 shadow-inner border-b border-orange-500/30">
-    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+  <!-- User Status Bar -->
+  <div id="userStatusBar" class="hidden bg-slate-900 text-white py-2 px-4 shadow-inner border-b border-slate-800">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
       <div class="flex items-center gap-2.5 font-medium">
-        <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center font-bold text-xs text-white">
+        <div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center font-bold text-xs text-white">
           <span id="userAvatarText">U</span>
         </div>
         <div>
-          <span>Xin chào, <b id="userNameDisplay">Khách</b></span>
-          <span id="userPlanBadge" class="ml-2 bg-orange-500/30 border border-orange-400/40 text-orange-300 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[10px]">
+          <span>Tài khoản: <b id="userNameDisplay">Khách</b></span>
+          <span id="userPlanBadge" class="ml-2 bg-blue-500/20 border border-blue-400/30 text-blue-300 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[10px]">
             GÓI PRO
           </span>
         </div>
       </div>
 
-      <div class="flex items-center gap-3 sm:gap-5 flex-wrap">
+      <div class="flex items-center gap-4">
         <div class="flex items-center gap-2">
-          <span class="text-slate-300">Hạn mức tháng:</span>
-          <div class="w-24 bg-white/10 rounded-full h-2 overflow-hidden border border-white/20">
-            <div id="quotaProgressBar" class="bg-gradient-to-r from-orange-400 to-amber-400 h-full rounded-full transition-all" style="width: 20%"></div>
+          <span class="text-slate-400">Lượt tạo bài viết:</span>
+          <div class="w-24 bg-white/10 rounded-full h-2 overflow-hidden">
+            <div id="quotaProgressBar" class="bg-blue-400 h-full rounded-full transition-all" style="width: 20%"></div>
           </div>
-          <span id="quotaText" class="font-mono font-bold text-orange-300">0/50 link</span>
+          <span id="quotaText" class="font-mono font-bold text-blue-300">0/300 lượt</span>
         </div>
 
-        <button onclick="openPricingModal()" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-extrabold px-3 py-1 rounded-lg text-[11px] hover:from-orange-600 hover:to-amber-600 shadow-sm transition">
+        <button onclick="openPricingModal()" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold px-2.5 py-0.5 rounded text-[11px] hover:opacity-90 transition">
           Nâng cấp gói
         </button>
 
-        <button id="adminBtn" onclick="openAdminModal()" class="hidden bg-purple-700 hover:bg-purple-800 text-white font-bold px-2.5 py-1 rounded-lg text-[11px] transition flex items-center gap-1">
-          <i class="fa-solid fa-crown text-amber-300"></i> Quản Trị Admin
+        <button id="adminBtn" onclick="openAdminModal()" class="hidden bg-purple-700 hover:bg-purple-800 text-white font-bold px-2.5 py-0.5 rounded text-[11px] transition flex items-center gap-1">
+          <i class="fa-solid fa-crown text-amber-300"></i> Admin
         </button>
 
-        <button onclick="logout()" class="text-slate-400 hover:text-white font-medium hover:underline text-xs">
+        <button onclick="logout()" class="text-slate-400 hover:text-white font-medium text-xs">
           Đăng xuất
         </button>
       </div>
     </div>
   </div>
 
-  <main class="max-w-6xl mx-auto px-4 py-8">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      
-      <!-- Cột Trái: Tab chuyển đổi Form tạo link -->
-      <div class="lg:col-span-7 space-y-6">
-        
-        <!-- Tab Selector: Chia Sẻ Thường vs Chiến Dịch ADS Pro -->
-        <div class="bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-1.5">
-          <button id="tabNormalBtn" onclick="switchFormTab('normal')" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition tab-active">
-            <i class="fa-solid fa-share-nodes text-orange-500"></i> Tạo Link Đăng Facebook / Zalo
-          </button>
-          <button id="tabAdsBtn" onclick="switchFormTab('ads')" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition text-slate-600 hover:bg-slate-50">
-            <i class="fa-solid fa-bullhorn text-purple-600"></i> Chiến Dịch ADS Pro (Pixel & UTM)
-            <span class="bg-purple-100 text-purple-700 text-[9px] font-black px-1.5 py-0.5 rounded uppercase">Mới</span>
-          </button>
-        </div>
+  <!-- Navigation Bar: 3 Module Chính -->
+  <div class="max-w-7xl mx-auto px-4 mt-6">
+    <div class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-2">
+      <button id="navTab1" onclick="switchMainTab('tab1')" class="flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active">
+        <i class="fa-solid fa-pen-nib text-blue-500"></i>
+        <span>1. Tạo Bài Viết & Ảnh Quảng Cáo Thu Hút</span>
+      </button>
+      <button id="navTab2" onclick="switchMainTab('tab2')" class="flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2 transition">
+        <i class="fa-solid fa-rocket text-purple-600"></i>
+        <span>2. Lên Chiến Dịch Ads 1-Click</span>
+      </button>
+      <button id="navTab3" onclick="switchMainTab('tab3')" class="flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2 transition">
+        <i class="fa-solid fa-comments text-emerald-600"></i>
+        <span>3. Auto Reply Comment & Auto Inbox</span>
+      </button>
+    </div>
+  </div>
 
-        <!-- Form Tạo Link -->
-        <div class="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h2 id="formHeadingTitle" class="text-lg font-bold text-slate-900 leading-tight flex items-center gap-2">
-                <i class="fa-solid fa-wand-magic-sparkles text-orange-500"></i> Tạo Link Chuyển Hướng Mở App
-              </h2>
-              <p id="formHeadingSub" class="text-xs text-slate-500 mt-0.5">Khách ấn vào bài viết sẽ chuyển liên kết ngay sang Shopee.</p>
-            </div>
-            <span id="cardQuotaBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">
-              Chưa đăng nhập
-            </span>
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- ==================== MODULE 1: AI ADS CREATIVE & VISUAL STUDIO ==================== -->
+    <div id="module1Content" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Form Tạo Bài Viết AI -->
+        <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center gap-2 text-slate-900 font-black text-base border-b border-slate-100 pb-3">
+            <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i>
+            <span>Thiết Lập Thông Tin Sản Phẩm Cần Quảng Cáo</span>
           </div>
 
-          <form id="createForm" class="space-y-4">
+          <form id="aiContentForm" class="space-y-3.5">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Tên Sản Phẩm / Dịch Vụ <span class="text-red-500">*</span></label>
+              <input type="text" id="aiProductName" required placeholder="VD: Tai nghe Bluetooth P9 chống ồn cao cấp" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Giá Gốc (Gạch đỏ)</label>
+                <input type="text" id="aiOriginalPrice" placeholder="VD: 499.000đ" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Giá Sale Sốc <span class="text-red-500">*</span></label>
+                <input type="text" id="aiSalePrice" placeholder="VD: 199.000đ" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-bold text-red-600 focus:outline-none focus:border-blue-500">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Quà Tặng / Ưu Đãi Đi Kèm</label>
+              <input type="text" id="aiPromo" placeholder="VD: Freeship toàn quốc + Tặng cáp sạc nhanh" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Ngành Hàng</label>
+              <select id="aiCategory" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-medium text-slate-700 focus:outline-none focus:border-blue-500">
+                <option value="cong_nghe">📱 Công nghệ & Phụ kiện điện thoại</option>
+                <option value="thoi_trang">👗 Thời trang & Giày dép</option>
+                <option value="my_pham">💄 Mỹ phẩm & Chăm sóc sắc đẹp</option>
+                <option value="gia_dung">🏠 Đồ gia dụng & Tiện ích thông minh</option>
+                <option value="me_be">🍼 Mẹ & Bé</option>
+                <option value="khac">🛒 Ngành hàng khác</option>
+              </select>
+            </div>
+
+            <button type="submit" id="aiGenerateBtn" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-xl text-xs shadow-md shadow-blue-500/25 transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-sparkles"></i> Tạo Bài Viết Quảng Cáo AI Thu Hút Khách
+            </button>
+          </form>
+
+          <!-- Studio Tạo Banner Ảnh Quảng Cáo Bắt Mắt -->
+          <div class="pt-4 border-t border-slate-100 space-y-3">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-800">
+              <span class="flex items-center gap-1.5"><i class="fa-regular fa-image text-purple-600"></i> Studio Thiết Kế Ảnh Quảng Cáo Bắt Mắt</span>
+            </div>
             
-            <!-- Link Shopee -->
+            <input type="text" id="visualImgUrl" placeholder="Dán link ảnh sản phẩm..." class="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none">
+            
+            <div class="grid grid-cols-2 gap-2">
+              <select id="visualFrameStyle" class="p-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-700">
+                <option value="flash_sale">🔥 Khung Flash Sale Đỏ</option>
+                <option value="mall">👑 Khung Shopee Mall Vàng</option>
+                <option value="freeship">🚚 Khung Freeship Xanh Lá</option>
+              </select>
+              <button onclick="renderVisualAdCanvas()" class="py-2 bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold rounded-lg text-xs transition">
+                Tạo Ảnh Quảng Cáo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cột Phải: Kết Quả 3 Bài Viết & Ảnh Banner -->
+        <div class="lg:col-span-7 space-y-5">
+          
+          <!-- Banner Preview Canvas -->
+          <div id="visualBannerPreviewBox" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center gap-5">
+            <div class="w-56 h-56 bg-slate-900 rounded-xl overflow-hidden relative flex-shrink-0 shadow-md">
+              <canvas id="adCanvas" width="400" height="400" class="w-full h-full object-cover"></canvas>
+            </div>
+            <div class="space-y-2 text-xs text-slate-600">
+              <div class="font-bold text-sm text-slate-900">Ảnh Quảng Cáo Chuẩn Kích Thước Newfeed Facebook</div>
+              <p>Ảnh được tự động gắn khung viền Sale Sốc, giá gạch đỏ và tem bảo hành chính hãng giúp tăng 200% CTR khi lướt tin.</p>
+              <button onclick="downloadCanvasImage()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-xs transition flex items-center gap-2">
+                <i class="fa-solid fa-download"></i> Tải Ảnh Xuống (Download HD)
+              </button>
+            </div>
+          </div>
+
+          <!-- 3 Bài Viết Quảng Cáo AI -->
+          <div id="aiPostsContainer" class="space-y-4">
+            <div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-400 text-xs">
+              <i class="fa-solid fa-wand-magic-sparkles text-2xl text-blue-400 mb-2 block"></i>
+              Nhập tên sản phẩm bên trái và bấm <b>"Tạo Bài Viết Quảng Cáo AI"</b> để nhận ngay 3 mẫu bài viết bán hàng theo công thức AIDA & PAS đỉnh cao!
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== MODULE 2: FACEBOOK ADS LAUNCHER & MANAGER ==================== -->
+    <div id="module2Content" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Form Lên Camp Ads -->
+        <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2 text-slate-900 font-black text-base">
+              <i class="fa-solid fa-rocket text-purple-600"></i>
+              <span>Lên Chiến Dịch Quảng Cáo Facebook 1-Click</span>
+            </div>
+            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">Tự động kết nối</span>
+          </div>
+
+          <form id="createCampaignForm" class="space-y-3.5">
             <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                1. Link Shopee Gốc / Affiliate <span class="text-red-500">*</span>
-              </label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <i class="fa-solid fa-store"></i>
-                </div>
-                <input 
-                  type="url" 
-                  id="targetUrl" 
-                  required
-                  placeholder="https://shopee.vn/... hoặc https://s.shopee.vn/..."
-                  class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition"
-                >
-              </div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Tên Chiến Dịch Quảng Cáo <span class="text-red-500">*</span></label>
+              <input type="text" id="campName" required placeholder="VD: Chiến dịch Sale 50% Tai Nghe P9 - Tháng 10" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-purple-500">
             </div>
 
-            <!-- Tiêu đề Facebook -->
             <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                2. Tiêu Đề Bài Viết / Tên Sản Phẩm <span class="text-red-500">*</span>
-              </label>
-              <input 
-                type="text" 
-                id="title" 
-                required
-                placeholder="VD: [Mã Giảm 50%] Tai Nghe Bluetooth Chống Ồn Chính Hãng"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition"
-              >
+              <label class="block text-xs font-bold text-slate-700 mb-1">Mục Tiêu Quảng Cáo (Objective) <span class="text-red-500">*</span></label>
+              <select id="campObjective" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none focus:border-purple-500">
+                <option value="MESSAGES">💬 Tin Nhắn Messenger (Khuyên Dùng - Chốt Đơn Trực Tiếp)</option>
+                <option value="POST_ENGAGEMENT">👍 Tương Tác Bài Viết (Tăng Like, Comment, Share)</option>
+                <option value="TRAFFIC">🌐 Lưu Lượng Truy Cập (Chuyển Hướng Về Trang Đặt Hàng)</option>
+              </select>
             </div>
 
-            <!-- Link Ảnh -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Ngân Sách Hàng Ngày <span class="text-red-500">*</span></label>
+                <select id="campBudget" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold text-purple-700 focus:outline-none">
+                  <option value="50000">50.000đ / ngày</option>
+                  <option value="100000" selected>100.000đ / ngày</option>
+                  <option value="200000">200.000đ / ngày</option>
+                  <option value="500000">500.000đ / ngày</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Độ Tuổi Mục Tiêu</label>
+                <select id="campAge" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium text-slate-700 focus:outline-none">
+                  <option value="18-35">18 - 35 tuổi (Trẻ trung)</option>
+                  <option value="25-45" selected>25 - 45 tuổi (Sức mua cao)</option>
+                  <option value="18-65">18 - 65 tuổi (Toàn bộ)</option>
+                </select>
+              </div>
+            </div>
+
             <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                3. Link Hình Ảnh Sản Phẩm (Thẻ to Facebook)
-              </label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <i class="fa-regular fa-image"></i>
-                </div>
-                <input 
-                  type="url" 
-                  id="imageUrl" 
-                  placeholder="https://cf.shopee.vn/file/... hoặc link ảnh bất kỳ"
-                  class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition"
-                >
-              </div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Vị Trí Nhắm Mục Tiêu</label>
+              <input type="text" id="campLocation" value="Toàn quốc (Việt Nam)" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs text-slate-700 focus:outline-none">
             </div>
 
-            <!-- ==================== KHỐI TÍNH NĂNG ADS PRO (HIỆN KHI CHỌN TAB ADS) ==================== -->
-            <div id="adsSuiteBox" class="hidden p-4 bg-purple-50/80 border border-purple-200 rounded-xl space-y-3.5">
-              <div class="flex items-center justify-between text-xs font-bold text-purple-950">
-                <span class="uppercase tracking-wider flex items-center gap-1.5">
-                  <i class="fa-solid fa-bullhorn text-purple-600"></i> Cấu Hình Facebook & TikTok Ads (Pro Suite)
-                </span>
-                <span class="text-[10px] bg-purple-200 text-purple-900 font-bold px-2 py-0.5 rounded">Gói Pro / Business</span>
-              </div>
-
-              <!-- Facebook Pixel & TikTok Pixel -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1">
-                    <i class="fa-brands fa-facebook text-blue-600"></i> Facebook Pixel ID:
-                  </label>
-                  <input 
-                    type="text" 
-                    id="fbPixelInput" 
-                    placeholder="VD: 123456789012345"
-                    class="w-full px-3 py-2 bg-white rounded-lg border border-purple-200 text-xs font-mono font-bold text-slate-800 focus:outline-none focus:border-purple-500"
-                  >
-                  <span class="text-[10px] text-slate-400 mt-0.5 block">Tự động bắn sự kiện PageView, ViewContent, AddToCart</span>
-                </div>
-
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1">
-                    <i class="fa-brands fa-tiktok text-slate-900"></i> TikTok Pixel ID:
-                  </label>
-                  <input 
-                    type="text" 
-                    id="tiktokPixelInput" 
-                    placeholder="VD: C123456789ABC"
-                    class="w-full px-3 py-2 bg-white rounded-lg border border-purple-200 text-xs font-mono font-bold text-slate-800 focus:outline-none focus:border-purple-500"
-                  >
-                  <span class="text-[10px] text-slate-400 mt-0.5 block">Đo lường chuyển đổi chiến dịch TikTok Ads</span>
-                </div>
-              </div>
-
-              <!-- Nhóm Zalo Săn Sale & Tên Chiến Dịch (Campaign) -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1">
-                    <i class="fa-solid fa-users text-blue-500"></i> Link Nhóm Zalo Săn Deal VIP:
-                  </label>
-                  <input 
-                    type="url" 
-                    id="zaloGroupInput" 
-                    placeholder="VD: https://zalo.me/g/..."
-                    class="w-full px-3 py-2 bg-white rounded-lg border border-purple-200 text-xs text-slate-800 focus:outline-none focus:border-purple-500"
-                  >
-                  <span class="text-[10px] text-slate-400 mt-0.5 block">Thêm nút mời khách vào phễu Zalo săn mã</span>
-                </div>
-
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1">
-                    <i class="fa-solid fa-chart-line text-emerald-600"></i> Tên Chiến Dịch (UTM Campaign):
-                  </label>
-                  <input 
-                    type="text" 
-                    id="utmCampaignInput" 
-                    placeholder="VD: sale1010_quangcao_fb"
-                    class="w-full px-3 py-2 bg-white rounded-lg border border-purple-200 text-xs font-mono text-slate-800 focus:outline-none focus:border-purple-500"
-                  >
-                  <span class="text-[10px] text-slate-400 mt-0.5 block">Gắn sub_id1 Shopee để theo dõi doanh thu</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- ==================== KHỐI TÍNH NĂNG CTR BOOSTER (PLAY ẢO, TEM SALE) ==================== -->
-            <div class="p-4 bg-orange-50/70 border border-orange-200 rounded-xl space-y-3.5">
-              <div class="flex items-center justify-between text-xs font-bold text-orange-950">
-                <span class="uppercase tracking-wider flex items-center gap-1.5">
-                  <i class="fa-solid fa-bolt text-orange-600"></i> Vũ khí tăng lượt click (CTR Booster)
-                </span>
-                <span class="text-[10px] bg-orange-200/70 text-orange-800 font-bold px-2 py-0.5 rounded">Tự động tối ưu</span>
-              </div>
-
-              <!-- Fake Play & Tem Sale -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label class="flex items-center gap-2 p-2.5 bg-white border border-orange-200/80 rounded-xl cursor-pointer hover:border-orange-400 transition">
-                  <input type="checkbox" id="enablePlayBtn" checked class="w-4 h-4 text-orange-600 rounded accent-orange-600">
-                  <div class="text-xs">
-                    <span class="font-bold text-slate-800 block">🎬 Nút Play Video Ảo</span>
-                    <span class="text-[10px] text-slate-500">Giống video review, tăng x3 click</span>
-                  </div>
-                </label>
-
-                <div>
-                  <select id="badgeSelect" class="w-full h-full p-2.5 bg-white border border-orange-200/80 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-orange-500 transition">
-                    <option value="none">🏷️ Tem: Không gắn tem</option>
-                    <option value="flash_sale" selected>🔥 Tem: FLASH SALE GIẢM 50%</option>
-                    <option value="freeship">🚚 Tem: FREESHIP EXTRA 0Đ</option>
-                    <option value="mall">👑 Tem: SHOPEE MALL CHÍNH HÃNG</option>
-                    <option value="deal_soc">⚡ Tem: DEAL SỐC HÔM NAY</option>
-                    <option value="bogo">🎁 Tem: MUA 1 TẶNG 1</option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- Voucher & Kênh Đăng -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-700 mb-1">
-                    📋 Tự động chép mã Voucher (nếu có):
-                  </label>
-                  <input 
-                    type="text" 
-                    id="voucherInput" 
-                    placeholder="VD: GIAM50K hoặc FREESHIP"
-                    class="w-full px-3 py-2 bg-white rounded-lg border border-orange-200 text-xs font-mono font-bold text-emerald-700 uppercase focus:outline-none focus:border-orange-500"
-                  >
-                </div>
-
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-700 mb-1">
-                    🏷️ Kênh đăng bài (Sub-ID):
-                  </label>
-                  <select id="subIdSelect" class="w-full px-3 py-2 bg-white rounded-lg border border-orange-200 text-xs font-medium text-slate-700 focus:outline-none focus:border-orange-500">
-                    <option value="">Tự động theo chế độ</option>
-                    <option value="fb_ads">🎯 Facebook Ads (fb_ads)</option>
-                    <option value="tiktok_ads">🎵 TikTok Ads (tiktok_ads)</option>
-                    <option value="fb_group">👥 Group Săn Sale (fb_group)</option>
-                    <option value="fb_page">📄 Fanpage Bán Hàng (fb_page)</option>
-                    <option value="fb_profile">👤 Trang Cá Nhân (fb_profile)</option>
-                    <option value="fb_reels">🎥 Video Reels (fb_reels)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <!-- Mô tả ngắn -->
             <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                4. Lời Kêu Gọi Săn Deal / Mô Tả
-              </label>
-              <textarea 
-                id="description" 
-                rows="2"
-                placeholder="VD: Flash Sale giảm sâu chỉ hôm nay. Freeship toàn quốc, bấm vào để mở app mua ngay kẻo hết quà!"
-                class="w-full px-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition"
-              ></textarea>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nội Dung Bài Đăng Sẽ Chạy Ads</label>
+              <textarea id="campPostContent" rows="3" placeholder="Nhập nội dung bài quảng cáo (hoặc sao chép từ Module 1 sang)..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none"></textarea>
             </div>
 
-            <button 
-              type="submit" 
-              id="submitBtn"
-              class="w-full py-3.5 px-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold rounded-xl shadow-lg shadow-orange-500/25 transition flex items-center justify-center gap-2 text-sm"
-            >
-              <i class="fa-solid fa-wand-magic-sparkles"></i> Tạo Link Chuyển Hướng Facebook (Mở App)
+            <button type="submit" id="createCampBtn" class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black rounded-xl text-xs shadow-md shadow-purple-500/25 transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-play"></i> Kích Hoạt Chiến Dịch Quảng Cáo Facebook
             </button>
           </form>
         </div>
 
-        <!-- Hộp kết quả tạo link thành công -->
-        <div id="resultBox" class="hidden bg-emerald-50 border border-emerald-200 rounded-2xl p-6 transition-all duration-300">
-          <div class="flex items-center gap-2 text-emerald-800 font-bold mb-1.5">
-            <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i> Tạo Liên Kết Thành Công!
-          </div>
-          <p class="text-xs text-emerald-700 mb-4">Link đã được kích hoạt chế độ siêu tốc mở thẳng App Shopee & tích hợp theo dõi chuyển đổi.</p>
-          
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <input 
-              type="text" 
-              id="outputUrl" 
-              readonly 
-              class="flex-1 bg-white border border-emerald-300 px-3.5 py-2.5 rounded-xl text-sm font-mono text-slate-800 select-all"
-            >
-            <button 
-              id="copyBtn" 
-              class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-sm"
-            >
-              <i class="fa-regular fa-copy"></i> Sao chép
+        <!-- Danh Sách Chiến Dịch Đang Chạy -->
+        <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="font-black text-slate-900 text-base flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-slate-500"></i>
+              <span>Quản Lý Các Chiến Dịch Quảng Cáo Facebook</span>
+            </div>
+            <button onclick="loadUserCampaigns()" class="text-xs text-purple-600 font-bold hover:underline">
+              <i class="fa-solid fa-rotate-right"></i> Làm mới
             </button>
           </div>
 
-          <div class="mt-4 flex flex-wrap gap-2 pt-2 border-t border-emerald-200/70 text-xs">
-            <a id="testLink" href="#" target="_blank" class="px-3 py-1.5 bg-white border border-emerald-300 rounded-lg text-emerald-800 font-medium hover:bg-emerald-100 flex items-center gap-1.5 transition">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i> Mở thử liên kết
-            </a>
-            <a id="fbDebugLink" href="#" target="_blank" class="px-3 py-1.5 bg-white border border-emerald-300 rounded-lg text-emerald-800 font-medium hover:bg-emerald-100 flex items-center gap-1.5 transition">
-              <i class="fa-brands fa-facebook"></i> Kiểm tra hiển thị qua FB Debugger
-            </a>
+          <div id="campaignsListContainer" class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+            <div class="text-center py-10 text-xs text-slate-400">Đang tải danh sách chiến dịch...</div>
           </div>
         </div>
 
       </div>
-
-      <!-- Cột Phải: Live Preview Facebook & Lịch sử -->
-      <div class="lg:col-span-5 space-y-6">
-        
-        <!-- Live Preview Facebook Card -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm sticky top-20">
-          <div class="flex items-center justify-between mb-3.5">
-            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-brands fa-facebook text-blue-600 text-base"></i> Xem trước trên Facebook
-            </h3>
-            <span id="previewTagBadge" class="text-[11px] bg-orange-100 text-orange-700 font-bold px-2 py-0.5 rounded">Mô phỏng thật</span>
-          </div>
-
-          <div class="border border-slate-300 rounded-xl overflow-hidden bg-slate-50 transition shadow-sm">
-            <div class="p-3 bg-white flex items-center gap-2.5 border-b border-slate-100">
-              <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
-                FB
-              </div>
-              <div>
-                <div class="text-xs font-bold text-slate-900 leading-tight">Fanpage / Chiến Dịch Quảng Cáo</div>
-                <div class="text-[10px] text-slate-400">Được tài trợ · <i class="fa-solid fa-earth-americas"></i></div>
-              </div>
-            </div>
-
-            <div class="px-3 py-2 bg-white text-xs text-slate-700">
-              Săn deal siêu sốc Shopee ngay hôm nay nha cả nhà ơi 👇
-            </div>
-
-            <div class="cursor-pointer group">
-              <div class="w-full h-48 bg-slate-900 overflow-hidden relative flex items-center justify-center">
-                <img 
-                  id="previewImage" 
-                  src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=60" 
-                  alt="Preview" 
-                  class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                  onerror="this.src='https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=60'"
-                >
-                <div id="previewBadge" class="absolute top-2.5 left-2.5 bg-red-600 text-white text-[11px] font-black px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1 uppercase tracking-tight">
-                  🔥 FLASH SALE GIẢM 50%
-                </div>
-                <div id="previewPlayBtn" class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div class="w-14 h-14 rounded-full bg-black/60 backdrop-blur-sm border-2 border-white/90 flex items-center justify-center text-white shadow-2xl pl-1 group-hover:scale-110 transition duration-300">
-                    <i class="fa-solid fa-play text-xl"></i>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="p-3 bg-slate-100 border-t border-slate-200">
-                <div id="previewDomain" class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-0.5 truncate">
-                  SHOPEE.VN
-                </div>
-                <div id="previewTitle" class="text-sm font-bold text-slate-900 leading-snug line-clamp-2">
-                  [Mã Giảm 50%] Tai Nghe Bluetooth Chống Ồn Chính Hãng
-                </div>
-                <div id="previewDesc" class="text-xs text-slate-500 mt-1 line-clamp-1">
-                  Flash Sale giảm sâu chỉ hôm nay. Freeship toàn quốc, bấm vào để mở app mua ngay kẻo hết quà!
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-3 text-[11px] text-slate-500 flex items-start gap-1.5">
-            <i class="fa-solid fa-circle-info text-orange-500 mt-0.5"></i>
-            <span>Nút Play ảo, Tem nhãn & Pixel tracking giúp bài viết tăng tỷ lệ click và tối ưu thuật toán Facebook Ads!</span>
-          </div>
-        </div>
-
-      </div>
-
     </div>
+
+    <!-- ==================== MODULE 3: AUTO REPLY COMMENT & AUTO INBOX ==================== -->
+    <div id="module3Content" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Cấu Hình Kịch Bản Bot -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2 text-slate-900 font-black text-base">
+              <i class="fa-solid fa-robot text-emerald-600"></i>
+              <span>Cấu Hình Tự Động Phản Hồi Bài Viết Quảng Cáo</span>
+            </div>
+            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">Đang Bật</span>
+          </div>
+
+          <form id="autoReplyForm" class="space-y-4">
+            
+            <div class="space-y-2 p-3 bg-emerald-50/50 rounded-xl border border-emerald-100 text-xs">
+              <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+                <input type="checkbox" id="botAutoLike" checked class="w-4 h-4 text-emerald-600 accent-emerald-600 rounded">
+                <span>Tự động LIKE bình luận của khách hàng ngay lập tức</span>
+              </label>
+
+              <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+                <input type="checkbox" id="botHidePhone" checked class="w-4 h-4 text-emerald-600 accent-emerald-600 rounded">
+                <span class="text-red-700">Tự động ẨN bình luận chứa Số Điện Thoại (Chống đối thủ cướp khách)</span>
+              </label>
+            </div>
+
+            <!-- Mẫu trả lời comment -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Các Mẫu Trả Lời Bình Luận (Xoay vòng ngẫu nhiên chống spam):</label>
+              <textarea id="botReplyTemplates" rows="4" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs leading-relaxed focus:outline-none focus:border-emerald-500 font-mono"></textarea>
+              <span class="text-[10px] text-slate-400 mt-0.5 block">* Mỗi dòng là một mẫu câu khác nhau. Bot sẽ tự chọn câu ngẫu nhiên để không bị Facebook đánh dấu trùng lặp.</span>
+            </div>
+
+            <!-- Mẫu tin nhắn gửi Messenger -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Mẫu Tin Nhắn Tự Động Gửi Vào Hộp Thư Messenger Của Khách:</label>
+              <textarea id="botInboxMessage" rows="4" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs leading-relaxed focus:outline-none focus:border-emerald-500 font-mono"></textarea>
+            </div>
+
+            <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md shadow-emerald-500/20 transition">
+              Lưu Cấu Hình Kịch Bản Bot
+            </button>
+          </form>
+        </div>
+
+        <!-- Trình Mô Phỏng Thực Tế (Live Simulator) -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="font-black text-slate-900 text-base flex items-center gap-2">
+              <i class="fa-solid fa-vial-circle-check text-blue-600"></i>
+              <span>Trình Mô Phỏng Phản Hồi Trực Tuyến (Live Simulator)</span>
+            </div>
+            <span class="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">Thử nghiệm</span>
+          </div>
+
+          <p class="text-xs text-slate-500">Nhập thử một bình luận giống khách hàng thật để xem hệ thống bot xử lý trả lời và gửi tin nhắn như thế nào:</p>
+
+          <div class="space-y-3">
+            <div class="flex gap-2">
+              <input type="text" id="simCommentInput" value="Tư vấn cho mình với ạ, số điện thoại mình 0988123456" class="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-blue-500">
+              <button onclick="runBotSimulation()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition flex-shrink-0">
+                Thử Nghiệm
+              </button>
+            </div>
+          </div>
+
+          <!-- Màn hình giả lập kết quả -->
+          <div id="simResultBox" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 text-xs">
+            <div class="text-slate-400 text-center py-6">
+              Bấm nút <b>"Thử Nghiệm"</b> phía trên để chạy mô phỏng bot phản hồi khách hàng!
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </main>
 
-  <!-- ==================== MODAL BẢNG GIÁ 4 GÓI (PRICING MODAL) ==================== -->
+  <!-- ==================== MODAL BẢNG GIÁ 4 GÓI (VIETCOMBANK LE VAN THIEN 9349850292) ==================== -->
   <div id="pricingModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden overflow-y-auto">
     <div class="bg-white rounded-3xl max-w-5xl w-full p-6 sm:p-8 shadow-2xl my-auto border border-slate-200 relative max-h-[92vh] overflow-y-auto">
-      
       <button onclick="closePricingModal()" class="absolute top-5 right-5 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
         <i class="fa-solid fa-xmark text-lg"></i>
       </button>
 
       <div class="text-center max-w-2xl mx-auto mb-8">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-700 font-bold text-xs mb-2">
-          <i class="fa-solid fa-crown text-amber-500"></i> BẢNG GIÁ DỊCH VỤ
+          <i class="fa-solid fa-crown text-amber-500"></i> BẢNG GIÁ GÓI DỊCH VỤ
         </div>
         <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-          Chuyển link Shopee dễ dàng – Tăng hiệu quả bán hàng
+          Bộ Công Cụ Chạy Ads & Thu Hút Khách Hàng Facebook
         </h2>
         <p class="text-sm text-slate-500 mt-1.5">
-          Tạo link mở trực tiếp ứng dụng Shopee và giữ trọn link Affiliate chỉ với vài thao tác đơn giản.
+          Tối ưu chi phí quảng cáo, tăng tỷ lệ tiếp cận và chốt đơn tự động chỉ với vài thao tác đơn giản.
         </p>
       </div>
 
       <!-- 4 Cột Gói Cước -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         
-        <!-- 1. Gói Basic -->
-        <div class="border border-slate-200 rounded-2xl p-5 bg-white flex flex-col justify-between hover:border-emerald-500 transition shadow-sm hover:shadow-md">
+        <!-- Basic -->
+        <div class="border border-slate-200 rounded-2xl p-5 bg-white flex flex-col justify-between hover:border-emerald-500 transition">
           <div>
             <div class="flex items-center justify-between mb-2">
-              <span class="font-black text-base text-slate-900 flex items-center gap-1.5">
-                🌱 Basic
-              </span>
+              <span class="font-black text-base text-slate-900">🌱 Basic</span>
               <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Khởi đầu</span>
             </div>
-            <p class="text-xs text-slate-500 min-h-[32px]">Phù hợp cho người mới bắt đầu làm Shopee Affiliate.</p>
-
+            <p class="text-xs text-slate-500 min-h-[32px]">Dành cho người mới bắt đầu chạy quảng cáo.</p>
             <div class="my-4">
               <div class="text-2xl font-black text-emerald-600">59.000đ<span class="text-xs text-slate-400 font-normal">/tháng</span></div>
-              <div class="text-xs font-bold text-emerald-800 bg-emerald-50 py-1.5 px-3 rounded-lg mt-2 flex items-center gap-1.5">
-                <i class="fa-solid fa-link"></i> 5 link/tháng
-              </div>
+              <div class="text-xs font-bold text-emerald-800 bg-emerald-50 py-1.5 px-3 rounded-lg mt-2">30 bài viết AI/tháng</div>
             </div>
-
             <ul class="space-y-2 text-xs text-slate-600 mb-6 border-t border-slate-100 pt-3">
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i> Chuyển link Shopee sang deeplink mở app</li>
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i> Hỗ trợ link Affiliate</li>
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i> Sử dụng 1 tài khoản</li>
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i> Hỗ trợ kỹ thuật cơ bản</li>
+              <li><i class="fa-solid fa-check text-emerald-500 mr-1.5"></i> Tạo bài viết quảng cáo AI</li>
+              <li><i class="fa-solid fa-check text-emerald-500 mr-1.5"></i> Thiết kế ảnh Flash Sale</li>
+              <li><i class="fa-solid fa-check text-emerald-500 mr-1.5"></i> Lên chiến dịch Ads cơ bản</li>
             </ul>
           </div>
-
-          <button onclick="selectPlanCheckout('basic', 'Basic', 59000, 5)" class="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition">
+          <button onclick="selectPlanCheckout('basic', 'Basic', 59000)" class="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition">
             Đăng ký gói
           </button>
         </div>
 
-        <!-- 2. Gói Standard -->
-        <div class="border border-slate-200 rounded-2xl p-5 bg-white flex flex-col justify-between hover:border-blue-500 transition shadow-sm hover:shadow-md">
+        <!-- Standard -->
+        <div class="border border-slate-200 rounded-2xl p-5 bg-white flex flex-col justify-between hover:border-blue-500 transition">
           <div>
             <div class="flex items-center justify-between mb-2">
-              <span class="font-black text-base text-slate-900 flex items-center gap-1.5">
-                ⭐ Standard
-              </span>
+              <span class="font-black text-base text-slate-900">⭐ Standard</span>
               <span class="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full">Tiêu chuẩn</span>
             </div>
-            <p class="text-xs text-slate-500 min-h-[32px]">Dành cho người thường xuyên chia sẻ link trên Facebook.</p>
-
+            <p class="text-xs text-slate-500 min-h-[32px]">Dành cho người bán hàng thường xuyên.</p>
             <div class="my-4">
               <div class="text-2xl font-black text-blue-600">99.000đ<span class="text-xs text-slate-400 font-normal">/tháng</span></div>
-              <div class="text-xs font-bold text-blue-800 bg-blue-50 py-1.5 px-3 rounded-lg mt-2 flex items-center gap-1.5">
-                <i class="fa-solid fa-link"></i> 20 link/tháng
-              </div>
+              <div class="text-xs font-bold text-blue-800 bg-blue-50 py-1.5 px-3 rounded-lg mt-2">100 bài viết AI/tháng</div>
             </div>
-
             <ul class="space-y-2 text-xs text-slate-600 mb-6 border-t border-slate-100 pt-3">
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-blue-500 mt-0.5"></i> Toàn bộ tính năng Basic</li>
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-blue-500 mt-0.5"></i> Lưu lịch sử chuyển link</li>
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-blue-500 mt-0.5"></i> Sao chép kết quả nhanh</li>
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-blue-500 mt-0.5"></i> Hỗ trợ kỹ thuật ưu tiên</li>
+              <li><i class="fa-solid fa-check text-blue-500 mr-1.5"></i> Toàn bộ tính năng Basic</li>
+              <li><i class="fa-solid fa-check text-blue-500 mr-1.5"></i> Quản lý 5 chiến dịch Ads</li>
+              <li><i class="fa-solid fa-check text-blue-500 mr-1.5"></i> Kịch bản Auto Reply & Inbox</li>
             </ul>
           </div>
-
-          <button onclick="selectPlanCheckout('standard', 'Standard', 99000, 20)" class="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition">
+          <button onclick="selectPlanCheckout('standard', 'Standard', 99000)" class="w-full py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 transition">
             Đăng ký gói
           </button>
         </div>
 
-        <!-- 3. Gói Pro (Phổ biến nhất) -->
+        <!-- Pro -->
         <div class="border-2 border-purple-500 rounded-2xl p-5 bg-purple-50/20 flex flex-col justify-between shadow-lg relative transform lg:-translate-y-2">
-          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-md tracking-wider">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-md">
             PHỔ BIẾN NHẤT
           </div>
           <div>
             <div class="flex items-center justify-between mb-2 mt-1">
-              <span class="font-black text-base text-purple-950 flex items-center gap-1.5">
-                👑 Pro
-              </span>
+              <span class="font-black text-base text-purple-950">👑 Pro</span>
               <span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">Khuyên dùng</span>
             </div>
-            <p class="text-xs text-slate-500 min-h-[32px]">Dành cho người bán hàng chuyên nghiệp, nhu cầu cao.</p>
-
+            <p class="text-xs text-slate-500 min-h-[32px]">Chạy quảng cáo chuyên nghiệp, tối ưu chi phí.</p>
             <div class="my-4">
               <div class="text-2xl font-black text-purple-600">149.000đ<span class="text-xs text-slate-400 font-normal">/tháng</span></div>
-              <div class="text-xs font-bold text-purple-900 bg-purple-100 py-1.5 px-3 rounded-lg mt-2 flex items-center gap-1.5">
-                <i class="fa-solid fa-link"></i> 50 link/tháng
-              </div>
+              <div class="text-xs font-bold text-purple-900 bg-purple-100 py-1.5 px-3 rounded-lg mt-2">300 bài viết AI/tháng</div>
             </div>
-
             <ul class="space-y-2 text-xs text-slate-600 mb-6 border-t border-purple-100 pt-3">
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-purple-600 mt-0.5"></i> Toàn bộ tính năng Standard</li>
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-purple-600 mt-0.5"></i> Tốc độ chuyển hướng siêu tốc 0ms</li>
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-purple-600 mt-0.5"></i> Studio tăng CTR (Play ảo + Tem sale)</li>
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-purple-600 mt-0.5"></i> <b>Mở khóa tính năng Facebook & TikTok Ads</b></li>
+              <li><i class="fa-solid fa-check text-purple-600 mr-1.5"></i> Trọn bộ công thức AIDA & PAS</li>
+              <li><i class="fa-solid fa-check text-purple-600 mr-1.5"></i> Lên Ads Facebook 1-click tự động</li>
+              <li><i class="fa-solid fa-check text-purple-600 mr-1.5"></i> Auto Inbox + Ẩn SĐT cướp khách</li>
             </ul>
           </div>
-
-          <button onclick="selectPlanCheckout('pro', 'Pro', 149000, 50)" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-extrabold text-xs shadow-md shadow-purple-500/30 transition">
+          <button onclick="selectPlanCheckout('pro', 'Pro', 149000)" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs shadow-md shadow-purple-500/30 hover:opacity-90 transition">
             Đăng ký ngay
           </button>
         </div>
 
-        <!-- 4. Gói Business -->
-        <div class="border border-slate-200 rounded-2xl p-5 bg-white flex flex-col justify-between hover:border-amber-500 transition shadow-sm hover:shadow-md">
+        <!-- Business -->
+        <div class="border border-slate-200 rounded-2xl p-5 bg-white flex flex-col justify-between hover:border-amber-500 transition">
           <div>
             <div class="flex items-center justify-between mb-2">
-              <span class="font-black text-base text-slate-900 flex items-center gap-1.5">
-                👥 Business
-              </span>
+              <span class="font-black text-base text-slate-900">👥 Business</span>
               <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">Đội nhóm</span>
             </div>
-            <p class="text-xs text-slate-500 min-h-[32px]">Dành cho đội nhóm, chạy ads lớn & quy mô cao.</p>
-
+            <p class="text-xs text-slate-500 min-h-[32px]">Dành cho đội nhóm, người chạy ngân sách lớn.</p>
             <div class="my-4">
               <div class="text-2xl font-black text-amber-600">199.000đ<span class="text-xs text-slate-400 font-normal">/tháng</span></div>
-              <div class="text-xs font-bold text-amber-900 bg-amber-50 py-1.5 px-3 rounded-lg mt-2 flex items-center gap-1.5">
-                <i class="fa-solid fa-link"></i> 100 link/tháng
-              </div>
+              <div class="text-xs font-bold text-amber-900 bg-amber-50 py-1.5 px-3 rounded-lg mt-2">1.000 bài viết AI/tháng</div>
             </div>
-
             <ul class="space-y-2 text-xs text-slate-600 mb-6 border-t border-slate-100 pt-3">
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-amber-500 mt-0.5"></i> Toàn bộ tính năng Pro</li>
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-amber-500 mt-0.5"></i> <b>Bộ công cụ ADS Pro (Pixel CAPI + UTM Builder + Zalo VIP)</b></li>
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-amber-500 mt-0.5"></i> Hỗ trợ nhiều tài khoản đội nhóm</li>
-              <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-amber-500 mt-0.5"></i> Hỗ trợ 24/7 ưu tiên cao nhất</li>
+              <li><i class="fa-solid fa-check text-amber-500 mr-1.5"></i> Không giới hạn tài khoản Ads</li>
+              <li><i class="fa-solid fa-check text-amber-500 mr-1.5"></i> Phễu Auto Inbox đa kịch bản</li>
+              <li><i class="fa-solid fa-check text-amber-500 mr-1.5"></i> Hỗ trợ trực tiếp 1-1</li>
             </ul>
           </div>
-
-          <button onclick="selectPlanCheckout('business', 'Business', 199000, 100)" class="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition">
+          <button onclick="selectPlanCheckout('business', 'Business', 199000)" class="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition">
             Đăng ký gói
           </button>
         </div>
 
       </div>
-
-      <!-- Quy tắc tính lượt -->
-      <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5">
-        <div class="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">
-          <i class="fa-solid fa-list-check text-orange-500"></i> Quy tắc tính lượt
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs text-slate-600">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-emerald-500"></i>
-            <span>Mỗi link chuyển đổi thành công = <b>1 lượt</b>.</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-emerald-500"></i>
-            <span>Link lỗi do hệ thống <b>không trừ lượt</b>.</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-emerald-500"></i>
-            <span>Hạn mức làm mới <b>mỗi tháng</b>.</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-emerald-500"></i>
-            <span>Không cộng dồn lượt chưa dùng sang tháng sau.</span>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 
-  <!-- ==================== MODAL THANH TOÁN VIETCOMBANK (VIETQR) ==================== -->
+  <!-- ==================== MODAL THANH TOÁN VIETCOMBANK ==================== -->
   <div id="checkoutModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 hidden overflow-y-auto">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative text-center my-auto">
       <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
         <i class="fa-solid fa-xmark"></i>
       </button>
 
-      <!-- Logo & Header Vietcombank -->
       <div class="mb-3">
         <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full font-bold text-xs uppercase tracking-wider mb-2">
           <i class="fa-solid fa-shield-halved text-emerald-600"></i> Cổng Thanh Toán Vietcombank
@@ -619,104 +505,78 @@
         <p class="text-xs text-slate-500 mt-0.5">Quét mã QR bằng App Ngân hàng bất kỳ để kích hoạt tự động</p>
       </div>
 
-      <!-- Khung Mã QR VietQR -->
       <div class="p-3 bg-slate-50 border-2 border-emerald-500/30 rounded-2xl inline-block shadow-sm mb-4">
         <img id="vietQrImg" src="" alt="VietQR Vietcombank" class="w-56 h-56 object-contain mx-auto rounded-xl">
       </div>
 
-      <!-- Bảng Thông Tin Chi Tiết Khớp 100% Ảnh Gốc -->
       <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left text-xs space-y-2.5 mb-5 shadow-inner">
         <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-          <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-user text-slate-400"></i> CHỦ TÀI KHOẢN:</span>
+          <span class="text-slate-500">CHỦ TÀI KHOẢN:</span>
           <span class="font-black text-slate-900 text-sm">LE VAN THIEN</span>
         </div>
-
         <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-          <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-building-columns text-emerald-600"></i> NGÂN HÀNG:</span>
+          <span class="text-slate-500">NGÂN HÀNG:</span>
           <span class="font-bold text-emerald-700">Vietcombank (VCB)</span>
         </div>
-
         <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-          <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-regular fa-credit-card text-slate-400"></i> SỐ TÀI KHOẢN:</span>
+          <span class="text-slate-500">SỐ TÀI KHOẢN:</span>
           <div class="flex items-center gap-2">
-            <span class="font-mono font-black text-slate-900 text-sm tracking-wider">9349850292</span>
-            <button onclick="copyRaw('9349850292')" class="px-2 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded text-[10px] transition">
-              Copy
-            </button>
+            <span class="font-mono font-black text-slate-900 text-sm">9349850292</span>
+            <button onclick="copyRaw('9349850292')" class="px-2 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded text-[10px]">Copy</button>
           </div>
         </div>
-
         <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-          <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-money-bill-wave text-slate-400"></i> SỐ TIỀN:</span>
+          <span class="text-slate-500">SỐ TIỀN:</span>
           <div class="flex items-center gap-2">
             <span id="checkoutAmount" class="font-black text-red-600 text-sm">149.000đ</span>
-            <button onclick="copyAmount()" class="px-2 py-0.5 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded text-[10px] transition">
-              Copy
-            </button>
+            <button onclick="copyAmount()" class="px-2 py-0.5 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded text-[10px]">Copy</button>
           </div>
         </div>
-
         <div class="flex items-center justify-between">
-          <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-comment-dots text-slate-400"></i> NỘI DUNG CK:</span>
+          <span class="text-slate-500">NỘI DUNG CK:</span>
           <div class="flex items-center gap-2">
             <code id="checkoutContent" class="bg-white px-2 py-1 rounded border border-amber-300 font-bold font-mono text-amber-900 text-xs">NAP USER PRO</code>
-            <button onclick="copyContent()" class="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded text-[10px] transition">
-              Copy
-            </button>
+            <button onclick="copyContent()" class="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded text-[10px]">Copy</button>
           </div>
         </div>
       </div>
 
-      <div class="text-[11px] text-slate-400 mb-4 flex items-center justify-center gap-1.5">
-        <i class="fa-solid fa-circle-check text-emerald-500"></i>
-        <span>Vui lòng kiểm tra kỹ thông tin trước khi thanh toán. Cảm ơn bạn!</span>
-      </div>
-
-      <button onclick="closeCheckoutModal()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition">
+      <button onclick="closeCheckoutModal()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold rounded-xl text-xs transition">
         Tôi Đã Chuyển Khoản Xong
       </button>
     </div>
   </div>
 
-  <!-- ==================== MODAL AUTH (ĐĂNG NHẬP / ĐĂNG KÝ HOÀN THIỆN) ==================== -->
+  <!-- ==================== MODAL AUTH (ĐĂNG NHẬP / ĐĂNG KÝ) ==================== -->
   <div id="authModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 relative">
       <button onclick="closeAuthModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
         <i class="fa-solid fa-xmark"></i>
       </button>
 
-      <!-- Switch Tabs Login / Register -->
       <div class="flex border-b border-slate-200 mb-5 pb-1">
-        <button id="authTabLogin" onclick="switchAuthTab('login')" class="flex-1 pb-2 font-bold text-xs border-b-2 border-orange-500 text-orange-600 transition">
-          Đăng Nhập
-        </button>
-        <button id="authTabRegister" onclick="switchAuthTab('register')" class="flex-1 pb-2 font-bold text-xs border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition">
-          Đăng Ký Mới
-        </button>
+        <button id="authTabLogin" onclick="switchAuthTab('login')" class="flex-1 pb-2 font-bold text-xs border-b-2 border-blue-600 text-blue-600 transition">Đăng Nhập</button>
+        <button id="authTabRegister" onclick="switchAuthTab('register')" class="flex-1 pb-2 font-bold text-xs border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition">Đăng Ký Mới</button>
       </div>
 
       <form id="authForm" class="space-y-3.5">
         <div id="nameFieldGroup" class="hidden">
           <label class="block text-[11px] font-bold text-slate-700 mb-1">Họ & Tên</label>
-          <input type="text" id="authName" placeholder="Nguyễn Văn A" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-orange-500">
+          <input type="text" id="authName" placeholder="Nguyễn Văn A" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none">
         </div>
-
         <div>
           <label class="block text-[11px] font-bold text-slate-700 mb-1">Email <span class="text-red-500">*</span></label>
-          <input type="email" id="authEmail" required placeholder="name@gmail.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-orange-500">
+          <input type="email" id="authEmail" required placeholder="name@gmail.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none">
         </div>
-
         <div>
           <label class="block text-[11px] font-bold text-slate-700 mb-1">Mật khẩu <span class="text-red-500">*</span></label>
-          <input type="password" id="authPassword" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-orange-500">
+          <input type="password" id="authPassword" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none">
         </div>
-
-        <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold rounded-xl text-xs transition shadow-md shadow-orange-500/20">
+        <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl text-xs transition">
           Đăng Nhập
         </button>
       </form>
 
-      <!-- Nút Đăng Nhập Nhanh Admin (1-Click) -->
       <div class="mt-4 pt-3 border-t border-slate-100 text-center">
         <button onclick="fillAdminCredentials()" class="w-full py-2 px-3 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 font-bold rounded-xl text-[11px] flex items-center justify-center gap-1.5 transition">
           <i class="fa-solid fa-crown text-amber-500"></i> Đăng Nhập Nhanh Quản Trị Viên (Admin)
@@ -725,7 +585,7 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL ADMIN QUẢN TRỊ TOÀN DIỆN ==================== -->
+  <!-- ==================== MODAL ADMIN QUẢN TRỊ ==================== -->
   <div id="adminModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden overflow-y-auto">
     <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative my-auto max-h-[92vh] overflow-y-auto">
       <button onclick="closeAdminModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
@@ -733,69 +593,52 @@
       </button>
 
       <div class="flex items-center gap-3 mb-5">
-        <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-purple-500/20">
-          👑
-        </div>
+        <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-lg">👑</div>
         <div>
-          <h3 class="text-lg font-black text-slate-900 leading-tight">Bảng Điều Khiển Quản Trị Viên</h3>
-          <p class="text-xs text-slate-500">Quản lý toàn bộ khách hàng, kích hoạt gói cước & theo dõi hạn mức.</p>
+          <h3 class="text-lg font-black text-slate-900 leading-tight">Bảng Quản Trị Hệ Thống (Admin)</h3>
+          <p class="text-xs text-slate-500">Kích hoạt gói dịch vụ và quản lý thành viên.</p>
         </div>
       </div>
 
-      <!-- Khung Kích Hoạt Nhanh Gói Cho Khách -->
-      <div class="p-4 bg-purple-50/80 border border-purple-200 rounded-2xl mb-6 space-y-3">
-        <div class="text-xs font-bold text-purple-950 uppercase tracking-wider flex items-center gap-1.5">
-          <i class="fa-solid fa-bolt text-purple-600"></i> Kích hoạt gói dịch vụ (Sau khi nhận chuyển khoản)
-        </div>
+      <div class="p-4 bg-purple-50 border border-purple-200 rounded-2xl mb-6 space-y-3">
+        <div class="text-xs font-bold text-purple-950 uppercase tracking-wider">Kích Hoạt Gói Cho Khách Đã Chuyển Khoản:</div>
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
           <input type="email" id="adminTargetEmail" placeholder="Email khách hàng..." class="sm:col-span-2 px-3 py-2 bg-white rounded-xl border border-purple-300 text-xs focus:outline-none">
           <select id="adminTargetPlan" class="px-3 py-2 bg-white rounded-xl border border-purple-300 text-xs font-bold text-slate-700">
-            <option value="basic">🌱 Basic (5 link)</option>
-            <option value="standard">⭐ Standard (20 link)</option>
-            <option value="pro" selected>👑 Pro (50 link)</option>
-            <option value="business">👥 Business (100 link)</option>
+            <option value="basic">🌱 Basic (59k)</option>
+            <option value="standard">⭐ Standard (99k)</option>
+            <option value="pro" selected>👑 Pro (149k)</option>
+            <option value="business">👥 Business (199k)</option>
           </select>
-          <button onclick="adminUpgradeUser()" class="py-2 px-3 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs transition shadow-md shadow-purple-600/20">
+          <button onclick="adminUpgradeUser()" class="py-2 px-3 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs transition">
             Kích Hoạt
           </button>
         </div>
       </div>
 
-      <!-- Danh Sách Khách Hàng -->
       <div>
         <div class="flex items-center justify-between mb-3">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-            <i class="fa-solid fa-users text-slate-400"></i> Danh sách thành viên hệ thống
-          </span>
-          <button onclick="loadAdminUsers()" class="text-xs text-purple-600 hover:underline flex items-center gap-1">
-            <i class="fa-solid fa-rotate-right"></i> Làm mới
-          </button>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Danh Sách Thành Viên</span>
+          <button onclick="loadAdminUsers()" class="text-xs text-purple-600 hover:underline">Làm mới</button>
         </div>
-        <div id="adminUsersList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
-          <div class="text-xs text-slate-400 text-center py-6">Đang tải danh sách...</div>
-        </div>
+        <div id="adminUsersList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
       </div>
     </div>
   </div>
 
   <script>
-    // Global State
+    // State
     let currentUser = null;
-    let authMode = 'login'; // 'login' or 'register'
-    let currentTab = 'normal'; // 'normal' or 'ads'
+    let authMode = 'login';
+    let currentMainTab = 'tab1';
     let currentCheckoutPrice = 0;
 
     // Check Login on Start
     async function checkAuth() {
       const token = localStorage.getItem('aff_token');
-      if (!token) {
-        renderAuthUI(null);
-        return;
-      }
+      if (!token) { renderAuthUI(null); return; }
       try {
-        const res = await fetch('/api/auth/me', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
         if (data.loggedIn && data.user) {
           currentUser = data.user;
@@ -804,19 +647,15 @@
           localStorage.removeItem('aff_token');
           renderAuthUI(null);
         }
-      } catch (e) {
-        renderAuthUI(null);
-      }
+      } catch (e) { renderAuthUI(null); }
     }
 
     function renderAuthUI(user) {
       const authNav = document.getElementById('authNav');
       const userStatusBar = document.getElementById('userStatusBar');
-      const cardQuotaBadge = document.getElementById('cardQuotaBadge');
       const adminBtn = document.getElementById('adminBtn');
 
       if (user) {
-        // Logged in
         authNav.innerHTML = `
           <button onclick="openPricingModal()" class="px-3 py-1.5 bg-orange-50 border border-orange-200 hover:bg-orange-100 text-orange-700 font-bold rounded-lg text-xs flex items-center gap-1.5 transition">
             <i class="fa-solid fa-crown text-amber-500"></i> Bảng Giá Gói
@@ -831,22 +670,15 @@
         document.getElementById('userAvatarText').innerText = (user.name || 'U').charAt(0).toUpperCase();
         document.getElementById('userPlanBadge').innerText = (user.planDetails?.name || user.plan).toUpperCase();
         
-        const limit = user.linksLimit || 2;
+        const limit = user.linksLimit || 5;
         const used = user.linksUsed || 0;
         const percent = Math.min(100, Math.round((used / limit) * 100));
-        document.getElementById('quotaText').innerText = `${used}/${limit} link`;
+        document.getElementById('quotaText').innerText = `${used}/${limit} lượt`;
         document.getElementById('quotaProgressBar').style.width = `${percent}%`;
 
-        cardQuotaBadge.className = "px-2.5 py-1 rounded-full text-[11px] font-bold bg-orange-100 text-orange-800";
-        cardQuotaBadge.innerText = `Đã dùng: ${used}/${limit} link (${(user.planDetails?.name || user.plan).toUpperCase()})`;
-
-        if (user.role === 'admin') {
-          adminBtn.classList.remove('hidden');
-        } else {
-          adminBtn.classList.add('hidden');
-        }
+        if (user.role === 'admin') adminBtn.classList.remove('hidden');
+        else adminBtn.classList.add('hidden');
       } else {
-        // Guest
         authNav.innerHTML = `
           <button onclick="openPricingModal()" class="px-3 py-1.5 bg-orange-50 border border-orange-200 hover:bg-orange-100 text-orange-700 font-bold rounded-lg text-xs flex items-center gap-1.5 transition">
             <i class="fa-solid fa-crown text-amber-500"></i> Bảng Giá Gói
@@ -856,8 +688,6 @@
           </button>
         `;
         userStatusBar.classList.add('hidden');
-        cardQuotaBadge.className = "px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600";
-        cardQuotaBadge.innerText = "Chưa đăng nhập (Tặng 2 link dùng thử)";
       }
     }
 
@@ -865,47 +695,408 @@
       localStorage.removeItem('aff_token');
       currentUser = null;
       renderAuthUI(null);
-      alert('Đã đăng xuất tài khoản!');
+      alert('Đã đăng xuất!');
     }
 
-    // Switch Form Tab: Normal vs ADS Pro
-    function switchFormTab(tab) {
-      currentTab = tab;
-      const tabNormalBtn = document.getElementById('tabNormalBtn');
-      const tabAdsBtn = document.getElementById('tabAdsBtn');
-      const adsSuiteBox = document.getElementById('adsSuiteBox');
-      const formHeadingTitle = document.getElementById('formHeadingTitle');
-      const formHeadingSub = document.getElementById('formHeadingSub');
-      const previewTagBadge = document.getElementById('previewTagBadge');
+    // Switch Main Tabs (1, 2, 3)
+    function switchMainTab(tab) {
+      currentMainTab = tab;
+      const t1 = document.getElementById('navTab1');
+      const t2 = document.getElementById('navTab2');
+      const t3 = document.getElementById('navTab3');
+      const c1 = document.getElementById('module1Content');
+      const c2 = document.getElementById('module2Content');
+      const c3 = document.getElementById('module3Content');
 
-      if (tab === 'ads') {
-        tabAdsBtn.className = "flex-1 py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition tab-active";
-        tabNormalBtn.className = "flex-1 py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition text-slate-600 hover:bg-slate-50";
-        adsSuiteBox.classList.remove('hidden');
-        formHeadingTitle.innerHTML = '<i class="fa-solid fa-bullhorn text-purple-600"></i> Thiết Lập Chiến Dịch ADS Facebook & TikTok';
-        formHeadingSub.innerText = 'Tối ưu chuyển đổi Ads, gắn Facebook Pixel, TikTok Pixel & Phễu Zalo VIP.';
-        previewTagBadge.innerText = 'Quảng Cáo ADS';
-        previewTagBadge.className = 'text-[11px] bg-purple-100 text-purple-700 font-bold px-2 py-0.5 rounded';
-        document.getElementById('subIdSelect').value = 'fb_ads';
-      } else {
-        tabNormalBtn.className = "flex-1 py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition tab-active";
-        tabAdsBtn.className = "flex-1 py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition text-slate-600 hover:bg-slate-50";
-        adsSuiteBox.classList.add('hidden');
-        formHeadingTitle.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-orange-500"></i> Tạo Link Chuyển Hướng Mở App';
-        formHeadingSub.innerText = 'Khách ấn vào bài viết sẽ chuyển liên kết ngay sang Shopee.';
-        previewTagBadge.innerText = 'Mô phỏng thật';
-        previewTagBadge.className = 'text-[11px] bg-orange-100 text-orange-700 font-bold px-2 py-0.5 rounded';
+      t1.className = "flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-600 hover:bg-slate-50";
+      t2.className = "flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-600 hover:bg-slate-50";
+      t3.className = "flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-600 hover:bg-slate-50";
+      c1.classList.add('hidden');
+      c2.classList.add('hidden');
+      c3.classList.add('hidden');
+
+      if (tab === 'tab1') {
+        t1.className = "flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active";
+        c1.classList.remove('hidden');
+      } else if (tab === 'tab2') {
+        t2.className = "flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active";
+        c2.classList.remove('hidden');
+        loadUserCampaigns();
+      } else if (tab === 'tab3') {
+        t3.className = "flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition nav-tab-active";
+        c3.classList.remove('hidden');
+        loadAutoReplyConfig();
       }
     }
 
-    // Modal Handlers
+    // ----------------- MODULE 1: AI ADS CONTENT GENERATION -----------------
+    document.getElementById('aiContentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) {
+        alert('Vui lòng Đăng nhập để sử dụng tính năng tạo bài viết AI!');
+        openAuthModal('login');
+        return;
+      }
+
+      const btn = document.getElementById('aiGenerateBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI Đang Viết 3 Bài Quảng Cáo Đỉnh Cao...';
+
+      const payload = {
+        productName: document.getElementById('aiProductName').value.trim(),
+        originalPrice: document.getElementById('aiOriginalPrice').value.trim(),
+        salePrice: document.getElementById('aiSalePrice').value.trim(),
+        promo: document.getElementById('aiPromo').value.trim(),
+        category: document.getElementById('aiCategory').value
+      };
+
+      try {
+        const token = localStorage.getItem('aff_token');
+        const res = await fetch('/api/ads/generate-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          const container = document.getElementById('aiPostsContainer');
+          container.innerHTML = data.posts.map((post, idx) => `
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <span class="text-xs font-black uppercase text-blue-700 flex items-center gap-1.5">
+                  <i class="fa-solid fa-bookmark text-blue-500"></i> Bài ${idx + 1}: ${post.formula}
+                </span>
+                <button onclick="copyRawText(\`${escapeJs(post.content + '\n\n' + post.hashtags)}\`)" class="px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-xs flex items-center gap-1 transition">
+                  <i class="fa-regular fa-copy"></i> Sao Chép Bài
+                </button>
+              </div>
+
+              <div class="font-bold text-slate-900 text-sm leading-snug">${escapeHtml(post.headline)}</div>
+              <div class="text-xs text-slate-700 whitespace-pre-line leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-100 font-sans">${escapeHtml(post.content)}</div>
+              <div class="text-[11px] text-blue-600 font-semibold font-mono">${escapeHtml(post.hashtags)}</div>
+
+              <div class="pt-2 flex gap-2">
+                <button onclick="sendToCampaignForm(\`${escapeJs(post.headline)}\`, \`${escapeJs(post.content)}\`)" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-rocket"></i> Dùng Bài Này Để Chạy Ads Ngay
+                </button>
+              </div>
+            </div>
+          `).join('');
+
+          if (data.quota) {
+            currentUser.linksUsed = data.quota.used;
+            renderAuthUI(currentUser);
+          }
+
+          // Cập nhật canvas ảnh
+          renderVisualAdCanvas();
+        } else {
+          alert('Lỗi: ' + data.error);
+          if (data.limitExceeded) openPricingModal();
+        }
+      } catch (err) {
+        alert('Lỗi kết nối: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-sparkles"></i> Tạo Bài Viết Quảng Cáo AI Thu Hút Khách';
+      }
+    });
+
+    function sendToCampaignForm(title, content) {
+      document.getElementById('campName').value = 'Chiến dịch: ' + title.slice(0, 40);
+      document.getElementById('campPostContent').value = content;
+      switchMainTab('tab2');
+      alert('Đã chuyển bài viết sang Trình Lên Chiến Dịch Ads!');
+    }
+
+    // ----------------- VISUAL AD BANNER CANVAS MAKER -----------------
+    function renderVisualAdCanvas() {
+      const canvas = document.getElementById('adCanvas');
+      const ctx = canvas.getContext('2d');
+      const pName = document.getElementById('aiProductName').value.trim() || 'SẢN PHẨM FLASH SALE';
+      const pSalePrice = document.getElementById('aiSalePrice').value.trim() || '199.000đ';
+      const pOrigPrice = document.getElementById('aiOriginalPrice').value.trim() || '499.000đ';
+      const frameStyle = document.getElementById('visualFrameStyle').value;
+      const imgUrl = document.getElementById('visualImgUrl').value.trim();
+
+      // Nền đen/xám
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 400, 400);
+
+      // Nếu có ảnh tải lên
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function() {
+        ctx.drawImage(img, 20, 50, 360, 270);
+        drawOverlays();
+      };
+      img.onerror = function() {
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(20, 50, 360, 270);
+        ctx.fillStyle = '#64748b';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ẢNH SẢN PHẨM CHÍNH', 200, 185);
+        drawOverlays();
+      };
+      img.src = imgUrl || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800';
+
+      function drawOverlays() {
+        // Viền Khung
+        ctx.lineWidth = 14;
+        ctx.strokeStyle = frameStyle === 'mall' ? '#eab308' : (frameStyle === 'freeship' ? '#10b981' : '#ef4444');
+        ctx.strokeRect(7, 7, 386, 386);
+
+        // Header Khung
+        ctx.fillStyle = frameStyle === 'mall' ? '#ca8a04' : (frameStyle === 'freeship' ? '#059669' : '#dc2626');
+        ctx.fillRect(0, 0, 400, 45);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(frameStyle === 'mall' ? '👑 SHOPEE MALL - CAM KẾT CHÍNH HÃNG 100%' : (frameStyle === 'freeship' ? '🚚 FREESHIP EXTRA 0Đ TOÀN QUỐC' : '🔥 FLASH SALE GIẢM SỐC 50% HÔM NAY'), 200, 28);
+
+        // Footer Giá Sale
+        ctx.fillStyle = 'rgba(0,0,0,0.85)';
+        ctx.fillRect(10, 320, 380, 70);
+
+        // Giá Gạch Cũ
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(pOrigPrice, 25, 345);
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(23, 341);
+        ctx.lineTo(25 + ctx.measureText(pOrigPrice).width, 341);
+        ctx.stroke();
+
+        // Giá Sale To Đùng
+        ctx.fillStyle = '#facc15';
+        ctx.font = '900 24px sans-serif';
+        ctx.fillText(pSalePrice, 25, 375);
+
+        // Nút Mua Ngay
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(260, 332, 120, 45);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('MUA NGAY', 320, 360);
+      }
+    }
+
+    function downloadCanvasImage() {
+      const canvas = document.getElementById('adCanvas');
+      const link = document.createElement('a');
+      link.download = 'banner_quang_cao_fb.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // ----------------- MODULE 2: CAMPAIGN LAUNCHER -----------------
+    document.getElementById('createCampaignForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) {
+        alert('Vui lòng Đăng nhập để kích hoạt chiến dịch quảng cáo!');
+        openAuthModal('login');
+        return;
+      }
+
+      const btn = document.getElementById('createCampBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang Kích Hoạt Chiến Dịch...';
+
+      const payload = {
+        name: document.getElementById('campName').value.trim(),
+        objective: document.getElementById('campObjective').value,
+        dailyBudget: document.getElementById('campBudget').value,
+        targetAge: document.getElementById('campAge').value,
+        targetLocation: document.getElementById('campLocation').value.trim(),
+        postContent: document.getElementById('campPostContent').value.trim()
+      };
+
+      try {
+        const token = localStorage.getItem('aff_token');
+        const res = await fetch('/api/ads/campaigns/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('🎉 ' + data.message);
+          loadUserCampaigns();
+        } else {
+          alert('Lỗi: ' + data.error);
+        }
+      } catch (err) {
+        alert('Lỗi kết nối: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-play"></i> Kích Hoạt Chiến Dịch Quảng Cáo Facebook';
+      }
+    });
+
+    async function loadUserCampaigns() {
+      const container = document.getElementById('campaignsListContainer');
+      const token = localStorage.getItem('aff_token');
+      if (!token) {
+        container.innerHTML = '<div class="text-center py-8 text-xs text-slate-400">Vui lòng đăng nhập để xem danh sách chiến dịch.</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/ads/campaigns', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.success && data.campaigns.length > 0) {
+          container.innerHTML = data.campaigns.map(c => `
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5 text-xs">
+              <div class="flex items-center justify-between">
+                <div class="font-bold text-slate-900 text-sm line-clamp-1">${escapeHtml(c.name)}</div>
+                <span class="px-2.5 py-0.5 rounded-full font-black text-[10px] ${c.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">
+                  ${c.status === 'ACTIVE' ? '● ĐANG CHẠY' : '○ TẠM DỪNG'}
+                </span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-slate-600 bg-white p-2.5 rounded-lg border border-slate-100">
+                <div>Ngân sách: <b class="text-purple-700">${c.dailyBudget.toLocaleString('vi-VN')}đ/ngày</b></div>
+                <div>Mục tiêu: <b>${c.objective}</b></div>
+                <div>Tiếp cận ước tính: <b class="text-blue-600">${c.reach}</b></div>
+                <div>Tương tác: <b class="text-emerald-600">${c.engagement} lượt</b></div>
+              </div>
+              <div class="flex items-center justify-between pt-1">
+                <span class="text-[11px] text-slate-400">Tạo ngày: ${new Date(c.createdAt).toLocaleDateString('vi-VN')}</span>
+                <button onclick="toggleCampaign('${c.id}')" class="px-3 py-1 ${c.status === 'ACTIVE' ? 'bg-amber-100 hover:bg-amber-200 text-amber-900' : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-900'} font-bold rounded-lg text-xs transition">
+                  ${c.status === 'ACTIVE' ? 'Tạm Dừng Chạy' : 'Bật Chạy Lại'}
+                </button>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = '<div class="text-center py-10 text-xs text-slate-400">Chưa có chiến dịch nào được tạo. Hãy điền thông tin bên trái để bật chiến dịch đầu tiên!</div>';
+        }
+      } catch (e) {
+        container.innerHTML = '<div class="text-center py-6 text-xs text-red-500">Không thể tải danh sách chiến dịch.</div>';
+      }
+    }
+
+    async function toggleCampaign(campId) {
+      const token = localStorage.getItem('aff_token');
+      try {
+        const res = await fetch('/api/ads/campaigns/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ campaignId: campId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          loadUserCampaigns();
+        } else {
+          alert('Lỗi: ' + data.error);
+        }
+      } catch (e) { alert('Lỗi kết nối'); }
+    }
+
+    // ----------------- MODULE 3: AUTO REPLY & INBOX -----------------
+    async function loadAutoReplyConfig() {
+      const token = localStorage.getItem('aff_token');
+      if (!token) return;
+      try {
+        const res = await fetch('/api/ads/auto-reply', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.success && data.config) {
+          document.getElementById('botAutoLike').checked = data.config.autoLike !== false;
+          document.getElementById('botHidePhone').checked = data.config.hidePhone !== false;
+          document.getElementById('botReplyTemplates').value = data.config.replyTemplates.join('\n');
+          document.getElementById('botInboxMessage').value = data.config.inboxMessage;
+        }
+      } catch (e) {}
+    }
+
+    document.getElementById('autoReplyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) { alert('Vui lòng đăng nhập'); return; }
+
+      const rawTemplates = document.getElementById('botReplyTemplates').value.trim().split('\n').filter(t => t.trim());
+      const payload = {
+        autoLike: document.getElementById('botAutoLike').checked,
+        hidePhone: document.getElementById('botHidePhone').checked,
+        replyTemplates: rawTemplates,
+        inboxMessage: document.getElementById('botInboxMessage').value.trim()
+      };
+
+      const token = localStorage.getItem('aff_token');
+      try {
+        const res = await fetch('/api/ads/auto-reply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) alert('✅ ' + data.message);
+        else alert('Lỗi: ' + data.error);
+      } catch (e) { alert('Lỗi kết nối'); }
+    });
+
+    async function runBotSimulation() {
+      const comment = document.getElementById('simCommentInput').value.trim();
+      const pName = document.getElementById('aiProductName').value.trim() || 'Tai nghe Bluetooth P9';
+      const pPrice = document.getElementById('aiSalePrice').value.trim() || '199.000đ';
+
+      try {
+        const res = await fetch('/api/ads/auto-reply/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerComment: comment,
+            customerName: 'Nguyễn Thị Hoa',
+            productName: pName,
+            productPrice: pPrice,
+            productLink: 'https://shopee.vn/flash-sale-deal'
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const r = data.result;
+          const box = document.getElementById('simResultBox');
+          box.innerHTML = `
+            <div class="space-y-3">
+              <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                <div class="font-bold text-blue-900 mb-1 flex items-center gap-1.5">
+                  <i class="fa-regular fa-user"></i> Khách hàng bình luận:
+                </div>
+                <div class="text-slate-800 font-medium">"${escapeHtml(comment)}"</div>
+                ${r.actionHidden ? `<div class="mt-2 text-[11px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded inline-block"><i class="fa-solid fa-shield-halved"></i> ${r.hideReason}</div>` : ''}
+              </div>
+
+              <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                <div class="font-bold text-emerald-900 mb-1 flex items-center gap-1.5">
+                  <i class="fa-solid fa-robot"></i> Bot tự động phản hồi bình luận:
+                </div>
+                <div class="text-slate-800 italic">"${escapeHtml(r.replyComment)}"</div>
+                <div class="mt-1 text-[10px] text-emerald-700">✓ Đã thả tim bình luận của khách</div>
+              </div>
+
+              <div class="p-3 bg-purple-50 border border-purple-200 rounded-xl">
+                <div class="font-bold text-purple-900 mb-1 flex items-center gap-1.5">
+                  <i class="fa-brands fa-facebook-messenger"></i> Bot tự động gửi tin nhắn Messenger chốt đơn:
+                </div>
+                <div class="text-slate-800 whitespace-pre-line bg-white p-2.5 rounded-lg border border-purple-100">${escapeHtml(r.sentInbox)}</div>
+              </div>
+            </div>
+          `;
+        }
+      } catch (e) { alert('Lỗi mô phỏng'); }
+    }
+
+    // ----------------- PRICING & VIETCOMBANK CHECKOUT -----------------
     function openPricingModal() { document.getElementById('pricingModal').classList.remove('hidden'); }
     function closePricingModal() { document.getElementById('pricingModal').classList.add('hidden'); }
-
     function openCheckoutModal() { document.getElementById('checkoutModal').classList.remove('hidden'); }
     function closeCheckoutModal() { document.getElementById('checkoutModal').classList.add('hidden'); }
 
-    function selectPlanCheckout(planId, name, price, limit) {
+    function selectPlanCheckout(planId, name, price) {
       closePricingModal();
       currentCheckoutPrice = price;
       document.getElementById('checkoutAmount').innerText = price.toLocaleString('vi-VN') + 'đ';
@@ -914,28 +1105,19 @@
       const content = `NAP ${userEmailPrefix} ${planId.toUpperCase()}`;
       document.getElementById('checkoutContent').innerText = content;
 
-      // Mã VietQR Vietcombank LE VAN THIEN 9349850292
+      // Vietcombank LE VAN THIEN 9349850292
       const qrUrl = `https://img.vietqr.io/image/VCB-9349850292-compact2.png?amount=${price}&addInfo=${encodeURIComponent(content)}&accountName=LE%20VAN%20THIEN`;
       document.getElementById('vietQrImg').src = qrUrl;
 
       openCheckoutModal();
     }
 
-    function copyRaw(text) {
-      navigator.clipboard.writeText(text);
-      alert('Đã sao chép: ' + text);
-    }
-    function copyAmount() {
-      navigator.clipboard.writeText(String(currentCheckoutPrice));
-      alert('Đã sao chép số tiền: ' + currentCheckoutPrice.toLocaleString('vi-VN') + 'đ');
-    }
-    function copyContent() {
-      const content = document.getElementById('checkoutContent').innerText;
-      navigator.clipboard.writeText(content);
-      alert('Đã sao chép nội dung CK: ' + content);
-    }
+    function copyRaw(text) { navigator.clipboard.writeText(text); alert('Đã sao chép: ' + text); }
+    function copyAmount() { navigator.clipboard.writeText(String(currentCheckoutPrice)); alert('Đã sao chép số tiền!'); }
+    function copyContent() { navigator.clipboard.writeText(document.getElementById('checkoutContent').innerText); alert('Đã sao chép nội dung CK!'); }
+    function copyRawText(text) { navigator.clipboard.writeText(text); alert('Đã sao chép toàn bộ bài viết!'); }
 
-    // Auth Modal Handlers
+    // ----------------- AUTH MODAL -----------------
     function openAuthModal(mode = 'login') {
       authMode = mode;
       switchAuthTab(mode);
@@ -945,25 +1127,24 @@
 
     function switchAuthTab(mode) {
       authMode = mode;
-      const tabLogin = document.getElementById('authTabLogin');
-      const tabRegister = document.getElementById('authTabRegister');
-      const nameGroup = document.getElementById('nameFieldGroup');
-      const submitBtn = document.getElementById('authSubmitBtn');
+      const tabL = document.getElementById('authTabLogin');
+      const tabR = document.getElementById('authTabRegister');
+      const nameG = document.getElementById('nameFieldGroup');
+      const btn = document.getElementById('authSubmitBtn');
 
       if (mode === 'login') {
-        tabLogin.className = "flex-1 pb-2 font-bold text-xs border-b-2 border-orange-500 text-orange-600 transition";
-        tabRegister.className = "flex-1 pb-2 font-bold text-xs border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition";
-        nameGroup.classList.add('hidden');
-        submitBtn.innerText = 'Đăng Nhập';
+        tabL.className = "flex-1 pb-2 font-bold text-xs border-b-2 border-blue-600 text-blue-600 transition";
+        tabR.className = "flex-1 pb-2 font-bold text-xs border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition";
+        nameG.classList.add('hidden');
+        btn.innerText = 'Đăng Nhập';
       } else {
-        tabRegister.className = "flex-1 pb-2 font-bold text-xs border-b-2 border-orange-500 text-orange-600 transition";
-        tabLogin.className = "flex-1 pb-2 font-bold text-xs border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition";
-        nameGroup.classList.remove('hidden');
-        submitBtn.innerText = 'Đăng Ký (Nhận 2 Link Dùng Thử)';
+        tabR.className = "flex-1 pb-2 font-bold text-xs border-b-2 border-blue-600 text-blue-600 transition";
+        tabL.className = "flex-1 pb-2 font-bold text-xs border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition";
+        nameG.classList.remove('hidden');
+        btn.innerText = 'Đăng Ký (Nhận 5 Lượt Dùng Thử)';
       }
     }
 
-    // 1-Click Fill Admin Credentials
     function fillAdminCredentials() {
       switchAuthTab('login');
       document.getElementById('authEmail').value = 'admin@shopeefb.com';
@@ -971,7 +1152,6 @@
       document.getElementById('authSubmitBtn').click();
     }
 
-    // Submit Auth Form
     document.getElementById('authForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('authEmail').value.trim();
@@ -994,229 +1174,54 @@
           currentUser = data.user;
           renderAuthUI(currentUser);
           closeAuthModal();
-          alert(authMode === 'login' ? 'Đăng nhập thành công!' : 'Đăng ký thành công! Bạn nhận được 2 link dùng thử miễn phí.');
+          alert(authMode === 'login' ? 'Đăng nhập thành công!' : 'Đăng ký thành công!');
         } else {
-          alert('Lỗi: ' + (data.error || 'Thất bại'));
+          alert('Lỗi: ' + data.error);
         }
-      } catch (err) {
-        alert('Lỗi kết nối server: ' + err.message);
-      }
+      } catch (err) { alert('Lỗi kết nối server'); }
     });
 
-    // Submit Create Link
-    document.getElementById('createForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      if (!currentUser) {
-        alert('Vui lòng Đăng nhập hoặc Đăng ký tài khoản để tạo link Shopee!');
-        openAuthModal('login');
-        return;
-      }
-
-      const isAds = currentTab === 'ads';
-      const fbPixel = document.getElementById('fbPixelInput').value.trim();
-      const tiktokPixel = document.getElementById('tiktokPixelInput').value.trim();
-      const zaloGroup = document.getElementById('zaloGroupInput').value.trim();
-      const utmCampaign = document.getElementById('utmCampaignInput').value.trim();
-
-      const submitBtn = document.getElementById('submitBtn');
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo liên kết siêu tốc...';
-
-      const payload = {
-        targetUrl: document.getElementById('targetUrl').value.trim(),
-        title: document.getElementById('title').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        imageUrl: document.getElementById('imageUrl').value.trim() || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
-        voucher: document.getElementById('voucherInput').value.trim(),
-        subId: document.getElementById('subIdSelect').value,
-        fomo: true,
-        isAdsMode: isAds,
-        fbPixel,
-        tiktokPixel,
-        zaloGroup,
-        utmCampaign
-      };
-
-      try {
-        const token = localStorage.getItem('aff_token');
-        const res = await fetch('/api/create', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-
-        if (data.success) {
-          const resultBox = document.getElementById('resultBox');
-          resultBox.classList.remove('hidden');
-          document.getElementById('outputUrl').value = data.data.shortUrl;
-          document.getElementById('testLink').href = data.data.shortUrl;
-          document.getElementById('fbDebugLink').href = `https://developers.facebook.com/tools/debug/?q=${encodeURIComponent(data.data.shortUrl)}`;
-
-          // Cập nhật lại hạn mức
-          if (data.userQuota) {
-            currentUser.linksUsed = data.userQuota.used;
-            renderAuthUI(currentUser);
-          }
-
-          resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-          if (data.upgradeRequired) {
-            alert(data.error);
-            openPricingModal();
-          } else if (data.limitExceeded) {
-            alert(data.error);
-            openPricingModal();
-          } else {
-            alert('Lỗi: ' + (data.error || 'Không thể tạo link'));
-          }
-        }
-      } catch (err) {
-        alert('Lỗi kết nối: ' + err.message);
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Tạo Link Chuyển Hướng Facebook (Mở App)';
-      }
-    });
-
-    // Copy Button
-    document.getElementById('copyBtn').addEventListener('click', () => {
-      const outputUrl = document.getElementById('outputUrl');
-      outputUrl.select();
-      navigator.clipboard.writeText(outputUrl.value);
-      const copyBtn = document.getElementById('copyBtn');
-      copyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Đã chép!';
-      copyBtn.classList.replace('bg-emerald-600', 'bg-slate-800');
-      setTimeout(() => {
-        copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Sao chép';
-        copyBtn.classList.replace('bg-slate-800', 'bg-emerald-600');
-      }, 2000);
-    });
-
-    // Live Preview Binders
-    document.getElementById('title').addEventListener('input', (e) => {
-      document.getElementById('previewTitle').innerText = e.target.value.trim() || '[Mã Giảm 50%] Tai Nghe Bluetooth Chống Ồn Chính Hãng';
-    });
-    document.getElementById('description').addEventListener('input', (e) => {
-      document.getElementById('previewDesc').innerText = e.target.value.trim() || 'Flash Sale giảm sâu chỉ hôm nay. Freeship toàn quốc, bấm vào để mở app mua ngay kẻo hết quà!';
-    });
-    document.getElementById('imageUrl').addEventListener('input', (e) => {
-      document.getElementById('previewImage').src = e.target.value.trim() || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800';
-    });
-    document.getElementById('enablePlayBtn').addEventListener('change', (e) => {
-      document.getElementById('previewPlayBtn').style.display = e.target.checked ? 'flex' : 'none';
-    });
-    const badgeMap = {
-      'none': null,
-      'flash_sale': '🔥 FLASH SALE GIẢM 50%',
-      'freeship': '🚚 FREESHIP EXTRA 0Đ',
-      'mall': '👑 SHOPEE MALL CHÍNH HÃNG',
-      'deal_soc': '⚡ DEAL SỐC HÔM NAY',
-      'bogo': '🎁 MUA 1 TẶNG 1'
-    };
-    document.getElementById('badgeSelect').addEventListener('change', (e) => {
-      const val = e.target.value;
-      const el = document.getElementById('previewBadge');
-      if (val === 'none') { el.style.display = 'none'; }
-      else { el.style.display = 'flex'; el.innerText = badgeMap[val] || ''; }
-    });
-
-    // Admin Functions
-    function openAdminModal() {
-      document.getElementById('adminModal').classList.remove('hidden');
-      loadAdminUsers();
-    }
+    // ----------------- ADMIN FUNCTIONS -----------------
+    function openAdminModal() { document.getElementById('adminModal').classList.remove('hidden'); loadAdminUsers(); }
     function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
 
     async function loadAdminUsers() {
       const listEl = document.getElementById('adminUsersList');
       const token = localStorage.getItem('aff_token');
       try {
-        const res = await fetch('/api/admin/users', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch('/api/admin/users', { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
         if (data.success) {
-          listEl.innerHTML = data.users.map(u => {
-            const planBadge = u.role === 'admin' 
-              ? '<span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-black text-[10px]">ADMIN</span>'
-              : `<span class="px-2 py-0.5 rounded bg-orange-100 text-orange-800 font-bold text-[10px]">${(u.planDetails?.name || u.plan).toUpperCase()}</span>`;
-            
-            return `
+          listEl.innerHTML = data.users.map(u => `
             <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs gap-3">
               <div>
                 <div class="font-bold text-slate-800 flex items-center gap-2">
-                  <span>${u.name}</span>
-                  <span class="text-slate-400 font-normal">(${u.email})</span>
-                  ${planBadge}
+                  <span>${u.name}</span> (${u.email})
+                  <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[10px]">${(u.planDetails?.name || u.plan).toUpperCase()}</span>
                 </div>
                 <div class="text-[11px] text-slate-500 mt-0.5">
-                  Đã dùng: <b>${u.linksUsed}/${u.linksLimit}</b> link | Hết hạn: <b>${new Date(u.planExpiresAt).toLocaleDateString('vi-VN')}</b>
+                  Đã dùng: <b>${u.linksUsed}/${u.linksLimit}</b> lượt | Hạn: <b>${new Date(u.planExpiresAt).toLocaleDateString('vi-VN')}</b>
                 </div>
               </div>
-              <div class="flex items-center gap-1.5 flex-shrink-0">
-                <button onclick="fillUpgradeEmail('${u.email}')" class="px-2.5 py-1 bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold rounded-lg text-[11px] transition">
-                  Nâng Gói
-                </button>
-                <button onclick="adminResetQuota('${u.email}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold rounded-lg text-[11px] transition" title="Đặt lại lượt dùng về 0">
-                  Reset
-                </button>
-              </div>
+              <button onclick="document.getElementById('adminTargetEmail').value='${u.email}'" class="px-2.5 py-1 bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold rounded-lg text-[11px]">
+                Nâng Gói
+              </button>
             </div>
-            `;
-          }).join('');
+          `).join('');
         }
-      } catch (e) {
-        listEl.innerHTML = '<div class="text-xs text-red-500 text-center py-4">Không thể tải danh sách.</div>';
-      }
-    }
-
-    function fillUpgradeEmail(email) {
-      document.getElementById('adminTargetEmail').value = email;
-      document.getElementById('adminTargetEmail').focus();
-    }
-
-    async function adminResetQuota(email) {
-      if (!confirm(`Bạn có chắc muốn đặt lại lượt dùng về 0 cho ${email}?`)) return;
-      const token = localStorage.getItem('aff_token');
-      try {
-        const res = await fetch('/api/admin/reset-quota', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ targetEmail: email })
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert(data.message);
-          loadAdminUsers();
-        } else {
-          alert('Lỗi: ' + data.error);
-        }
-      } catch (e) {
-        alert('Lỗi kết nối: ' + e.message);
-      }
+      } catch (e) { listEl.innerHTML = '<div class="text-xs text-red-500 text-center py-4">Lỗi tải danh sách</div>'; }
     }
 
     async function adminUpgradeUser() {
       const email = document.getElementById('adminTargetEmail').value.trim();
       const plan = document.getElementById('adminTargetPlan').value;
-      if (!email) { alert('Vui lòng nhập email khách hàng'); return; }
+      if (!email) { alert('Vui lòng nhập email'); return; }
 
       const token = localStorage.getItem('aff_token');
       try {
         const res = await fetch('/api/admin/upgrade', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ targetEmail: email, planId: plan, days: 30 })
         });
         const data = await res.json();
@@ -1224,16 +1229,22 @@
           alert(data.message);
           loadAdminUsers();
           checkAuth();
-        } else {
-          alert('Lỗi: ' + data.error);
-        }
-      } catch (e) {
-        alert('Lỗi kết nối: ' + e.message);
-      }
+        } else { alert('Lỗi: ' + data.error); }
+      } catch (e) { alert('Lỗi kết nối'); }
     }
 
-    // Init
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function escapeJs(str) {
+      if (!str) return '';
+      return str.replace(/`/g, '\\`').replace(/\\/g, '\\\\').replace(/\$/g, '\\$');
+    }
+
+    // Khởi tạo
     checkAuth();
+    renderVisualAdCanvas();
   </script>
 </body>
 </html>
