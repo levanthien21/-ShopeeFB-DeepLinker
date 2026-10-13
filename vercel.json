@@ -15,11 +15,11 @@
   "crons": [
     {
       "path": "/api/cron/auto-reply",
-      "schedule": "* * * * *"
+      "schedule": "0 0 * * *"
     },
     {
       "path": "/api/cron/farm-autopilot",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 8 * * *"
     }
   ]
 }
