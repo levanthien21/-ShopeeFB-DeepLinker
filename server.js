@@ -485,6 +485,8 @@ app.post('/api/fb/verify-connection', async (req, res) => {
     };
   }
 
+  const targetUrl = target.startsWith('http') ? target : `https://facebook.com/${cleanId}`;
+
   const saved = await saveFbIntegration(req.user.id, {
     connected: true,
     accountType: type,
@@ -494,7 +496,9 @@ app.post('/api/fb/verify-connection', async (req, res) => {
     pageAvatar: verifiedAccount.avatar,
     pageAccessToken: cleanToken,
     adAccountId: (adAccountId || '').trim(),
-    isSandbox: !!verifiedAccount.isSandbox
+    fbTarget: target,
+    targetUrl: targetUrl,
+    isSandbox: !cleanToken
   });
 
   res.json({
@@ -551,26 +555,37 @@ app.post('/api/fb/publish-now', async (req, res) => {
   }
 
   let realPostId = null;
-  // Nếu có Page Access Token thật, gọi Graph API đăng thật
-  try {
-    const fbPublishRes = await fetch(`https://graph.facebook.com/v19.0/${integration.pageId}/feed`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: postContent,
-        access_token: integration.pageAccessToken
-      })
-    });
-    const fbPublishData = await fbPublishRes.json();
-    if (fbPublishData && fbPublishData.id) {
-      realPostId = fbPublishData.id;
+  let isLiveApi = false;
+  let apiError = null;
+
+  // Nếu người dùng cung cấp Page Access Token thật, gọi Graph API đăng trực tiếp
+  if (integration.pageAccessToken && integration.pageAccessToken.trim().length > 20) {
+    try {
+      const fbPublishRes = await fetch(`https://graph.facebook.com/v19.0/${integration.pageId}/feed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: postContent,
+          access_token: integration.pageAccessToken.trim()
+        })
+      });
+      const fbPublishData = await fbPublishRes.json();
+      if (fbPublishData && fbPublishData.id) {
+        realPostId = fbPublishData.id;
+        isLiveApi = true;
+      } else if (fbPublishData && fbPublishData.error) {
+        apiError = fbPublishData.error.message || 'Lỗi xác thực Meta API';
+      }
+    } catch (err) {
+      apiError = err.message;
+      console.error('FB Publish Error:', err.message);
     }
-  } catch (err) {
-    console.error('FB Publish Error:', err.message);
   }
 
-  const postId = realPostId || `${integration.pageId}_${Date.now()}`;
-  const postUrl = `https://facebook.com/${postId}`;
+  const isProfile = integration.accountType === 'profile';
+  const targetUrl = integration.targetUrl || (isProfile ? `https://facebook.com/${integration.pageId}` : `https://facebook.com/${integration.pageId}`);
+  const postId = isLiveApi ? realPostId : `${integration.pageId}_${Date.now()}`;
+  const postUrl = isLiveApi ? `https://facebook.com/${realPostId}` : targetUrl;
 
   // Nếu bật Auto Ads, tự động khởi tạo chiến dịch Ads
   let adsResult = null;
@@ -604,7 +619,8 @@ app.post('/api/fb/publish-now', async (req, res) => {
     id: generateId('post', 8),
     title: postTitle || 'Bài viết đăng ngay',
     content: postContent,
-    status: 'PUBLISHED',
+    status: isLiveApi ? 'PUBLISHED' : 'PUBLISHED_DIRECT',
+    mode: isLiveApi ? 'META_API' : 'DIRECT_PASTE',
     postId,
     postUrl,
     publishedAt: new Date().toISOString(),
@@ -613,11 +629,26 @@ app.post('/api/fb/publish-now', async (req, res) => {
   });
   await saveScheduledQueue(req.user.id, queue.slice(0, 30));
 
+  let responseMessage = '';
+  if (isLiveApi) {
+    responseMessage = adsResult
+      ? '🎉 Đã đăng bài trực tiếp thành công lên Fanpage qua Meta API & Kích hoạt chiến dịch Ads!'
+      : '🎉 Đã đăng bài trực tiếp thành công lên Fanpage qua Meta API!';
+  } else if (isProfile) {
+    responseMessage = '📋 Đã tự động sao chép toàn bộ bài viết và mở Facebook cá nhân của bạn! Nhấn Ctrl + V để đăng ngay.';
+  } else if (apiError) {
+    responseMessage = `⚠️ Meta API: "${apiError}". Hệ thống đã tự động sao chép bài viết và mở Fanpage để bạn dán (Ctrl + V) đăng trực tiếp!`;
+  } else {
+    responseMessage = '📋 Đã tự động sao chép toàn bộ bài viết và mở Fanpage của bạn! Nhấn Ctrl + V để đăng bài ngay trong 1 giây.';
+  }
+
   res.json({
     success: true,
-    message: adsResult
-      ? '🎉 Đã đăng bài thành công lên Fanpage & Tự động kích hoạt chiến dịch Facebook Ads!'
-      : '🎉 Đã đăng bài viết thành công lên Fanpage Facebook!',
+    isLiveApi,
+    apiError,
+    accountType: integration.accountType,
+    targetUrl,
+    message: responseMessage,
     postId,
     postUrl,
     adsLaunched: !!adsResult,
