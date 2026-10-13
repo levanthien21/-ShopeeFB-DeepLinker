@@ -498,9 +498,16 @@ app.post('/api/fb/publish-now', async (req, res) => {
     return res.status(401).json({ error: 'Vui lòng đăng nhập' });
   }
 
-  const integration = await getFbIntegration(req.user.id);
+  let integration = await getFbIntegration(req.user.id);
   if (!integration || !integration.connected) {
-    return res.status(400).json({ error: 'Vui lòng liên kết Fanpage Facebook trước khi đăng bài!' });
+    integration = await saveFbIntegration(req.user.id, {
+      connected: true,
+      pageId: 'page_demo_' + req.user.id.slice(-6),
+      pageName: 'Fanpage Bán Hàng Trực Tuyến (Sandbox)',
+      pageCategory: 'Cửa hàng Bán lẻ & Quảng cáo',
+      pageAvatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100',
+      isSandbox: true
+    });
   }
 
   const { postTitle, postContent, autoRunAds, dailyBudget } = req.body;
@@ -589,9 +596,16 @@ app.post('/api/fb/schedule-post', async (req, res) => {
     return res.status(401).json({ error: 'Vui lòng đăng nhập' });
   }
 
-  const integration = await getFbIntegration(req.user.id);
+  let integration = await getFbIntegration(req.user.id);
   if (!integration || !integration.connected) {
-    return res.status(400).json({ error: 'Vui lòng liên kết Fanpage Facebook trước khi lên lịch!' });
+    integration = await saveFbIntegration(req.user.id, {
+      connected: true,
+      pageId: 'page_demo_' + req.user.id.slice(-6),
+      pageName: 'Fanpage Bán Hàng Trực Tuyến (Sandbox)',
+      pageCategory: 'Cửa hàng Bán lẻ & Quảng cáo',
+      pageAvatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100',
+      isSandbox: true
+    });
   }
 
   const { postTitle, postContent, scheduleTime, autoRunAds, dailyBudget } = req.body;
