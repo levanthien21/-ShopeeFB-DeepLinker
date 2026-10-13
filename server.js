@@ -2488,8 +2488,159 @@ app.delete('/api/fb/farm/:id', async (req, res) => {
   const ok = await deleteFanpageFromFarm(req.user.id, req.params.id);
   res.json({
     success: ok,
-    message: ok ? 'Đã xóa Fanpage khỏi dàn nuôi' : 'Không tìm thấy Fanpage'
+    message: ok ? 'Đã xóa Fanpage khỏi dàn nuôi thành công' : 'Không tìm thấy Fanpage'
   });
+});
+
+// Lấy thông tin chi tiết & kiểm tra quyền Token của 1 Fanpage
+app.get('/api/fb/farm/:id', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const farm = await getFanpageFarm(req.user.id);
+  const page = farm.find(p => p.id === req.params.id);
+  if (!page) return res.status(404).json({ error: 'Không tìm thấy Fanpage' });
+
+  let permissionInfo = null;
+  if (page.accessToken && page.accessToken.trim().length > 20) {
+    try {
+      const debugRes = await fetch(`https://graph.facebook.com/v19.0/debug_token?input_token=${page.accessToken}&access_token=${page.accessToken}`);
+      const debugData = await debugRes.json();
+      if (debugData && debugData.data) {
+        const scopes = debugData.data.scopes || [];
+        permissionInfo = {
+          isValid: debugData.data.is_valid,
+          scopes,
+          hasManagePosts: scopes.includes('pages_manage_posts'),
+          hasManageEngagement: scopes.includes('pages_manage_engagement'),
+          hasMessaging: scopes.includes('pages_messaging'),
+          hasReadUserContent: scopes.includes('pages_read_user_content'),
+          hasReadEngagement: scopes.includes('pages_read_engagement'),
+          hasShowList: scopes.includes('pages_show_list'),
+          allRequiredGranted: scopes.includes('pages_manage_posts') &&
+                              scopes.includes('pages_manage_engagement') &&
+                              scopes.includes('pages_messaging') &&
+                              scopes.includes('pages_read_user_content')
+        };
+      }
+    } catch (e) {}
+  }
+
+  res.json({ success: true, page, permissionInfo });
+});
+
+// Cập nhật chi tiết Fanpage (Token riêng biệt, Affiliate link riêng biệt, Lĩnh vực, Giờ đăng)
+app.put('/api/fb/farm/:id', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const pageId = req.params.id;
+  const farm = await getFanpageFarm(req.user.id);
+  const page = farm.find(p => p.id === pageId);
+  if (!page) return res.status(404).json({ error: 'Không tìm thấy Fanpage trong dàn nuôi của bạn' });
+
+  const { accessToken, affiliateLink, niche, contentMix, dailySlots, autoRunAds, dailyBudget, name } = req.body;
+  const updates = {};
+
+  if (affiliateLink !== undefined) updates.affiliateLink = (affiliateLink || '').trim();
+  if (niche !== undefined) updates.niche = niche;
+  if (contentMix !== undefined) updates.contentMix = contentMix;
+  if (Array.isArray(dailySlots)) updates.dailySlots = dailySlots;
+  if (autoRunAds !== undefined) updates.autoRunAds = !!autoRunAds;
+  if (dailyBudget !== undefined) updates.dailyBudget = Number(dailyBudget) || 50000;
+  if (name && name.trim()) updates.name = name.trim();
+
+  let tokenNote = null;
+  if (accessToken && accessToken.trim().length > 20) {
+    const rawToken = accessToken.trim();
+    let finalPageToken = rawToken;
+
+    // Tự động kiểm tra nếu người dùng dán User Token: chuyển thành Page Token chuẩn
+    try {
+      const accountsRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token&access_token=${rawToken}`);
+      const accountsData = await accountsRes.json();
+      if (accountsData && Array.isArray(accountsData.data)) {
+        const matched = accountsData.data.find(a => a.id === pageId);
+        if (matched && matched.access_token) {
+          finalPageToken = matched.access_token;
+          tokenNote = `Hệ thống đã tự động nhận diện và chuyển đổi User Token thành Page Token chuẩn cho "${matched.name}"!`;
+        }
+      }
+    } catch (e) {}
+
+    updates.accessToken = finalPageToken;
+    updates.isSandbox = false;
+
+    // Cập nhật ảnh đại diện/tên mới nhất từ Facebook
+    try {
+      const fbMeRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}?fields=name,picture&access_token=${finalPageToken}`);
+      const fbMe = await fbMeRes.json();
+      if (fbMe && fbMe.name) {
+        updates.name = fbMe.name;
+        if (fbMe.picture?.data?.url) updates.avatar = fbMe.picture.data.url;
+      }
+    } catch (e) {}
+  }
+
+  const updated = await updateFanpageInFarm(req.user.id, pageId, updates);
+  res.json({
+    success: true,
+    message: tokenNote || `Đã cập nhật thành công Fanpage "${updated.name}"!`,
+    tokenNote,
+    page: updated
+  });
+});
+
+// Kiểm tra quyền của một Access Token bất kỳ
+app.post('/api/fb/farm/:id/check-token', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Vui lòng đăng nhập' });
+  const pageId = req.params.id;
+  const token = (req.body.token || '').trim();
+  if (!token || token.length < 20) {
+    return res.status(400).json({ error: 'Vui lòng nhập Access Token hợp lệ (tối thiểu 20 ký tự)' });
+  }
+
+  try {
+    let finalToken = token;
+    let isUserTokenConverted = false;
+
+    // Kiểm tra xem có phải User Token chứa Page này không
+    const accountsRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token&access_token=${token}`);
+    const accountsData = await accountsRes.json();
+    if (accountsData && Array.isArray(accountsData.data)) {
+      const matched = accountsData.data.find(a => a.id === pageId);
+      if (matched && matched.access_token) {
+        finalToken = matched.access_token;
+        isUserTokenConverted = true;
+      }
+    }
+
+    const debugRes = await fetch(`https://graph.facebook.com/v19.0/debug_token?input_token=${finalToken}&access_token=${finalToken}`);
+    const debugData = await debugRes.json();
+
+    if (debugData && debugData.data) {
+      const scopes = debugData.data.scopes || [];
+      return res.json({
+        success: true,
+        isUserTokenConverted,
+        resolvedToken: finalToken,
+        isValid: debugData.data.is_valid,
+        scopes,
+        hasManagePosts: scopes.includes('pages_manage_posts'),
+        hasManageEngagement: scopes.includes('pages_manage_engagement'),
+        hasMessaging: scopes.includes('pages_messaging'),
+        hasReadUserContent: scopes.includes('pages_read_user_content'),
+        hasReadEngagement: scopes.includes('pages_read_engagement'),
+        allRequiredGranted: scopes.includes('pages_manage_posts') &&
+                            scopes.includes('pages_manage_engagement') &&
+                            scopes.includes('pages_messaging') &&
+                            scopes.includes('pages_read_user_content')
+      });
+    }
+
+    if (debugData && debugData.error) {
+      return res.status(400).json({ error: `Lỗi Meta API: ${debugData.error.message}` });
+    }
+    return res.status(400).json({ error: 'Token không hợp lệ hoặc đã hết hạn.' });
+  } catch (err) {
+    return res.status(500).json({ error: `Lỗi kiểm tra token: ${err.message}` });
+  }
 });
 
 // Kích hoạt nuôi tức thì 1 bài (Trigger Now Live Test)

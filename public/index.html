@@ -1362,6 +1362,140 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL CHI TIẾT & CÀI ĐẶT FANPAGE (EDIT FARM PAGE) ==================== -->
+  <div id="editFarmPageModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative my-auto space-y-4">
+      <button onclick="closeEditFarmModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+        <div id="editPageAvatarBox" class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl flex-shrink-0 overflow-hidden border border-slate-200">
+          <i class="fa-brands fa-facebook-f text-blue-600"></i>
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2">
+            <h3 id="editPageNameTitle" class="text-base font-black text-slate-900 truncate">Cài Đặt Fanpage</h3>
+            <span id="editPageStatusBadge" class="text-[10px] px-2 py-0.5 rounded-full font-bold"></span>
+          </div>
+          <p id="editPageIdSubtitle" class="text-xs text-slate-400 font-mono truncate">ID: ...</p>
+        </div>
+      </div>
+
+      <form id="editFarmForm" onsubmit="submitEditFarmPage(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="editPageIdInput">
+
+        <!-- 1. Cập nhật Token riêng biệt -->
+        <div class="p-3.5 bg-blue-50/70 border border-blue-200 rounded-2xl space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-key text-blue-600"></i> Page Access Token Riêng Biệt:
+            </label>
+            <button type="button" onclick="openFbDevGuideModal()" class="text-[10px] text-blue-600 hover:underline font-bold">
+              <i class="fa-solid fa-circle-question"></i> Cách lấy Token
+            </button>
+          </div>
+
+          <textarea id="editPageTokenInput" rows="3" placeholder="Dán mã Token riêng cho Fanpage này (EAAxxxx...)" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono text-[11px] leading-relaxed focus:outline-none focus:border-blue-500 bg-white"></textarea>
+
+          <div class="flex items-center justify-between pt-1">
+            <button type="button" onclick="checkCurrentPageToken()" id="checkTokenBtn" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-[11px] transition flex items-center gap-1 shadow-sm">
+              <i class="fa-solid fa-shield-check"></i> Kiểm Tra Quyền Token
+            </button>
+            <span id="tokenCheckStatusText" class="text-[11px] text-slate-500 font-medium"></span>
+          </div>
+
+          <!-- Khu vực hiển thị kết quả kiểm tra quyền Token -->
+          <div id="tokenScopesResultBox" class="hidden p-2.5 bg-white border border-slate-200 rounded-xl space-y-1.5 text-[11px]">
+            <div class="font-bold text-slate-700 text-[10px] uppercase">Trạng Thái Quyền Meta Token:</div>
+            <div class="grid grid-cols-2 gap-1.5" id="tokenScopesBadges"></div>
+            <p id="tokenScopeNotice" class="text-[10px] text-slate-500 pt-0.5 leading-snug"></p>
+          </div>
+        </div>
+
+        <!-- 2. Cập nhật Link Tiếp Thị Riêng Biệt (Shopee Deeplink / Bio link) -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+            <span>Link Tiếp Thị Liên Kết Riêng Biệt (Shopee Deeplink / Bio Link):</span>
+            <span class="text-[10px] text-slate-400 font-normal">Dành riêng cho Fanpage này</span>
+          </label>
+          <div class="relative">
+            <span class="absolute left-3 top-2.5 text-slate-400"><i class="fa-solid fa-link"></i></span>
+            <input type="url" id="editPageAffiliateLinkInput" placeholder="https://collshp.com/... hoặc link Shopee cá nhân" class="w-full pl-8 pr-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500 text-xs">
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">
+            💡 Mỗi bài viết AI tự động tạo (Flash Sale, Review) trên Page này sẽ tự động đính kèm link này để bạn hưởng hoa hồng affiliate.
+          </p>
+        </div>
+
+        <!-- 3. Lĩnh vực hoạt động (Niche) -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Lĩnh Vực Hoạt Động (Niche):</label>
+          <select id="editPageNicheSelect" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-slate-800 focus:outline-none focus:border-blue-500 text-xs">
+            <option value="cong_nghe">📱 Đồ công nghệ & Phụ kiện ĐT</option>
+            <option value="thoi_trang">👗 Thời trang & Phụ kiện</option>
+            <option value="my_pham">💄 Mỹ phẩm & Chăm sóc da</option>
+            <option value="gia_dung">🏠 Đồ gia dụng & Nhà cửa thông minh</option>
+            <option value="me_be">🍼 Mẹ & Bé</option>
+            <option value="suc_khoe">💪 Sức khỏe, Gym & Dinh dưỡng</option>
+            <option value="am_thuc">🍜 Ẩm thực & Đồ ăn vặt</option>
+            <option value="sach_giaoduc">📚 Sách, Kỹ năng & Giáo dục</option>
+            <option value="xe_co">🚗 Phụ kiện Xe & Lái xe an toàn</option>
+            <option value="khac">🛒 Đa ngành / Phong cách sống</option>
+          </select>
+        </div>
+
+        <!-- 4. Khung Giờ Đăng Bài Hàng Ngày -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Khung Giờ Tự Động Đăng Bài Hàng Ngày:</label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] font-bold text-slate-700">
+              <input type="checkbox" name="editFarmSlot" value="08:00" class="rounded text-blue-600 accent-blue-600"> 🌅 08:00 (Sáng)
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] font-bold text-slate-700">
+              <input type="checkbox" name="editFarmSlot" value="11:30" class="rounded text-blue-600 accent-blue-600"> 🍱 11:30 (Trưa)
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] font-bold text-slate-700">
+              <input type="checkbox" name="editFarmSlot" value="19:30" class="rounded text-blue-600 accent-blue-600"> 🍲 19:30 (Tối)
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] font-bold text-slate-700">
+              <input type="checkbox" name="editFarmSlot" value="20:30" class="rounded text-blue-600 accent-blue-600"> 🔥 20:30 (Giờ vàng)
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] font-bold text-slate-700">
+              <input type="checkbox" name="editFarmSlot" value="22:00" class="rounded text-blue-600 accent-blue-600"> 🌙 22:00 (Đêm)
+            </label>
+          </div>
+        </div>
+
+        <!-- 5. Tỷ lệ nội dung -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Tỷ Lệ Định Hướng Nội Dung (Content Strategy):</label>
+          <select id="editPageMixSelect" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-slate-800 focus:outline-none focus:border-blue-500 text-xs">
+            <option value="balanced">🌟 Cân Bằng (40% Kiến thức + 30% Tương tác + 30% Deal Shopee)</option>
+            <option value="knowledge">📚 Tập Trung Xây Kênh (Kiến thức, mẹo hay & kéo tương tác)</option>
+            <option value="sales">🔥 Bán Hàng Trực Diện (Review, flash sale & mã giảm giá)</option>
+          </select>
+        </div>
+
+        <!-- Nút hành động Footer -->
+        <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+          <button type="button" onclick="confirmDeleteCurrentEditPage()" class="w-full sm:w-auto px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 border border-red-200">
+            <i class="fa-solid fa-trash-can"></i> Xóa Không Nuôi Page Này
+          </button>
+
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button type="button" onclick="closeEditFarmModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+              Hủy
+            </button>
+            <button type="submit" id="saveEditFarmBtn" class="flex-1 sm:flex-none px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl text-xs transition shadow-md shadow-blue-500/25 flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-check"></i> Lưu Cập Nhật
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- ==================== MODAL NHẬT KÝ NUÔI FANPAGE (FARM POST HISTORY) ==================== -->
   <div id="farmHistoryModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden overflow-y-auto">
     <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 relative my-auto">
@@ -2740,21 +2874,24 @@
         return `
           <div class="bg-slate-50/70 border border-slate-200 hover:border-blue-400 rounded-2xl p-5 shadow-sm hover:shadow-md transition space-y-4 flex flex-col justify-between">
             
-            <!-- Header Card: Avatar & Tên Page -->
+            <!-- Header Card: Avatar & Tên Page (Bấm vào để mở cài đặt chi tiết) -->
             <div class="space-y-3">
               <div class="flex items-start justify-between gap-3">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-400/20 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                <div onclick="openEditFarmModal('${page.id}')" class="flex items-center gap-3 min-w-0 cursor-pointer group flex-1" title="Bấm để xem chi tiết & điều chỉnh Token/Link Fanpage">
+                  <div class="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-400/20 overflow-hidden flex-shrink-0 flex items-center justify-center group-hover:scale-105 transition">
                     ${page.avatar ? `<img src="${page.avatar}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120'">` : `<i class="fa-brands fa-facebook-f text-blue-600 text-xl"></i>`}
                   </div>
                   <div class="min-w-0">
-                    <h4 class="font-black text-slate-900 text-sm truncate" title="${escapeHtml(page.name)}">${escapeHtml(page.name)}</h4>
+                    <h4 class="font-black text-slate-900 text-sm truncate group-hover:text-blue-600 transition flex items-center gap-1.5" title="${escapeHtml(page.name)}">
+                      <span>${escapeHtml(page.name)}</span>
+                      <i class="fa-solid fa-pen-to-square text-[10px] text-slate-400 group-hover:text-blue-500"></i>
+                    </h4>
                     <p class="text-[11px] text-slate-400 font-mono truncate">ID: ${escapeHtml(page.id)}</p>
                   </div>
                 </div>
 
                 <!-- Status Toggle Badge -->
-                <button onclick="toggleFarmPage('${page.id}')" title="Bấm để ${isActive ? 'Tạm Dừng' : 'Kích Hoạt'} Auto-Pilot" class="flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider transition ${
+                <button onclick="toggleFarmPage('${page.id}')" title="Bấm để ${isActive ? 'Tạm Dừng' : 'Kích Hoạt'} Auto-Pilot" class="flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider transition ${
                   isActive 
                     ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200' 
                     : 'bg-slate-200 text-slate-600 border border-slate-300 hover:bg-slate-300'
@@ -2770,11 +2907,11 @@
                 </span>
 
                 <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${hasToken ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-amber-50 text-amber-700 border-amber-200'}">
-                  ${hasToken ? '✓ Meta API Tự Động' : '⚡ 1-Click Copy'}
+                  ${hasToken ? '✓ Token Riêng Đã Kết Nối' : '⚠️ Chưa Có Token'}
                 </span>
               </div>
 
-              <!-- Lịch đăng bài & Định hướng nội dung -->
+              <!-- Lịch đăng bài & Deeplink -->
               <div class="bg-white p-3 rounded-xl border border-slate-200 text-[11px] space-y-2">
                 <div>
                   <span class="text-slate-400 font-semibold block mb-1">Khung Giờ Tự Đăng Bài:</span>
@@ -2788,11 +2925,12 @@
                   <b class="text-purple-600 font-black">${publishedCount} bài</b>
                 </div>
 
-                ${page.affiliateLink ? `
-                  <div class="text-[10px] text-slate-400 truncate pt-0.5">
-                    🔗 Deeplink: <span class="text-blue-600 font-mono">${escapeHtml(page.affiliateLink)}</span>
-                  </div>
-                ` : ''}
+                <div class="text-[10px] truncate pt-0.5 border-t border-slate-100">
+                  <span class="text-slate-400 font-bold">🔗 Deeplink Riêng:</span> 
+                  ${page.affiliateLink 
+                    ? `<span class="text-blue-600 font-mono font-medium">${escapeHtml(page.affiliateLink)}</span>` 
+                    : `<span class="text-amber-600 italic">Chưa gắn link (Bấm Cài Đặt để thêm)</span>`}
+                </div>
               </div>
             </div>
 
@@ -2802,12 +2940,15 @@
                 <i class="fa-solid fa-bolt"></i> Nuôi Ngay 1 Bài (Test Live)
               </button>
 
-              <div class="flex items-center gap-2">
-                <button onclick="openFarmHistory('${page.id}', \`${escapeJs(page.name)}\`)" class="flex-1 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold rounded-lg text-[11px] transition flex items-center justify-center gap-1">
-                  <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Xem Nhật Ký
+              <div class="grid grid-cols-3 gap-1.5">
+                <button onclick="openEditFarmModal('${page.id}')" class="py-1.5 px-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold rounded-lg text-[11px] transition flex items-center justify-center gap-1" title="Điều chỉnh Token & Link Deeplink riêng">
+                  <i class="fa-solid fa-gear text-blue-600"></i> Cài Đặt
                 </button>
-                <button onclick="deleteFarmPage('${page.id}', \`${escapeJs(page.name)}\`)" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Xóa Fanpage khỏi dàn">
-                  <i class="fa-solid fa-trash-can text-xs"></i>
+                <button onclick="openFarmHistory('${page.id}', \`${escapeJs(page.name)}\`)" class="py-1.5 px-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold rounded-lg text-[11px] transition flex items-center justify-center gap-1" title="Xem lịch sử bài viết">
+                  <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Nhật Ký
+                </button>
+                <button onclick="deleteFarmPage('${page.id}', \`${escapeJs(page.name)}\`)" class="py-1.5 px-1 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold rounded-lg text-[11px] transition flex items-center justify-center gap-1" title="Xóa Fanpage không nuôi nữa">
+                  <i class="fa-solid fa-trash-can text-red-600"></i> Xóa
                 </button>
               </div>
             </div>
@@ -2924,6 +3065,213 @@
       } catch (e) {
         console.error(e);
       }
+    }
+
+    // ==================== QUẢN LÝ & CÀI ĐẶT CHI TIẾT FANPAGE ====================
+    let currentEditingFarmPage = null;
+
+    async function openEditFarmModal(pageId) {
+      if (!currentUser) { alert('Vui lòng đăng nhập tài khoản'); return; }
+      const token = localStorage.getItem('aff_token');
+      if (!token) return;
+
+      try {
+        const res = await fetch(`/api/fb/farm/${pageId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!data.success || !data.page) {
+          alert('Không tìm thấy thông tin Fanpage: ' + (data.error || ''));
+          return;
+        }
+
+        const page = data.page;
+        currentEditingFarmPage = page;
+
+        document.getElementById('editPageIdInput').value = page.id;
+        document.getElementById('editPageNameTitle').innerText = page.name || 'Fanpage';
+        document.getElementById('editPageIdSubtitle').innerText = `ID: ${page.id}`;
+        
+        const avatarBox = document.getElementById('editPageAvatarBox');
+        if (avatarBox) {
+          avatarBox.innerHTML = page.avatar 
+            ? `<img src="${page.avatar}" class="w-full h-full object-cover">`
+            : `<i class="fa-brands fa-facebook-f text-blue-600"></i>`;
+        }
+
+        const statusBadge = document.getElementById('editPageStatusBadge');
+        if (statusBadge) {
+          const isActive = page.status === 'ACTIVE';
+          statusBadge.className = `text-[10px] px-2.5 py-0.5 rounded-full font-bold ${
+            isActive ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-200 text-slate-700 border border-slate-300'
+          }`;
+          statusBadge.innerText = isActive ? '● ĐANG NUÔI' : '⏸ TẠM DỪNG';
+        }
+
+        document.getElementById('editPageTokenInput').value = page.accessToken || '';
+        document.getElementById('editPageAffiliateLinkInput').value = page.affiliateLink || '';
+        document.getElementById('editPageNicheSelect').value = page.niche || 'cong_nghe';
+        document.getElementById('editPageMixSelect').value = page.contentMix || 'balanced';
+
+        const slots = Array.isArray(page.dailySlots) && page.dailySlots.length ? page.dailySlots : ['20:00'];
+        document.querySelectorAll('input[name="editFarmSlot"]').forEach(cb => {
+          cb.checked = slots.includes(cb.value);
+        });
+
+        const resultBox = document.getElementById('tokenScopesResultBox');
+        const statusText = document.getElementById('tokenCheckStatusText');
+        if (resultBox) resultBox.classList.add('hidden');
+        if (statusText) statusText.innerText = '';
+
+        if (data.permissionInfo) {
+          renderTokenScopesBadges(data.permissionInfo);
+        }
+
+        document.getElementById('editFarmPageModal').classList.remove('hidden');
+      } catch (err) {
+        alert('Lỗi khi tải chi tiết Fanpage: ' + err.message);
+      }
+    }
+
+    function closeEditFarmModal() {
+      document.getElementById('editFarmPageModal').classList.add('hidden');
+      currentEditingFarmPage = null;
+    }
+
+    async function checkCurrentPageToken() {
+      if (!currentEditingFarmPage) return;
+      const pageId = currentEditingFarmPage.id;
+      const tokenInput = document.getElementById('editPageTokenInput').value.trim();
+      if (!tokenInput || tokenInput.length < 20) {
+        alert('Vui lòng dán Access Token hợp lệ (ít nhất 20 ký tự) để kiểm tra!');
+        return;
+      }
+
+      const btn = document.getElementById('checkTokenBtn');
+      const statusText = document.getElementById('tokenCheckStatusText');
+      const oldHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang kiểm tra...';
+      statusText.innerText = '';
+
+      const token = localStorage.getItem('aff_token');
+      try {
+        const res = await fetch(`/api/fb/farm/${pageId}/check-token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ token: tokenInput })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (data.isUserTokenConverted && data.resolvedToken) {
+            document.getElementById('editPageTokenInput').value = data.resolvedToken;
+            statusText.innerHTML = '<span class="text-blue-600 font-bold">⚡ Đã nhận diện User Token và lấy Page Token chuẩn!</span>';
+          } else {
+            statusText.innerHTML = '<span class="text-emerald-600 font-bold">✓ Token hợp lệ</span>';
+          }
+          renderTokenScopesBadges(data);
+        } else {
+          statusText.innerHTML = `<span class="text-red-600 font-bold">❌ ${data.error || 'Token không hợp lệ'}</span>`;
+          const resultBox = document.getElementById('tokenScopesResultBox');
+          if (resultBox) resultBox.classList.add('hidden');
+        }
+      } catch (e) {
+        statusText.innerHTML = `<span class="text-red-600 font-bold">Lỗi kết nối</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = oldHtml;
+      }
+    }
+
+    function renderTokenScopesBadges(info) {
+      const resultBox = document.getElementById('tokenScopesResultBox');
+      const badgesContainer = document.getElementById('tokenScopesBadges');
+      const noticeEl = document.getElementById('tokenScopeNotice');
+      if (!resultBox || !badgesContainer) return;
+
+      resultBox.classList.remove('hidden');
+      const perms = [
+        { name: 'Đăng bài nuôi page', scope: 'pages_manage_posts', ok: info.hasManagePosts },
+        { name: 'Trả lời cmt & Like', scope: 'pages_manage_engagement', ok: info.hasManageEngagement },
+        { name: 'Nhắn tin Messenger', scope: 'pages_messaging', ok: info.hasMessaging },
+        { name: 'Đọc cmt của khách', scope: 'pages_read_user_content', ok: info.hasReadUserContent }
+      ];
+
+      badgesContainer.innerHTML = perms.map(p => `
+        <div class="flex items-center justify-between p-1.5 rounded-lg border text-[10px] ${
+          p.ok ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
+        }">
+          <span class="font-bold truncate">${p.name}</span>
+          <span class="font-extrabold flex-shrink-0">${p.ok ? '✓ Có' : '✗ Thiếu'}</span>
+        </div>
+      `).join('');
+
+      if (!info.hasManageEngagement) {
+        noticeEl.innerHTML = '⚠️ <b class="text-amber-800">Lưu ý:</b> Đang thiếu quyền <code class="bg-amber-100 text-amber-900 px-1 rounded font-bold font-mono">pages_manage_engagement</code> để bot trả lời bình luận công khai. Bổ sung quyền này trong Graph API Explorer để bot đăng được cmt!';
+      } else if (info.allRequiredGranted) {
+        noticeEl.innerHTML = '🎉 <b class="text-emerald-700">Đầy đủ quyền:</b> Token đã có đủ quyền Đăng bài nuôi, Trả lời bình luận và Nhắn tin riêng Messenger!';
+      } else {
+        noticeEl.innerHTML = '';
+      }
+    }
+
+    async function submitEditFarmPage(e) {
+      e.preventDefault();
+      if (!currentEditingFarmPage) return;
+      const pageId = currentEditingFarmPage.id;
+
+      const tokenInput = document.getElementById('editPageTokenInput').value.trim();
+      const affiliateLink = document.getElementById('editPageAffiliateLinkInput').value.trim();
+      const niche = document.getElementById('editPageNicheSelect').value;
+      const mix = document.getElementById('editPageMixSelect').value;
+
+      const checkedSlots = [];
+      document.querySelectorAll('input[name="editFarmSlot"]:checked').forEach(cb => {
+        checkedSlots.push(cb.value);
+      });
+
+      const btn = document.getElementById('saveEditFarmBtn');
+      const oldHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+
+      const payload = {
+        accessToken: tokenInput,
+        affiliateLink: affiliateLink,
+        niche: niche,
+        contentMix: mix,
+        dailySlots: checkedSlots.length ? checkedSlots : ['20:00']
+      };
+
+      const token = localStorage.getItem('aff_token');
+      try {
+        const res = await fetch(`/api/fb/farm/${pageId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✅ ' + (data.message || 'Đã lưu thay đổi Fanpage thành công!'));
+          closeEditFarmModal();
+          loadFanpageFarm();
+        } else {
+          alert('Lỗi: ' + (data.error || 'Không thể cập nhật Fanpage'));
+        }
+      } catch (err) {
+        alert('Lỗi kết nối: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = oldHtml;
+      }
+    }
+
+    function confirmDeleteCurrentEditPage() {
+      if (!currentEditingFarmPage) return;
+      const pageId = currentEditingFarmPage.id;
+      const pageName = currentEditingFarmPage.name;
+      closeEditFarmModal();
+      deleteFarmPage(pageId, pageName);
     }
 
     // Xóa Fanpage khỏi dàn
